@@ -1,0 +1,44 @@
+name: Load period performance module
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: !contains(github.event.head_commit.message, 'fix: load period performance module')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Add period performance script loader
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          tag = '<script src="./period-performance.js"></script>'
+          if tag not in s:
+              marker = '</body>'
+              if marker not in s:
+                  raise SystemExit('Closing body tag not found')
+              s = s.replace(marker, tag + '\n' + marker, 1)
+              p.write_text(s, encoding='utf-8')
+          else:
+              print('Loader already present')
+
+      - name: Commit fix and remove one-shot workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/patch-period-loader.yml
+          git commit -m "fix: load period performance module"
+          git rm .github/workflows/patch-period-loader.yml
+          git commit -m "chore: remove one-shot period loader workflow"
+          git push
