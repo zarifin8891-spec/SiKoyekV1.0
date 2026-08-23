@@ -30,7 +30,7 @@ jobs:
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          tag = '<script src="period-performance.js?v=2"></script>'
+          tag = '<script src="period-performance.js?v=3"></script>'
           if tag not in s:
               if '</body>' not in s:
                   raise SystemExit('index.html has no </body> anchor')
