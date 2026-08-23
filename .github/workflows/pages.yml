@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -23,8 +23,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Inject period performance inline
+      - name: Publish period performance into source
         shell: python
         run: |
           from pathlib import Path
@@ -32,70 +34,71 @@ jobs:
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
           s = re.sub(r'<script src="\./period-performance\.js\?v=\d+"></script>', '', s)
-          script = r'''<script>
-          (function(){
-            const STYLE='period-performance-inline-style';
-            const SECTION='period-performance-inline';
-            function addStyle(){
-              if(document.getElementById(STYLE)) return;
-              const st=document.createElement('style');
-              st.id=STYLE;
-              st.textContent='.period-performance-inline{margin-top:18px}.period-performance-inline .ppgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}.period-performance-inline .ppnote{font-size:12px;color:var(--muted)}.period-performance-inline .pptable{margin-top:13px}@media(max-width:1100px){.period-performance-inline .ppgrid{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.period-performance-inline .ppgrid{grid-template-columns:1fr}}';
-              document.head.appendChild(st);
-            }
-            function periodOk(date){
-              if(!date) return false;
-              const from=(window.state&&state.period&&state.period.from)||'';
-              const to=(window.state&&state.period&&state.period.to)||'';
-              if(from && date<from) return false;
-              if(to && date>to) return false;
-              return true;
-            }
-            function projectActive(p){
-              const from=(window.state&&state.period&&state.period.from)||'';
-              const to=(window.state&&state.period&&state.period.to)||'';
-              if(!from&&!to) return true;
-              const start=p.start_date||p.project_date||'';
-              const end=p.end_date||p.start_date||p.project_date||'';
-              if(from && end && end<from) return false;
-              if(to && start && start>to) return false;
-              return true;
-            }
-            async function render(){
-              if(typeof sb==='undefined'||typeof state==='undefined'||state.page!=='dashboard') return;
-              const page=document.getElementById('page');
-              if(!page||page.querySelector('.'+SECTION)) return;
-              const title=[...page.querySelectorAll('.sectiontitle h2')].find(x=>x.textContent.trim()==='Project Health');
-              if(!title) return;
-              addStyle();
-              const projects=(state.summary||[]).filter(projectActive);
-              const ids=projects.map(p=>p.project_id).filter(Boolean);
-              let tx=[];
-              let error=null;
-              if(ids.length){
-                const res=await sb.from('financial_transactions').select('project_id,transaction_date,transaction_type,amount').in('project_id',ids);
-                tx=res.data||[]; error=res.error||null;
-              }
-              const box=document.createElement('div');
-              box.className='section '+SECTION;
-              if(error){
-                box.innerHTML='<div class="card kpi"><div class="label">KINERJA PERIODE</div><div class="value" style="color:var(--red);font-size:16px">Gagal membaca transaksi periode</div><div class="note">'+String(error.message||'Error')+'</div></div>';
-              }else{
-                const rows=projects.map(p=>{const arr=tx.filter(x=>x.project_id===p.project_id&&periodOk(x.transaction_date));const cin=arr.filter(x=>x.transaction_type==='MASUK').reduce((s,x)=>s+Number(x.amount||0),0);const cout=arr.filter(x=>x.transaction_type==='KELUAR').reduce((s,x)=>s+Number(x.amount||0),0);return {p,cin,cout,net:cin-cout,count:arr.length}});
-                const total=rows.reduce((a,r)=>({cin:a.cin+r.cin,cout:a.cout+r.cout,net:a.net+r.net,count:a.count+r.count}),{cin:0,cout:0,net:0,count:0});
-                box.innerHTML='<div class="sectiontitle"><h2>Kinerja Periode</h2><span class="ppnote">Cash flow berdasarkan tanggal transaksi</span></div><div class="ppgrid"><div class="card kpi"><div class="label">CASH IN PERIODE</div><div class="value">'+money(total.cin)+'</div></div><div class="card kpi"><div class="label">CASH OUT PERIODE</div><div class="value">'+money(total.cout)+'</div></div><div class="card kpi"><div class="label">NET CASHFLOW</div><div class="value">'+money(total.net)+'</div></div><div class="card kpi"><div class="label">JUMLAH TRANSAKSI</div><div class="value">'+total.count+'</div></div></div><div class="card tablecard pptable"><div class="scroll"><table class="table"><thead><tr><th>Proyek</th><th>Cash In</th><th>Cash Out</th><th>Net Cashflow</th><th>Transaksi</th></tr></thead><tbody>'+(rows.map(r=>'<tr><td><button class="linkbtn" onclick="openProject(\''+r.p.project_id+'\')">'+esc(r.p.project_code)+' — '+esc(r.p.project_name)+'</button></td><td>'+money(r.cin)+'</td><td>'+money(r.cout)+'</td><td>'+money(r.net)+'</td><td>'+r.count+'</td></tr>').join('')||'<tr><td colspan="5" class="empty">Tidak ada transaksi pada periode yang dipilih.</td></tr>')+'</tbody></table></div></div>';
-              }
-              title.closest('.section').before(box);
-            }
-            const obs=new MutationObserver(()=>setTimeout(render,50));
-            obs.observe(document.body,{childList:true,subtree:true});
-            addStyle();
-            setInterval(render,700);
-            render();
-          })();
-          </script>'''
-          s = s.replace('</body>', script + '</body>', 1)
+          s = re.sub(r'<script id="period-performance-inline">.*?</script>', '', s, flags=re.S)
+          inline = r'''
+<script id="period-performance-inline">
+(function(){
+  let loading=false;
+  function addStyle(){
+    if(document.getElementById('period-performance-style')) return;
+    const style=document.createElement('style');
+    style.id='period-performance-style';
+    style.textContent='.period-performance-section{margin-top:18px}.period-performance-section .pp-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}.period-performance-section .pp-note{font-size:12px;color:var(--muted)}.period-performance-section .pp-table{margin-top:13px}@media(max-width:1100px){.period-performance-section .pp-cards{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.period-performance-section .pp-cards{grid-template-columns:1fr}}';
+    document.head.appendChild(style);
+  }
+  function inRange(date){ if(!date)return false; if(state.period?.from&&date<state.period.from)return false; if(state.period?.to&&date>state.period.to)return false; return true; }
+  async function renderPerformance(){
+    if(loading || state.page!=='dashboard') return;
+    const page=document.getElementById('page');
+    if(!page || page.querySelector('.period-performance-section')) return;
+    const heading=[...page.querySelectorAll('.sectiontitle h2')].find(el=>el.textContent.trim()==='Project Health');
+    if(!heading)return;
+    const projects=(state.summary||[]).filter(x=>typeof periodMatch==='function'?periodMatch(x):true);
+    const ids=projects.map(x=>x.project_id).filter(Boolean);
+    loading=true;
+    try{
+      let transactions=[];
+      if(ids.length){
+        const {data,error}=await sb.from('financial_transactions').select('project_id,transaction_date,transaction_type,amount').in('project_id',ids);
+        if(error)throw error;
+        transactions=data||[];
+      }
+      const rows=projects.map(p=>{
+        const tx=transactions.filter(x=>x.project_id===p.project_id&&inRange(x.transaction_date));
+        const cashIn=tx.filter(x=>x.transaction_type==='MASUK').reduce((sum,x)=>sum+Number(x.amount||0),0);
+        const cashOut=tx.filter(x=>x.transaction_type==='KELUAR').reduce((sum,x)=>sum+Number(x.amount||0),0);
+        return {id:p.project_id,code:p.project_code,name:p.project_name,cashIn,cashOut,net:cashIn-cashOut,count:tx.length};
+      });
+      const totals=rows.reduce((a,r)=>({cashIn:a.cashIn+r.cashIn,cashOut:a.cashOut+r.cashOut,net:a.net+r.net,count:a.count+r.count}),{cashIn:0,cashOut:0,net:0,count:0});
+      const wrap=document.createElement('div');
+      wrap.className='section period-performance-section';
+      wrap.innerHTML=`<div class="sectiontitle"><h2>Kinerja Periode</h2><span class="pp-note">Transaksi pada periode ${periodLabel()}</span></div><div class="pp-cards"><div class="card kpi"><div class="label">CASH IN PERIODE</div><div class="value">${money(totals.cashIn)}</div></div><div class="card kpi"><div class="label">CASH OUT PERIODE</div><div class="value">${money(totals.cashOut)}</div></div><div class="card kpi"><div class="label">NET CASHFLOW</div><div class="value">${money(totals.net)}</div></div><div class="card kpi"><div class="label">JUMLAH TRANSAKSI</div><div class="value">${totals.count}</div></div></div><div class="card tablecard pp-table"><div class="scroll"><table class="table"><thead><tr><th>Proyek</th><th>Cash In</th><th>Cash Out</th><th>Net Cashflow</th><th>Transaksi</th></tr></thead><tbody>${rows.map(r=>`<tr><td><button class="linkbtn" onclick="openProject('${r.id}')">${esc(r.code)} — ${esc(r.name)}</button></td><td>${money(r.cashIn)}</td><td>${money(r.cashOut)}</td><td>${money(r.net)}</td><td>${r.count}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">Tidak ada transaksi pada periode yang dipilih.</td></tr>'}</tbody></table></div></div>`;
+      heading.closest('.section').before(wrap);
+    }catch(err){ try{toast(err?.message||'Gagal membaca kinerja periode')}catch(_){} }
+    finally{loading=false;}
+  }
+  addStyle();
+  new MutationObserver(renderPerformance).observe(document.body,{childList:true,subtree:true});
+  setInterval(renderPerformance,1000);
+  renderPerformance();
+})();
+</script>
+'''
+          s = s.replace('</body>', inline + '</body>', 1)
           p.write_text(s, encoding='utf-8')
+
+      - name: Commit source change
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No source change needed"
+          else
+            git commit -m "feat: add period performance dashboard [skip ci]"
+            git push origin HEAD:main
+          fi
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
