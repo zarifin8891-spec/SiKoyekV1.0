@@ -1,27 +1,39 @@
 (function(){
   const STYLE = `.periodperf{margin-top:18px}.periodperf .cards{grid-template-columns:repeat(5,1fr)}.periodperf .tablecard{margin-top:12px}`;
   const style=document.createElement('style'); style.textContent=STYLE; document.head.appendChild(style);
-  let cachePromise=null;
-  async function loadPeriodData(){
-    if(cachePromise)return cachePromise;
-    cachePromise=(async()=>{
+
+  let dataCache=null;
+  let dataPromise=null;
+
+  async function loadData(){
+    if(dataCache) return dataCache;
+    if(dataPromise) return dataPromise;
+    dataPromise=(async()=>{
       const [txRes,prRes,wiRes]=await Promise.all([
         sb.from('financial_transactions').select('project_id,transaction_date,transaction_type,amount'),
         sb.from('progress_records').select('project_id,work_item_id,progress_date,progress_percentage'),
         sb.from('project_work_items').select('id,project_id,weight')
       ]);
-      if(txRes.error||prRes.error||wiRes.error){throw (txRes.error||prRes.error||wiRes.error)}
-      return {transactions:txRes.data||[],progress:prRes.data||[],weights:Object.fromEntries((wiRes.data||[]).map(x=>[x.id,Number(x.weight||0)]))};
+      const err=txRes.error||prRes.error||wiRes.error;
+      if(err) throw err;
+      dataCache={
+        transactions:txRes.data||[],
+        progress:prRes.data||[],
+        weights:Object.fromEntries((wiRes.data||[]).map(x=>[x.id,Number(x.weight||0)]))
+      };
+      return dataCache;
     })();
-    return cachePromise;
+    try{return await dataPromise}catch(e){dataPromise=null;throw e}
   }
-  function inRange(d){
-    if(!d)return false;
-    if(state.period?.from && d<state.period.from)return false;
-    if(state.period?.to && d>state.period.to)return false;
+
+  function inRange(date){
+    if(!date) return false;
+    if(state.period?.from && date<state.period.from) return false;
+    if(state.period?.to && date>state.period.to) return false;
     return true;
   }
-  function perf(projects,data){
+
+  function compute(projects,data){
     const ids=new Set(projects.map(p=>p.project_id));
     const tx=data.transactions.filter(x=>ids.has(x.project_id)&&inRange(x.transaction_date));
     const pr=data.progress.filter(x=>ids.has(x.project_id)&&inRange(x.progress_date));
@@ -36,22 +48,30 @@
     totals.avgProgress=rows.length?totals.progress/rows.length:0;
     return {rows,totals};
   }
-  const originalDashboard=window.dashboard;
-  window.dashboard=function(){
-    const base=originalDashboard();
+
+  function render(){
+    const page=document.getElementById('page');
+    if(!page || typeof state==='undefined' || state.page!=='dashboard') return;
+    if(page.querySelector('.periodperf')) return;
+
+    const headings=[...page.querySelectorAll('.sectiontitle h2')];
+    const healthHeading=headings.find(h=>h.textContent.trim()==='Project Health');
+    if(!healthHeading) return;
+
     const projects=state.summary.filter(typeof periodMatch==='function'?periodMatch:()=>true);
-    if(!cachePromise){
-      loadPeriodData().then(()=>{try{renderPage()}catch(e){}}).catch(e=>{try{toast(e?.message||'Gagal membaca data periode')}catch(_){}});
-      return base.replace('</div></div>`</div>','</div></div>`</div>');
+    if(!dataCache){
+      loadData().then(()=>render()).catch(e=>{try{toast(e?.message||'Gagal membaca data periode')}catch(_){}});
+      return;
     }
-    const data=cachePromise.__value;
-    if(!data)return base;
-    const p=perf(projects,data),m=money,pc=p.totals;
-    const block=`<div class="section periodperf"><div class="sectiontitle"><h2>Kinerja Periode</h2><span class="note">Aktivitas transaksi dan progress pada periode ${periodLabel()}</span></div><div class="cards"><div class="card kpi"><div class="label">CASH IN PERIODE</div><div class="value">${m(pc.cashIn)}</div></div><div class="card kpi"><div class="label">CASH OUT PERIODE</div><div class="value">${m(pc.cashOut)}</div></div><div class="card kpi"><div class="label">REALISASI PERIODE</div><div class="value">${m(pc.cashOut)}</div></div><div class="card kpi"><div class="label">NET CASHFLOW</div><div class="value">${m(pc.net)}</div></div><div class="card kpi"><div class="label">AVG TAMBAHAN PROGRESS</div><div class="value">${pct(pc.avgProgress)}</div></div></div><div class="card tablecard"><div class="scroll"><table class="table"><thead><tr><th>Proyek</th><th>Cash In</th><th>Cash Out</th><th>Net Cashflow</th><th>Tambahan Progress</th></tr></thead><tbody>${p.rows.map(x=>`<tr><td><button class="linkbtn" onclick="openProject('${x.project_id}')">${esc(x.project_code)} — ${esc(x.project_name)}</button></td><td>${m(x.cashIn)}</td><td>${m(x.cashOut)}</td><td>${m(x.net)}</td><td>${pct(x.progress)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">Tidak ada aktivitas pada periode yang dipilih.</td></tr>'}</tbody></table></div></div></div>`;
-    const marker='<div class="section"><div class="health">';
-    return base.replace(marker,block+marker);
-  };
-  const originalLoad=window.loadPeriodData;
-  const originalPromise=loadPeriodData();
-  originalPromise.then(v=>{originalPromise.__value=v; cachePromise.__value=v; try{renderPage()}catch(e){}}).catch(()=>{});
+
+    const result=compute(projects,dataCache),m=money,pc=result.totals;
+    const wrap=document.createElement('div');
+    wrap.innerHTML=`<div class="section periodperf"><div class="sectiontitle"><h2>Kinerja Periode</h2><span class="note">Aktivitas transaksi dan progress pada periode ${periodLabel()}</span></div><div class="cards"><div class="card kpi"><div class="label">CASH IN PERIODE</div><div class="value">${m(pc.cashIn)}</div></div><div class="card kpi"><div class="label">CASH OUT PERIODE</div><div class="value">${m(pc.cashOut)}</div></div><div class="card kpi"><div class="label">REALISASI PERIODE</div><div class="value">${m(pc.cashOut)}</div></div><div class="card kpi"><div class="label">NET CASHFLOW</div><div class="value">${m(pc.net)}</div></div><div class="card kpi"><div class="label">AVG TAMBAHAN PROGRESS</div><div class="value">${pct(pc.avgProgress)}</div></div></div><div class="card tablecard"><div class="scroll"><table class="table"><thead><tr><th>Proyek</th><th>Cash In</th><th>Cash Out</th><th>Net Cashflow</th><th>Tambahan Progress</th></tr></thead><tbody>${result.rows.map(x=>`<tr><td><button class="linkbtn" onclick="openProject('${x.project_id}')">${esc(x.project_code)} — ${esc(x.project_name)}</button></td><td>${m(x.cashIn)}</td><td>${m(x.cashOut)}</td><td>${m(x.net)}</td><td>${pct(x.progress)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">Tidak ada aktivitas pada periode yang dipilih.</td></tr>'}</tbody></table></div></div></div>`;
+    healthHeading.closest('.section').before(wrap.firstElementChild);
+  }
+
+  const observer=new MutationObserver(()=>render());
+  observer.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
+  const kick=()=>{loadData().then(()=>render()).catch(()=>render())};
+  kick();
 })();
