@@ -2,16 +2,17 @@ name: Deploy SiKoyek V1.0
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: true
 
 jobs:
@@ -20,85 +21,22 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish period performance into source
+      - name: Add period performance module
         shell: python
         run: |
           from pathlib import Path
           import re
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
-          s = re.sub(r'<script src="\./period-performance\.js\?v=\d+"></script>', '', s)
-          s = re.sub(r'<script id="period-performance-inline">.*?</script>', '', s, flags=re.S)
-          inline = r'''
-<script id="period-performance-inline">
-(function(){
-  let loading=false;
-  function addStyle(){
-    if(document.getElementById('period-performance-style')) return;
-    const style=document.createElement('style');
-    style.id='period-performance-style';
-    style.textContent='.period-performance-section{margin-top:18px}.period-performance-section .pp-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}.period-performance-section .pp-note{font-size:12px;color:var(--muted)}.period-performance-section .pp-table{margin-top:13px}@media(max-width:1100px){.period-performance-section .pp-cards{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.period-performance-section .pp-cards{grid-template-columns:1fr}}';
-    document.head.appendChild(style);
-  }
-  function inRange(date){ if(!date)return false; if(state.period?.from&&date<state.period.from)return false; if(state.period?.to&&date>state.period.to)return false; return true; }
-  async function renderPerformance(){
-    if(loading || state.page!=='dashboard') return;
-    const page=document.getElementById('page');
-    if(!page || page.querySelector('.period-performance-section')) return;
-    const heading=[...page.querySelectorAll('.sectiontitle h2')].find(el=>el.textContent.trim()==='Project Health');
-    if(!heading)return;
-    const projects=(state.summary||[]).filter(x=>typeof periodMatch==='function'?periodMatch(x):true);
-    const ids=projects.map(x=>x.project_id).filter(Boolean);
-    loading=true;
-    try{
-      let transactions=[];
-      if(ids.length){
-        const {data,error}=await sb.from('financial_transactions').select('project_id,transaction_date,transaction_type,amount').in('project_id',ids);
-        if(error)throw error;
-        transactions=data||[];
-      }
-      const rows=projects.map(p=>{
-        const tx=transactions.filter(x=>x.project_id===p.project_id&&inRange(x.transaction_date));
-        const cashIn=tx.filter(x=>x.transaction_type==='MASUK').reduce((sum,x)=>sum+Number(x.amount||0),0);
-        const cashOut=tx.filter(x=>x.transaction_type==='KELUAR').reduce((sum,x)=>sum+Number(x.amount||0),0);
-        return {id:p.project_id,code:p.project_code,name:p.project_name,cashIn,cashOut,net:cashIn-cashOut,count:tx.length};
-      });
-      const totals=rows.reduce((a,r)=>({cashIn:a.cashIn+r.cashIn,cashOut:a.cashOut+r.cashOut,net:a.net+r.net,count:a.count+r.count}),{cashIn:0,cashOut:0,net:0,count:0});
-      const wrap=document.createElement('div');
-      wrap.className='section period-performance-section';
-      wrap.innerHTML=`<div class="sectiontitle"><h2>Kinerja Periode</h2><span class="pp-note">Transaksi pada periode ${periodLabel()}</span></div><div class="pp-cards"><div class="card kpi"><div class="label">CASH IN PERIODE</div><div class="value">${money(totals.cashIn)}</div></div><div class="card kpi"><div class="label">CASH OUT PERIODE</div><div class="value">${money(totals.cashOut)}</div></div><div class="card kpi"><div class="label">NET CASHFLOW</div><div class="value">${money(totals.net)}</div></div><div class="card kpi"><div class="label">JUMLAH TRANSAKSI</div><div class="value">${totals.count}</div></div></div><div class="card tablecard pp-table"><div class="scroll"><table class="table"><thead><tr><th>Proyek</th><th>Cash In</th><th>Cash Out</th><th>Net Cashflow</th><th>Transaksi</th></tr></thead><tbody>${rows.map(r=>`<tr><td><button class="linkbtn" onclick="openProject('${r.id}')">${esc(r.code)} — ${esc(r.name)}</button></td><td>${money(r.cashIn)}</td><td>${money(r.cashOut)}</td><td>${money(r.net)}</td><td>${r.count}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">Tidak ada transaksi pada periode yang dipilih.</td></tr>'}</tbody></table></div></div>`;
-      heading.closest('.section').before(wrap);
-    }catch(err){ try{toast(err?.message||'Gagal membaca kinerja periode')}catch(_){} }
-    finally{loading=false;}
-  }
-  addStyle();
-  new MutationObserver(renderPerformance).observe(document.body,{childList:true,subtree:true});
-  setInterval(renderPerformance,1000);
-  renderPerformance();
-})();
-</script>
-'''
-          s = s.replace('</body>', inline + '</body>', 1)
-          p.write_text(s, encoding='utf-8')
 
-      - name: Commit source change
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          if git diff --cached --quiet; then
-            echo "No source change needed"
-          else
-            git commit -m "feat: add period performance dashboard [skip ci]"
-            git push origin HEAD:main
-          fi
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+          html = re.sub(r'<script src="\./period-performance\.js\?v=\d+"></script>', '', html)
+          html = html.replace('</body>', '<script src="./period-performance.js?v=2"></script></body>', 1)
+          path.write_text(html, encoding='utf-8')
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
