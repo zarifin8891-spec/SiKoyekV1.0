@@ -13,6 +13,7 @@ Project Control System berbasis Supabase.
 - Cost Control
 - RAP Consumption
 - Cost Ratio
+- Dashboard Kinerja Periode
 
 ## Backend
 
