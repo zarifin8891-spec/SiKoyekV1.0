@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -23,49 +23,43 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Apply final login visual override
+      - name: Apply login styling to live main branch
         shell: python
         run: |
           from pathlib import Path
           import re
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
+
+          css = r''' .login{min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,#f4f7fb 0%,#edf2f7 100%)}.login .loginbox{width:min(410px,calc(100vw - 40px));background:#fff;border:1px solid #dfe5ed;border-radius:18px;padding:28px 30px 24px;box-shadow:0 18px 44px rgba(23,32,51,.09);overflow:hidden;position:relative}.login .loginbox::before{content:"";display:block;height:5px;margin:-28px -30px 22px;background:#294a80}.login .brand{margin:0;padding:0;background:transparent;color:#172033;text-align:left;font-size:31px;line-height:1.1;font-weight:800}.login .brand b{color:#245cff;font-weight:800}.login .loginbox h2{margin:5px 0 22px;padding:0;background:transparent;color:#5a677b;text-align:left;font-size:16px;line-height:1.3;font-weight:650;border-radius:0}.login .loginbox p{display:none}.login .loginbox .field{margin:15px 0}.login .loginbox .field label{display:block;font-size:13px;font-weight:800;color:#25324a;letter-spacing:.01em;margin-bottom:7px;text-transform:none}.login .loginbox .field input,.login .loginbox .field select,.login .loginbox .field textarea{width:100%;height:48px;padding:11px 13px;border:1px solid #cfd7e2;border-radius:11px;background:#fff;color:#172033;font-size:16px;box-shadow:none}.login .loginbox .password-wrap{position:relative}.login .loginbox .password-wrap input{padding-right:48px}.login .loginbox .toggle-password{position:absolute;right:0;top:0;width:46px;height:48px;border:0;background:transparent;color:#71809a;display:grid;place-items:center;cursor:pointer;padding:0}.login .loginbox .toggle-password svg{width:21px;height:21px}.login .loginbox #loginBtn{width:100%;height:49px;margin-top:7px;background:#167967;color:#fff;border:0;border-radius:11px;font-size:17px;font-weight:800;box-shadow:0 8px 18px rgba(22,121,103,.14)}.login .loginbox #loginBtn:hover{background:#146f61}.login .loginbox .forgot-wrap{text-align:center;margin-top:17px}.login .loginbox .forgot-link{border:0;background:transparent;color:#167967;font-size:14px;font-weight:750;padding:0}.login .loginbox .err{margin-top:10px;font-size:13px}@media(max-width:520px){.login{padding:12px}.login .loginbox{width:min(410px,calc(100vw - 24px));padding:24px 20px 22px;border-radius:16px}.login .loginbox::before{margin:-24px -20px 20px}.login .brand{font-size:28px}.login .loginbox h2{font-size:15px;margin-bottom:18px}.login .loginbox .field input{height:46px;font-size:16px}.login .loginbox .toggle-password{height:46px}.login .loginbox #loginBtn{height:47px;font-size:16px}} '''
+
+          # Remove older injected login overrides if present.
           s = re.sub(r'<link rel="stylesheet" href="login-style\.css\?v=\d+">', '', s)
-          override = r'''
-<style id="login-final-override">
-.login{min-height:100vh!important;display:grid!important;place-items:center!important;padding:20px!important;background:linear-gradient(135deg,#f4f7fb 0%,#edf2f7 100%)!important}
-.login .loginbox{width:min(410px,calc(100vw - 40px))!important;background:#fff!important;border:1px solid #dfe5ed!important;border-radius:18px!important;padding:28px 30px 24px!important;box-shadow:0 18px 44px rgba(23,32,51,.09)!important;overflow:hidden!important;position:relative!important}
-.login .loginbox::before{content:""!important;display:block!important;height:5px!important;margin:-28px -30px 22px!important;background:#294a80!important}
-.login .brand{margin:0!important;padding:0!important;background:transparent!important;color:#172033!important;text-align:left!important;font-size:31px!important;line-height:1.1!important;font-weight:800!important}
-.login .brand b{color:#245cff!important;font-weight:800!important}
-.login .loginbox h2{margin:5px 0 22px!important;padding:0!important;background:transparent!important;color:#5a677b!important;text-align:left!important;font-size:16px!important;line-height:1.3!important;font-weight:650!important;border-radius:0!important}
-.login .loginbox .field{margin:15px 0!important}
-.login .loginbox .field label{display:block!important;font-size:13px!important;font-weight:800!important;color:#25324a!important;letter-spacing:.01em!important;margin-bottom:7px!important;text-transform:none!important}
-.login .loginbox .field input,.login .loginbox .field select,.login .loginbox .field textarea{width:100%!important;height:48px!important;padding:11px 13px!important;border:1px solid #cfd7e2!important;border-radius:11px!important;background:#fff!important;color:#172033!important;font-size:16px!important;box-shadow:none!important}
-.login .loginbox .field input:focus{outline:none!important;border-color:#829ef2!important;box-shadow:0 0 0 3px rgba(36,92,255,.10)!important}
-.login .loginbox .password-wrap input{padding-right:48px!important}
-.login .loginbox .toggle-password{position:absolute!important;right:0!important;top:0!important;width:46px!important;height:48px!important;border:0!important;background:transparent!important;color:#71809a!important;display:grid!important;place-items:center!important;cursor:pointer!important;padding:0!important}
-.login .loginbox .toggle-password svg{width:21px!important;height:21px!important}
-.login .loginbox #loginBtn{width:100%!important;height:49px!important;margin-top:7px!important;background:#167967!important;color:#fff!important;border:0!important;border-radius:11px!important;font-size:17px!important;font-weight:800!important;box-shadow:0 8px 18px rgba(22,121,103,.14)!important}
-.login .loginbox #loginBtn:hover{background:#146f61!important}
-.login .loginbox .forgot-wrap{text-align:center!important;margin-top:17px!important}
-.login .loginbox .forgot-link{border:0!important;background:transparent!important;color:#167967!important;font-size:14px!important;font-weight:750!important;padding:0!important}
-.login .loginbox .err{margin-top:10px!important;font-size:13px!important}
-@media(max-width:520px){
-  .login{padding:12px!important}
-  .login .loginbox{width:min(410px,calc(100vw - 24px))!important;padding:24px 20px 22px!important;border-radius:16px!important}
-  .login .loginbox::before{margin:-24px -20px 20px!important}
-  .login .brand{font-size:28px!important}
-  .login .loginbox h2{font-size:15px!important;margin-bottom:18px!important}
-  .login .loginbox .field input{height:46px!important;font-size:16px!important}
-  .login .loginbox .toggle-password{height:46px!important}
-  .login .loginbox #loginBtn{height:47px!important;font-size:16px!important}
-}
-</style>
-'''
-          s = re.sub(r'</head>', override + '</head>', s, count=1)
+          s = re.sub(r'<style id="login-final-override">.*?</style>', '', s, flags=re.S)
+
+          # Replace the original login CSS block in the source itself.
+          pattern = re.compile(r'\.login\{min-height:100vh;display:grid;place-items:center;padding:.*?\.err\{margin-top:12px;color:var\(--red\);font-size:13px\}', re.S)
+          s, count = pattern.subn(css.strip(), s, count=1)
+          if count != 1:
+              raise SystemExit('Original login CSS block not found; refusing unsafe edit')
+
           p.write_text(s, encoding='utf-8')
+
+      - name: Commit source change for branch-based Pages
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No source change needed"
+          else
+            git commit -m "chore: compact login UI source [skip ci]"
+            git push
+          fi
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
