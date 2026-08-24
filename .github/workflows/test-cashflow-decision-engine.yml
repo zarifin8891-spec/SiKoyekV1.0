@@ -1,0 +1,21 @@
+name: Test Cash Flow Decision Engine V1.0
+
+on:
+  push:
+    branches:
+      - feature/cashflow-decision-engine-v1
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  cashflow-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run Cash Flow Decision Engine tests
+        run: node tests/project-cashflow-decision-engine-v1.test.js
