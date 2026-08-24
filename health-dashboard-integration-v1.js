@@ -5,6 +5,18 @@
   const SUPABASE_KEY='sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf';
   let healthClient=null,lastSignature='',busy=false;
   function esc(s){return String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
+  function hideLegacyProjectHealth(){
+    const dashboard=[...document.querySelectorAll('.content')].find(x=>x.querySelector('.top h1')?.textContent.trim()==='Dashboard');
+    if(!dashboard)return;
+    [...dashboard.querySelectorAll('.section')].forEach(sec=>{
+      if(sec.id==='health-engine-v1-card')return;
+      const h2=sec.querySelector('.sectiontitle h2');
+      if(h2&&h2.textContent.replace(/\s+/g,' ').trim()==='Project Health'){
+        sec.dataset.legacyHealth='hidden';
+        sec.style.display='none';
+      }
+    });
+  }
   async function load(){
     if(busy||!window.SiKoyekHealthEngine||!window.supabase)return;
     const app=document.getElementById('app');
@@ -16,13 +28,13 @@
       if(error)throw error;
       const rows=(data||[]).map(r=>({...r,project_progress:Number(r.project_progress||0),cost_ratio:Number(r.cost_ratio||0),rap_consumption:Number(r.rap_consumption||0)})).map(r=>({...r,health:window.SiKoyekHealthEngine.evaluate(r)}));
       const sig=JSON.stringify(rows.map(r=>[r.project_code,r.health.status,r.project_progress,r.cost_ratio,r.rap_consumption]));
-      if(sig===lastSignature)return;
-      lastSignature=sig;render(rows);
-    }catch(e){console.warn('Health Dashboard integration:',e)}finally{busy=false}
+      if(sig===lastSignature){hideLegacyProjectHealth();return;}
+      lastSignature=sig;render(rows);hideLegacyProjectHealth();
+    }catch(e){console.warn('Health Dashboard integration:',e);hideLegacyProjectHealth()}finally{busy=false}
   }
   function render(rows){
     const old=document.getElementById('health-engine-v1-card');if(old)old.remove();
-    const dashboard=[...document.querySelectorAll('.content')].find(x=>x.querySelector('.top h1'));if(!dashboard)return;
+    const dashboard=[...document.querySelectorAll('.content')].find(x=>x.querySelector('.top h1')?.textContent.trim()==='Dashboard');if(!dashboard)return;
     const priority=[...rows].sort((a,b)=>{const rank={red:3,amber:2,green:1};return rank[b.health.level]-rank[a.health.level]||b.health.costGap-a.health.costGap}).slice(0,5);
     const card=document.createElement('section');card.id='health-engine-v1-card';card.className='section';
     card.innerHTML=`<div class="sectiontitle"><h2>Project Health Engine <span class="pill green">V${ENGINE_VERSION} • LIVE READ-ONLY</span></h2><span class="note">Progress vs Cost Ratio & RAP Consumption</span></div><div class="card tablecard he-table-card"><div class="scroll"><table class="table"><thead><tr><th>Proyek</th><th>Progress</th><th>Cost Ratio</th><th>RAP Consumption</th><th>Health</th><th>Gap Cost</th></tr></thead><tbody>${priority.map(r=>`<tr><td><strong>${esc(r.project_code)}</strong> — ${esc(r.project_name)}</td><td>${r.project_progress.toFixed(2)}%</td><td>${r.cost_ratio.toFixed(2)}%</td><td>${r.rap_consumption.toFixed(2)}%</td><td><span class="pill ${r.health.level}">${r.health.status}</span></td><td>${r.health.costGap>=0?'+':''}${r.health.costGap.toFixed(2)} pp</td></tr>`).join('')||'<tr><td colspan="6" class="empty">Belum ada data proyek.</td></tr>'}</tbody></table></div></div>`;
