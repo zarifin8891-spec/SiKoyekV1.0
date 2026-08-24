@@ -18,5 +18,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Run Cash Flow Decision Engine tests
+      - name: Run core tests
         run: node tests/project-cashflow-decision-engine-v1.test.js
+      - name: Run stress tests
+        run: node tests/cashflow-decision-engine-stress-v1.test.js
