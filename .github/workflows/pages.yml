@@ -45,7 +45,7 @@ jobs:
           path = Path('index.html')
           html = path.read_text(encoding='utf-8')
           html = re.sub(r'<script src="\./dashboard-graphs\.js\?v=\d+"></script>', '', html)
-          html = html.replace('</body>', '<script src="./dashboard-graphs.js?v=2"></script></body>', 1)
+          html = html.replace('</body>', '<script src="./dashboard-graphs.js?v=3"></script></body>', 1)
           path.write_text(html, encoding='utf-8')
 
       - name: Configure GitHub Pages
