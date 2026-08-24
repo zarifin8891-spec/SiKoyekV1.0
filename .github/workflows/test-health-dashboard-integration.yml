@@ -1,0 +1,53 @@
+name: Test Health Dashboard Integration V1.0
+
+on:
+  push:
+    branches:
+      - feature/health-engine-v1
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  integration-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build isolated Dashboard preview
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          source = Path('index.html')
+          preview = Path('/tmp/sikoyek-dashboard-preview.html')
+          html = source.read_text(encoding='utf-8')
+          if 'id="app"' not in html:
+              raise SystemExit('FAIL: Dashboard app mount not found')
+          if 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2' not in html:
+              raise SystemExit('FAIL: Supabase client dependency not found')
+
+          html = re.sub(r'<script src="\\./health-dashboard-integration-v1\\.js\\?v=\\d+"></script>', '', html)
+          html = html.replace('</body>', '<script src="./health-dashboard-integration-v1.js?v=2"></script></body>', 1)
+          preview.write_text(html, encoding='utf-8')
+
+          required = [
+              'project-health-engine-v1.js',
+              'health-dashboard-integration-v1.js',
+              'project_summary',
+              'Project Health Engine'
+          ]
+          for item in required:
+              if item not in html and item not in Path('health-dashboard-integration-v1.js').read_text(encoding='utf-8'):
+                  raise SystemExit(f'FAIL: required integration marker missing: {item}')
+
+          if html.count('health-dashboard-integration-v1.js?v=2') != 1:
+              raise SystemExit('FAIL: Health integration must be injected exactly once')
+
+          print('Dashboard Health Integration smoke test: PASS')
+          print(f'Preview created: {preview}')
