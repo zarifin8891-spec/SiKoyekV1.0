@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const engine=fs.readFileSync('project-cashflow-decision-engine-v1.js','utf8');
+const integration=fs.readFileSync('cashflow-decision-dashboard-v1.js','utf8');
+assert.match(engine,/SiKoyekCashflowDecisionEngine/,'Cash Flow engine export missing');
+assert.match(integration,/project_summary/,'Dashboard integration must read project_summary');
+assert.match(integration,/cash_in/,'Dashboard integration must consume cash_in');
+assert.match(integration,/cash_out/,'Dashboard integration must consume cash_out');
+assert.match(integration,/net_cashflow/,'Dashboard integration must consume net_cashflow');
+console.log('Cash Flow Dashboard smoke: PASS');
