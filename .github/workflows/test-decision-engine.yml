@@ -1,0 +1,21 @@
+name: Test Decision Engine V1.0
+
+on:
+  push:
+    branches:
+      - feature/decision-engine-v1
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Test Decision Engine
+        run: node tests/project-decision-engine-v1.test.js
