@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const integration=fs.readFileSync('decision-dashboard-integration-v1.js','utf8');
+const engine=fs.readFileSync('project-decision-engine-v1.js','utf8');
+const health=fs.readFileSync('project-health-engine-v1.js','utf8');
+assert.ok(integration.includes('decision-engine-v1-card'),'Decision card marker missing');
+assert.ok(integration.includes('Prioritas & Tindakan'),'Decision section title missing');
+assert.ok(integration.includes('Status'),'Decision status column missing');
+assert.ok(integration.includes('Masalah Utama'),'Decision reason column missing');
+assert.ok(integration.includes('Tindakan'),'Decision action column missing');
+assert.ok(integration.includes('project_summary'),'Supabase summary source missing');
+assert.ok(integration.includes('SiKoyekDecisionEngine'),'Decision engine dependency missing');
+assert.ok(integration.includes('SiKoyekHealthEngine'),'Health engine dependency missing');
+assert.equal((integration.match(/decision-engine-v1-card/g)||[]).length,1,'Decision card id should be declared once');
+assert.ok(engine.includes('window.SiKoyekDecisionEngine'),'Decision engine export missing');
+assert.ok(health.includes('window.SiKoyekHealthEngine'),'Health engine export missing');
+console.log('Decision Dashboard Integration V1.0: PASS');
