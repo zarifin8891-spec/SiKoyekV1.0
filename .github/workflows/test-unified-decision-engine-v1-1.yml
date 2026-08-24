@@ -18,5 +18,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Run unified Decision Engine tests
+      - name: Run unified Decision Engine core tests
         run: node tests/project-decision-engine-v1-1.test.js
+      - name: Run six real-project validation
+        run: node tests/project-decision-engine-v1-1-real-projects.test.js
