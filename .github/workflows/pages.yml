@@ -72,6 +72,17 @@ jobs:
           html = html.replace('</body>', '<script src="./rap-control-validation.js?v=1"></script></body>', 1)
           path.write_text(html, encoding='utf-8')
 
+      - name: Add project health decision engine
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+          html = re.sub(r'<script src="\\./project-health-engine\\.js\\?v=\\d+"></script>', '', html)
+          html = html.replace('</body>', '<script src="./project-health-engine.js?v=1"></script></body>', 1)
+          path.write_text(html, encoding='utf-8')
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
