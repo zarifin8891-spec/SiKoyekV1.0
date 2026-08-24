@@ -31,6 +31,6 @@ assert.match(riskRap.action,/pemakaian RAP/i);
 
 const riskBoth=evaluate({project_progress:20,cost_ratio:40,rap_consumption:45},health('BERISIKO'));
 assert.match(riskBoth.reason,/sama-sama/i);
-assert.match(riskBoth.action,/pengeluaran berikutnya/i);
+assert.match(riskBoth.action,/Hentikan penambahan biaya non-kritis/i);
 
 console.log('Decision Engine V1.0: PASS');
