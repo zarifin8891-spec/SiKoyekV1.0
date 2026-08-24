@@ -1,0 +1,21 @@
+name: Test Health Engine V1.0
+
+on:
+  push:
+    branches:
+      - feature/health-engine-v1
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Test Health Engine
+        run: node tests/project-health-engine-v1.test.js
