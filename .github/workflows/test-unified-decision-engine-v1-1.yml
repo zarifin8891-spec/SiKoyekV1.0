@@ -1,0 +1,24 @@
+name: Test Unified Decision Engine V1.1
+
+on:
+  push:
+    branches:
+      - feature/decision-engine-v1-1
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-unified-decision-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run unified Decision Engine core tests
+        run: node tests/project-decision-engine-v1-1.test.js
+      - name: Run six real-project validation
+        run: node tests/project-decision-engine-v1-1-real-projects.test.js
