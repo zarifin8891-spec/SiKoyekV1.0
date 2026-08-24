@@ -1,0 +1,21 @@
+name: Test Decision Dashboard Integration V1.0
+
+on:
+  push:
+    branches:
+      - feature/decision-engine-v1
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  integration-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run Decision Dashboard integration smoke test
+        run: node tests/decision-dashboard-integration-v1.test.js

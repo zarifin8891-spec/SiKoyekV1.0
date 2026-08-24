@@ -1,0 +1,21 @@
+name: Test Decision Engine Stress V1.0
+
+on:
+  push:
+    branches:
+      - feature/decision-engine-v1
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  stress-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run Decision Engine stress tests
+        run: node tests/decision-engine-stress-v1.test.js

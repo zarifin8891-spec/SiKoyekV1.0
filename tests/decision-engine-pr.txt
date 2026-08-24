@@ -1,0 +1,1 @@
+Decision Engine V1.0 validation branch ready for automated checks. Do not merge until stress tests and Dashboard integration tests pass.
