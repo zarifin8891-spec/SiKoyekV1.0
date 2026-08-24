@@ -22,3 +22,5 @@ jobs:
         run: node tests/project-cashflow-decision-engine-v1.test.js
       - name: Run stress tests
         run: node tests/cashflow-decision-engine-stress-v1.test.js
+      - name: Run Dashboard smoke test
+        run: node tests/cashflow-dashboard-smoke-v1.js
