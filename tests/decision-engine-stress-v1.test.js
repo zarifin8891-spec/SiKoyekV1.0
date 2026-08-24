@@ -4,7 +4,7 @@ const vm=require('node:vm');
 const code=fs.readFileSync('project-decision-engine-v1.js','utf8');
 const ctx={window:{}};vm.createContext(ctx);vm.runInContext(code,ctx);
 const evaluate=ctx.window.SiKoyekDecisionEngine.evaluate;
-
+function health(status){return {status};}
 const cases=[
   {name:'Healthy baseline',row:{project_progress:20,cost_ratio:8.95,rap_consumption:12.78},status:'SEHAT',priority:'RENDAH'},
   {name:'Healthy zero activity',row:{project_progress:0,cost_ratio:0,rap_consumption:0},status:'SEHAT',priority:'RENDAH'},
@@ -20,7 +20,7 @@ const cases=[
   {name:'Boundary risk RAP',row:{project_progress:20,cost_ratio:8.95,rap_consumption:40},status:'BERISIKO',priority:'TINGGI'}
 ];
 for(const c of cases){
-  const out=evaluate(c.row,{status:c.status});
+  const out=evaluate(c.row,health(c.status));
   assert.equal(out.status,c.status,`${c.name}: status`);
   assert.equal(out.priority,c.priority,`${c.name}: priority`);
   assert.equal(typeof out.reason,'string',`${c.name}: reason`);
