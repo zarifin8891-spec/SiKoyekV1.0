@@ -97,21 +97,21 @@ jobs:
           html = re.sub(r'<script src="\\./decision-dashboard-integration-v1\\.js\\?v=\\d+"></script>', '', html)
           html = html.replace('</body>', '<script src="./decision-dashboard-integration-v1.js?v=1"></script></body>', 1)
           path.write_text(html, encoding='utf-8')
-      - name: Add UI/UX form modules through pass 6
+      - name: Add UI/UX form modules through pass 6 and step 1 stability
         shell: python
         run: |
           from pathlib import Path
           import re
           path = Path('index.html')
           html = path.read_text(encoding='utf-8')
-          assets_css=['ui-revamp-v1.css','ui-form-polish-v2.css','ui-form-fixes-v3.css','ui-form-pass5.css','ui-form-pass6.css']
-          assets_js=['ui-revamp-v1.js','ui-input-revamp-v1.js','ui-form-fixes-v3.js','ui-form-pass5.js','ui-form-pass6.js']
+          assets_css=['ui-revamp-v1.css','ui-form-polish-v2.css','ui-form-fixes-v3.css','ui-form-pass5.css','ui-form-pass6.css','ui-form-step1.css']
+          assets_js=['ui-revamp-v1.js','ui-input-revamp-v1.js','ui-form-fixes-v3.js','ui-form-pass5.js','ui-form-pass6.js','ui-form-step1.js']
           for asset in assets_css:
             html=re.sub(r'<link rel="stylesheet" href="\\./'+re.escape(asset)+r'\\?v=\\d+">','',html)
           for asset in assets_js:
             html=re.sub(r'<script src="\\./'+re.escape(asset)+r'\\?v=\\d+"></script>','',html)
-          html=html.replace('</head>','<link rel="stylesheet" href="./ui-revamp-v1.css?v=1"><link rel="stylesheet" href="./ui-form-polish-v2.css?v=2"><link rel="stylesheet" href="./ui-form-fixes-v3.css?v=3"><link rel="stylesheet" href="./ui-form-pass5.css?v=1"><link rel="stylesheet" href="./ui-form-pass6.css?v=1"></head>',1)
-          html=html.replace('</body>','<script src="./ui-revamp-v1.js?v=1"></script><script src="./ui-input-revamp-v1.js?v=2"></script><script src="./ui-form-fixes-v3.js?v=3"></script><script src="./ui-form-pass5.js?v=1"></script><script src="./ui-form-pass6.js?v=1"></script></body>',1)
+          html=html.replace('</head>','<link rel="stylesheet" href="./ui-revamp-v1.css?v=1"><link rel="stylesheet" href="./ui-form-polish-v2.css?v=2"><link rel="stylesheet" href="./ui-form-fixes-v3.css?v=3"><link rel="stylesheet" href="./ui-form-pass5.css?v=1"><link rel="stylesheet" href="./ui-form-pass6.css?v=1"><link rel="stylesheet" href="./ui-form-step1.css?v=1"></head>',1)
+          html=html.replace('</body>','<script src="./ui-revamp-v1.js?v=1"></script><script src="./ui-input-revamp-v1.js?v=2"></script><script src="./ui-form-fixes-v3.js?v=3"></script><script src="./ui-form-pass5.js?v=1"></script><script src="./ui-form-pass6.js?v=1"></script><script src="./ui-form-step1.js?v=1"></script></body>',1)
           path.write_text(html,encoding='utf-8')
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
