@@ -9,7 +9,7 @@
     return modals.find(m=>m.querySelector('#f_code,#f_name'))||null;
   }
 
-  function restoreSnapshot(s){
+  async function restoreSnapshot(s){
     if(!s)return;
     const modal=getProjectModal();
     if(!modal)return;
@@ -17,12 +17,22 @@
       const el=modal.querySelector('#'+id);
       if(el)el.value=value;
     });
+    if(typeof window.ensureCategoryDropdown==='function')await window.ensureCategoryDropdown();
     const cat=modal.querySelector('#f_cat');
     if(cat&&s.values?.f_cat)cat.value=s.values.f_cat;
     const step=s.step||1;
     window.__siKoyekProjectStep=step;
     modal.querySelectorAll('.ui-step').forEach(x=>x.classList.toggle('active',Number(x.dataset.target)===Number(step)));
     modal.querySelectorAll('.ui-pane').forEach(x=>x.style.display=Number(x.dataset.pane)===Number(step)?'block':'none');
+  }
+
+  function snapshotProject(){
+    const modal=getProjectModal();
+    if(!modal)return null;
+    const ids=['f_code','f_date','f_name','f_owner','f_cat','f_loc','f_contract','f_mgr','f_start','f_end','f_status'];
+    const values={};
+    ids.forEach(id=>{const el=modal.querySelector('#'+id);if(el)values[id]=el.value});
+    return{values,step:Number(window.__siKoyekProjectStep||1)};
   }
 
   function formifyCategoryMaster(){
@@ -47,27 +57,20 @@
   }
 
   function openCategoryMaster(){
-    window.__p6ProjectSnap=typeof window.p6ProjectSnapshot==='function'?window.p6ProjectSnapshot():window.__p6ProjectSnap;
-    if(!window.__p6ProjectSnap){
-      const ids=['f_code','f_date','f_name','f_owner','f_cat','f_loc','f_contract','f_mgr','f_start','f_end','f_status'];
-      const values={};
-      ids.forEach(id=>{const el=getProjectModal()?.querySelector('#'+id);if(el)values[id]=el.value});
-      window.__p6ProjectSnap={values,step:Number(window.__siKoyekProjectStep||1)};
-    }
+    window.__p6ProjectSnap=snapshotProject();
     modal('Master Kategori Proyek',`<div class="ui-help">Daftar ini membaca seluruh kategori langsung dari database. Nonaktifkan kategori untuk menghapusnya dari dropdown tanpa menghapus histori proyek.</div><div class="category-master-toolbar"><div class="field"><label>Nama Kategori Baru</label><input id="p6NewCat" placeholder="Contoh: Pembangunan Gedung"></div><button class="btn primary" type="button" onclick="p6AddCat()">+ Tambah</button></div><div class="p6-category-table"><div class="p6-category-head"><div>Nama Kategori</div><div>Status</div><div>Aksi</div></div><div id="p6CatRows"></div></div><div class="formactions"><button class="btn ghost" type="button" onclick="p6CloseCategoryMaster()">Tutup & Kembali</button></div>`);
     hideCategoryTopClose();
     if(typeof window.renderMaster==='function')window.renderMaster();
-    else if(typeof renderMaster==='function')renderMaster();
   }
 
-  function closeCategoryAndRestore(){
+  async function closeCategoryAndRestore(){
     const snap=window.__p6ProjectSnap;
     delete window.__p6ProjectSnap;
     const categoryModal=getCategoryModal();
     if(categoryModal)categoryModal.remove();
     const projectModal=getProjectModal();
     if(projectModal){
-      restoreSnapshot(snap);
+      await restoreSnapshot(snap);
       return;
     }
     if(typeof window.openProjectForm==='function'){
