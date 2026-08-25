@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/ui-form-fixes-v3
+      - feature/ui-form-pass4
       - feature/cleanup-duplicate-project-health
   pull_request:
     branches:
@@ -36,8 +37,8 @@ jobs:
         run: node tests/ui-revamp-v1.test.js
       - name: Verify deployment includes form assets
         run: |
-          grep -q 'ui-form-fixes-v3.js' .github/workflows/pages.yml
-          grep -q 'ui-form-fixes-v3.css' .github/workflows/pages.yml
+          grep -q 'ui-form-fixes-v3.js?v=2' .github/workflows/pages.yml
+          grep -q 'ui-form-fixes-v3.css?v=2' .github/workflows/pages.yml
       - name: Verify category master migration
         run: |
           test -s supabase/migrations/20260825045000_project_category_master.sql

@@ -7,12 +7,18 @@ assert.ok(js.includes("removeAttribute('onclick')"),'Wizard navigation binding m
 assert.ok(js.includes("['Renovasi','Bangun Baru','Interior','Instalasi','Pemeliharaan','Lainnya']"),'Category fallback options missing');
 assert.ok(js.includes("project_categories"),'Project category master table integration missing');
 assert.ok(js.includes('openCategoryMaster'),'Category master dialog missing');
+assert.ok(js.includes('closeCategoryMaster'),'Category master return action missing');
+assert.ok(js.includes('window.__projectFormSnapshot'),'Project form state preservation missing');
+assert.ok(js.includes('formatDateId'),'Indonesian date formatting missing');
+assert.ok(js.includes('enhanceDateInput'),'Custom date display wrapper missing');
 assert.ok(js.includes('addProjectCategory'),'Category add action missing');
 assert.ok(js.includes('data-category-master'),'Category master button missing');
 assert.ok(css.includes('--ux3-navy'),'Form-fix design token missing');
 assert.ok(css.includes('.category-tools'),'Category master styling missing');
-assert.ok(css.includes('.category-master-add'),'Category master list styling missing');
-assert.ok(deploy.includes('ui-form-fixes-v3.js'),'Fix JS must be deployed');
-assert.ok(deploy.includes('ui-form-fixes-v3.css'),'Fix CSS must be deployed');
-console.log('UI Form Fixes V3 + Project Category Master: PASS');
-// final synchronize checkpoint
+assert.ok(css.includes('.category-master-add'),'Category master add panel styling missing');
+assert.ok(css.includes('.ux-date-wrap'),'Custom date field styling missing');
+assert.ok(css.includes('justify-content:center!important'),'Centered command button styling missing');
+assert.ok(css.includes('.ui-step::before{content:none!important'),'Wizard step numbering suppression missing');
+assert.ok(deploy.includes('ui-form-fixes-v3.js?v=2'),'Fix JS cache bust must be updated');
+assert.ok(deploy.includes('ui-form-fixes-v3.css?v=2'),'Fix CSS cache bust must be updated');
+console.log('UI Form Pass 4: navigation + category master return + dates + centered actions: PASS');
