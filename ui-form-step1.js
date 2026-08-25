@@ -33,10 +33,10 @@
     if(active.some(x=>x.name===current))select.value=current;
     else if(active[0])select.value=active[0].name;
 
-    // Remove helper rows inserted by older UI passes. Keep exactly one.
-    field.querySelectorAll('.category-tools,[data-p6-cat-master]')
-      .forEach(el=>{const row=el.closest('.category-tools')||el.closest('.field')===field?el:null;if(row&&row!==field)row.remove()});
-    field.querySelectorAll('.step1-category-tools').forEach((el,i)=>{if(i>0)el.remove()});
+    // Clean helpers left by previous UI passes so exactly one category-master row remains.
+    field.querySelectorAll('.category-tools').forEach(row=>row.remove());
+    field.querySelectorAll('[data-p6-cat-master]').forEach(button=>button.closest('div')?.remove());
+    field.querySelectorAll('.step1-category-tools').forEach((row,i)=>{if(i>0)row.remove()});
 
     let tools=field.querySelector('.step1-category-tools');
     if(!tools){
@@ -55,8 +55,7 @@
     const box=document.querySelector('#modal .modalbox.p6-form');
     if(!box)return;
     const head=box.querySelector('.p6-body>.modalhead');
-    if(!head)return;
-    head.classList.add('step1-modalhead');
+    if(head)head.classList.add('step1-modalhead');
   }
 
   let scheduled=false;
