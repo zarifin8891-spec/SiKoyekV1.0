@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const js=fs.readFileSync('ui-form-fixes-v3.js','utf8');
+const css=fs.readFileSync('ui-form-fixes-v3.css','utf8');
+const deploy=fs.readFileSync('.github/workflows/pages.yml','utf8');
+assert.ok(js.includes("['Renovasi','Bangun Baru','Interior','Instalasi','Pemeliharaan','Lainnya']"),'Category options missing');
+assert.ok(js.includes('uiNext')||js.includes('nextProjectStep'),'Project wizard fix missing');
+assert.ok(css.includes('--ux3-navy'),'Form-fix design token missing');
+assert.ok(deploy.includes('ui-form-fixes-v3.js'),'Fix JS must be deployed');
+assert.ok(deploy.includes('ui-form-fixes-v3.css'),'Fix CSS must be deployed');
+console.log('UI Form Fixes V3: PASS');
