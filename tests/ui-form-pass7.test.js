@@ -13,6 +13,8 @@ assert.ok(js.includes('Do not call closeModal()'),'Duplicate #modal close guard 
 assert.ok(js.includes('getProjectModal()'),'Existing project modal lookup missing');
 assert.ok(js.includes('formifyCategoryMaster'),'Master category shell transformer missing');
 assert.ok(js.includes('p6-category-side'),'Master category must use a real sidebar element');
+assert.ok(js.includes('hideCategoryTopClose'),'Master category top close button guard missing');
+assert.ok(js.includes("box.querySelector('.modalhead button')?.remove()"),'Master category top close button must be removed');
 assert.ok(pass6.includes("box.dataset.p6==='1'||box.dataset.p6Master==='1'"),'Pass 6 must not re-transform Master Kategori on later MutationObserver passes');
 assert.ok(css.includes('.modalbox.p6-form>.p6-side'),'Project side panel alignment missing');
 assert.ok(css.includes('.p6-body>.modalhead h3'),'Project modal header selector missing');
