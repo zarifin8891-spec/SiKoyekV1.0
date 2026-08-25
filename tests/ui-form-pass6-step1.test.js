@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const js=fs.readFileSync('ui-form-step1.js','utf8');
+const css=fs.readFileSync('ui-form-step1.css','utf8');
+assert.ok(js.includes('field.querySelectorAll(\'.category-tools\').forEach(row=>row.remove())'),'Legacy category helper cleanup missing');
+assert.ok(js.includes('input.tagName!==\'SELECT\''),'Dropdown enforcement missing');
+assert.ok(js.includes('step1-category-tools'),'Single category helper missing');
+assert.ok(css.includes('step1-modalhead'),'Modal header stabilization missing');
+assert.ok(css.includes('step1-category-tools'),'Category helper styling missing');
+console.log('UI Form Step 1: PASS');
