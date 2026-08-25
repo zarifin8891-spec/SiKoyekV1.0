@@ -6,6 +6,7 @@ on:
       - feature/ui-form-fixes-v3
       - feature/ui-form-pass4
       - feature/ui-form-pass5
+      - feature/ui-form-pass6
       - feature/cleanup-duplicate-project-health
   pull_request:
     branches:
@@ -27,6 +28,7 @@ jobs:
           node --check ui-input-revamp-v1.js
           node --check ui-form-fixes-v3.js
           node --check ui-form-pass5.js
+          node --check ui-form-pass6.js
       - name: Verify UI assets exist
         run: |
           test -s ui-revamp-v1.css
@@ -35,18 +37,24 @@ jobs:
           test -s ui-form-fixes-v3.js
           test -s ui-form-pass5.css
           test -s ui-form-pass5.js
+          test -s ui-form-pass6.css
+          test -s ui-form-pass6.js
       - name: Run form fix integration test
         run: node tests/ui-form-fixes-v3.test.js
       - name: Run UI revamp integration test
         run: node tests/ui-revamp-v1.test.js
       - name: Run UI form pass 5 integration test
         run: node tests/ui-form-pass5.test.js
+      - name: Run UI form pass 6 integration test
+        run: node tests/ui-form-pass6.test.js
       - name: Verify deployment includes form assets
         run: |
           grep -q 'ui-form-fixes-v3.js?v=3' .github/workflows/pages.yml
           grep -q 'ui-form-fixes-v3.css?v=3' .github/workflows/pages.yml
           grep -q 'ui-form-pass5.js?v=1' .github/workflows/pages.yml
           grep -q 'ui-form-pass5.css?v=1' .github/workflows/pages.yml
+          grep -q 'ui-form-pass6.js?v=1' .github/workflows/pages.yml
+          grep -q 'ui-form-pass6.css?v=1' .github/workflows/pages.yml
       - name: Verify category master migration
         run: |
           test -s supabase/migrations/20260825045000_project_category_master.sql
