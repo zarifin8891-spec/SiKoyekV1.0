@@ -4,14 +4,15 @@
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
   const titleInfo=t=>{const x=t.toLowerCase();if(x.includes('tambah proyek'))return['PROJECT CONTROL','Tambah proyek baru','Isi data inti proyek secara rapi sebelum masuk ke tahap nilai, periode, dan konfirmasi.','Pastikan kode proyek unik dan data dasar benar.'];if(x.includes('tambah item'))return['WORK BREAKDOWN','Item pekerjaan','Susun pekerjaan dan bobotnya. Progress proyek akan dibentuk dari bobot pekerjaan.','Bobot total item harus terkontrol.'];if(x.includes('rap proyek')||x.includes('kontrol anggaran'))return['BUDGET CONTROL','RAP proyek','Kelola struktur anggaran dan pastikan biaya tetap terkendali terhadap nilai kontrak.','Total RAP menjadi dasar Cost Ratio dan RAP Consumption.'];if(x.includes('input progress'))return['PROGRESS CONTROL','Input progress','Catat kemajuan aktual per item pekerjaan dan lihat kontribusinya ke progress proyek.','Gunakan angka progress item yang benar.'];if(x.includes('transaksi keuangan'))return['CASH FLOW','Transaksi keuangan','Catat uang masuk dan keluar agar posisi cashflow proyek selalu terlihat.','Gunakan deskripsi yang jelas untuk setiap transaksi.'];if(x.includes('master kategori'))return['MASTER DATA','Kategori proyek','Kelola kategori proyek sebagai master data terpusat.','Edit, nonaktifkan, atau aktifkan kembali tanpa merusak histori.'];if(x.includes('edit data proyek'))return['PROJECT CONTROL','Edit data proyek','Perubahan data dasar hanya diperbolehkan sebelum proyek dimulai.','Setelah ada progress atau transaksi, data inti dikunci.'];return['SIKOYEK V1.0',t,'Project control workspace.','Gunakan form ini untuk menjaga data tetap konsisten.']};
 
-  function formify(){
-    const box=document.querySelector('#modal .modalbox');if(!box||box.dataset.p6==='1')return;
+  function formify(){const box=document.querySelector('#modal .modalbox');if(!box||box.dataset.p6==='1')return;
     const head=box.querySelector('.modalhead');const h3=head?.querySelector('h3');if(!h3)return;
-    const title=h3.textContent.trim();const [mark,big,desc,hint]=titleInfo(title);
+    const title=h3.textContent.trim();
+    if(title.toLowerCase().includes('master kategori')){box.dataset.p6Master='1';return;}
+    const [mark,big,desc,hint]=titleInfo(title);
     const side=document.createElement('aside');side.className='p6-side';side.innerHTML=`<div class="p6-mark">${esc(mark)}</div><div class="p6-title">${esc(big)}</div><div class="p6-desc">${esc(desc)}</div><div class="p6-hint">${esc(hint)}</div>`;
     const body=document.createElement('div');body.className='p6-body';
     while(box.firstChild){body.appendChild(box.firstChild)}
-    box.appendChild(side);box.appendChild(body);box.dataset.p6='1';if(title.toLowerCase().includes('master kategori'))box.classList.add('p6-master');else box.classList.add('p6-form');
+    box.appendChild(side);box.appendChild(body);box.dataset.p6='1';box.classList.add('p6-form');
   }
 
   async function loadCats(){try{const {data,error}=await sb.from('project_categories').select('id,name,sort_order,is_active').order('sort_order',{ascending:true}).order('name',{ascending:true});if(!error&&Array.isArray(data))cats=data}catch(_){cats=[]}return cats.length?cats:fallback.map((name,i)=>({id:null,name,sort_order:i+1,is_active:true}))}
