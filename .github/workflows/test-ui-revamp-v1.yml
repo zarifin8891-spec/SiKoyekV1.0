@@ -6,7 +6,7 @@ on:
       - feature/ui-form-fixes-v3
       - feature/ui-form-pass4
       - feature/ui-form-pass5
-      - feature/ui-form-pass6
+      - feature/ui-form-pass6-clean
       - feature/cleanup-duplicate-project-health
   pull_request:
     branches:
