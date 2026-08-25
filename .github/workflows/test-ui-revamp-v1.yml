@@ -1,0 +1,24 @@
+name: Test UI Revamp V1
+
+on:
+  push:
+    branches:
+      - feature/cleanup-duplicate-project-health
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-ui-revamp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Syntax check UI module
+        run: node --check ui-revamp-v1.js
+      - name: Verify UI assets exist
+        run: test -s ui-revamp-v1.css && test -s ui-revamp-v1.js
