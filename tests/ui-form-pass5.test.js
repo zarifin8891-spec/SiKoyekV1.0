@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const js=fs.readFileSync('ui-form-pass5.js','utf8');
+const css=fs.readFileSync('ui-form-pass5.css','utf8');
+const deploy=fs.readFileSync('.github/workflows/pages.yml','utf8');
+assert.ok(js.includes('p5EditCategory'),'Category edit action missing');
+assert.ok(js.includes('p5DeleteCategory'),'Category delete action missing');
+assert.ok(js.includes('p5RestoreCategory'),'Category restore action missing');
+assert.ok(js.includes('projectLifecycle'),'Project lifecycle guard missing');
+assert.ok(js.includes('p5EditProject'),'Project edit action missing');
+assert.ok(js.includes('p5DeleteProject'),'Project delete action missing');
+assert.ok(js.includes("status!=='RENCANA'"),'Project start lock rule missing');
+assert.ok(css.includes('.p5-action.danger'),'Danger action styling missing');
+assert.ok(css.includes('.category-master-table'),'Category master table styling missing');
+assert.ok(css.includes('#f_cat'),'Category dropdown styling missing');
+assert.ok(deploy.includes('ui-form-pass5.js?v=1'),'Pass 5 JS deploy missing');
+assert.ok(deploy.includes('ui-form-pass5.css?v=1'),'Pass 5 CSS deploy missing');
+console.log('UI Form Pass 5: PASS');

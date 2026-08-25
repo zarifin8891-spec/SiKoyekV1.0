@@ -19,6 +19,6 @@ assert.ok(css.includes('.category-master-add'),'Category master add panel stylin
 assert.ok(css.includes('.ux-date-wrap'),'Custom date field styling missing');
 assert.ok(css.includes('justify-content:center!important'),'Centered command button styling missing');
 assert.ok(css.includes('.ui-step::before{content:none!important'),'Wizard step numbering suppression missing');
-assert.ok(deploy.includes('ui-form-fixes-v3.js?v=2'),'Fix JS cache bust must be updated');
-assert.ok(deploy.includes('ui-form-fixes-v3.css?v=2'),'Fix CSS cache bust must be updated');
+assert.ok(deploy.includes('ui-form-fixes-v3.js?v=3'),'Fix JS cache bust must be updated');
+assert.ok(deploy.includes('ui-form-fixes-v3.css?v=3'),'Fix CSS cache bust must be updated');
 console.log('UI Form Pass 4: navigation + category master return + dates + centered actions: PASS');
