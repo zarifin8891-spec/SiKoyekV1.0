@@ -1,24 +1,17 @@
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-
-const css = fs.readFileSync('ui-revamp-v1.css', 'utf8');
-const polish = fs.readFileSync('ui-form-polish-v2.css', 'utf8');
-const input = fs.readFileSync('ui-input-revamp-v1.js', 'utf8');
-const index = fs.readFileSync('index.html', 'utf8');
-const deploy = fs.readFileSync('.github/workflows/pages.yml', 'utf8');
-
-assert.ok(css.includes('--ux-primary'), 'Design token primary missing');
-assert.ok(css.includes('.ui-wizard'), 'Wizard styling missing');
-assert.ok(css.includes('.ui-progress-card'), 'Progress styling missing');
-assert.ok(polish.includes('.modalhead:before'), 'Form polish modal accent missing');
-assert.ok(polish.includes('.formactions{position:sticky'), 'Sticky form actions missing');
-assert.ok(input.includes('replace(/\\s/g,\'\').replace(\',\',\'.\')'), 'Decimal comma normalization missing');
-assert.match(index, /function openProjectForm\(\)/, 'Project form missing');
-assert.match(index, /function openItemForm\(\)/, 'Work-item form missing');
-assert.match(index, /function openRapForm\(\)/, 'RAP form missing');
-assert.match(index, /function progressView\(d\)/, 'Progress view missing');
-assert.ok(deploy.includes('ui-revamp-v1.css'), 'UI revamp stylesheet must be injected by deployment');
-assert.ok(deploy.includes('ui-form-polish-v2.css'), 'Form polish stylesheet must be injected by deployment');
-assert.ok(deploy.includes('ui-input-revamp-v1.js'), 'Input enhancement module must be injected by deployment');
-
-console.log('UI Revamp V2 form polish: PASS');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const js=fs.readFileSync('ui-form-fixes-v3.js','utf8');
+const css=fs.readFileSync('ui-form-fixes-v3.css','utf8');
+const deploy=fs.readFileSync('.github/workflows/pages.yml','utf8');
+const migration=fs.readFileSync('supabase/migrations/20260825045000_project_category_master.sql','utf8');
+assert.ok(js.includes('window.nextProjectStep'),'Project wizard next handler must be globally reachable');
+assert.ok(js.includes('window.prevProjectStep'),'Project wizard back handler must be globally reachable');
+assert.ok(js.includes('project_categories'),'Project category master integration missing');
+assert.ok(js.includes('openCategoryMaster'),'Category master UI missing');
+assert.ok(js.includes("insert({name,sort_order"),'Category insert logic missing');
+assert.ok(css.includes('--ux3-navy'),'Form-fix design token missing');
+assert.ok(css.includes('.category-tools'),'Category master styling missing');
+assert.ok(deploy.includes('ui-form-fixes-v3.js'),'Fix JS must be deployed');
+assert.ok(deploy.includes('ui-form-fixes-v3.css'),'Fix CSS must be deployed');
+assert.ok(migration.includes('project_categories'),'Category master migration missing');
+console.log('UI Form Fixes V3: PASS');
