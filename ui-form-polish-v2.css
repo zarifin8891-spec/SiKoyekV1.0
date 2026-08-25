@@ -1,0 +1,28 @@
+:root{--ux2-navy:#0b1f3a;--ux2-navy-2:#12335b;--ux2-line:#d9e1ec;--ux2-success:#167967}
+.modalbox{width:min(820px,100%);border-radius:22px;box-shadow:0 30px 80px rgba(15,23,42,.24)}
+.modalhead{position:relative;padding:22px 24px;background:linear-gradient(135deg,#ffffff 0%,#f7f9fc 100%)}
+.modalhead:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--ux2-navy);border-radius:22px 0 0 22px}
+.modalhead h3{font-size:22px;font-weight:900}
+.modalbox>.ui-wizard,.modalbox>.ui-help,.modalbox>.field,.modalbox>.formgrid,.modalbox>.ui-progress-card,.modalbox>.ui-total,.modalbox>.note{margin-left:24px;margin-right:24px}
+.ui-help{padding:12px 14px!important;border:1px solid #e3eaf3;border-radius:12px;background:#f7f9fc;font-size:12px!important;color:#59677b!important}
+.ui-pane{padding-top:4px}
+.formgrid{padding:16px;border:1px solid #e6ebf2;border-radius:16px;background:linear-gradient(180deg,#fbfcfe 0%,#f7f9fc 100%);gap:16px}
+.field label{font-size:12px!important;font-weight:900!important;color:#26354b!important}
+.field input,.field select,.field textarea{min-height:50px;border-radius:12px;font-size:15px;background:#fff}
+.field textarea{min-height:104px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#6d8fb8;box-shadow:0 0 0 4px rgba(11,31,58,.09);background:#fff}
+#f_contract,#wi_weight,#rap_material,#rap_labor,#rap_equipment,#rap_operational,#rap_subcontract,#rap_other,#pr_pct{font-weight:850;font-size:17px;color:var(--ux2-navy);background:#f8fbff}
+#f_contract,#rap_material,#rap_labor,#rap_equipment,#rap_operational,#rap_subcontract,#rap_other{text-align:right}
+#wi_weight,#pr_pct{text-align:right}
+.ui-total{background:#fff;border:1px solid #dce4ee;border-radius:13px;box-shadow:0 4px 14px rgba(15,23,42,.04);padding:14px 16px}
+.ui-total strong{font-size:18px;color:var(--ux2-navy)}
+.ui-steps{gap:10px}
+.ui-step{min-height:48px;display:flex;align-items:center;border-radius:14px;background:#f8fafc}
+.ui-step.active{background:#eef3f8;border-color:#9db0c5;box-shadow:inset 0 0 0 1px rgba(11,31,58,.04)}
+.ui-progress-card{grid-template-columns:1fr 1fr;gap:14px}
+.ui-progress-callout{min-height:132px;background:linear-gradient(135deg,#f7faff 0%,#eef4fb 100%);border-color:#d8e3f0;box-shadow:0 6px 18px rgba(15,23,42,.04)}
+.ui-progress-callout .big{font-size:34px;color:var(--ux2-navy)}
+#pr_contrib{color:var(--ux2-success)}
+.formactions{position:sticky;bottom:0;z-index:3;padding:15px 0 20px!important;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);box-shadow:0 -8px 20px rgba(15,23,42,.05)}
+.formactions .btn{min-height:46px;padding-inline:18px!important}
+@media(max-width:780px){.modalbox>.ui-wizard,.modalbox>.ui-help,.modalbox>.field,.modalbox>.formgrid,.modalbox>.ui-progress-card,.modalbox>.ui-total,.modalbox>.note{margin-left:18px;margin-right:18px}.ui-progress-card{grid-template-columns:1fr}.formgrid{padding:13px}.modalhead{padding:20px}.formactions{padding-bottom:16px!important}}
