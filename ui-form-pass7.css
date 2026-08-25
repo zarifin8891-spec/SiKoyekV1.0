@@ -1,178 +1,47 @@
-/* Pass 7: stable modal lifecycle + matched project-form header. */
+/* Pass 7: stable modal lifecycle + identical form shell for Master Kategori. */
 
-/* Keep the normal project form and Master Kategori on the same two-column shell. */
-.modalbox.p6-form{
-  grid-template-columns:280px minmax(0,1fr)!important;
-}
-.modalbox.p6-form>.p6-side{
-  grid-column:1!important;
-  grid-row:1!important;
-  width:280px!important;
-  min-width:280px!important;
-  min-height:100%!important;
-}
-.modalbox.p6-form>.p6-body{
-  grid-column:2!important;
-  grid-row:1!important;
-  min-width:0!important;
-  width:100%!important;
-}
+/* Project form shell. */
+.modalbox.p6-form{grid-template-columns:280px minmax(0,1fr)!important}
+.modalbox.p6-form>.p6-side{grid-column:1!important;grid-row:1!important;width:280px!important;min-width:280px!important;min-height:100%!important}
+.modalbox.p6-form>.p6-body{grid-column:2!important;grid-row:1!important;min-width:0!important;width:100%!important}
 
-/* Header: same compact, clean treatment as Tambah Proyek Baru. */
-.p6-body>.modalhead,
-.modalbox:has(#p6CatRows)>.modalhead{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:space-between!important;
-  gap:18px!important;
-  min-height:76px!important;
-  height:76px!important;
-  padding:18px 26px!important;
-  margin:0!important;
-  box-sizing:border-box!important;
-  border-bottom:1px solid #e9eef4!important;
-  background:#fff!important;
-  position:sticky!important;
-  top:0!important;
-  z-index:8!important;
+/* Shared compact header, matching Tambah Proyek Baru. */
+.p6-body>.modalhead{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;gap:18px!important;
+  min-height:76px!important;height:76px!important;padding:18px 26px!important;margin:0!important;box-sizing:border-box!important;
+  border-bottom:1px solid #e9eef4!important;background:#fff!important;position:sticky!important;top:0!important;z-index:8!important
 }
-.p6-body>.modalhead h3,
-.modalbox:has(#p6CatRows)>.modalhead h3{
-  visibility:visible!important;
-  display:block!important;
-  height:auto!important;
-  margin:0!important;
-  overflow:visible!important;
-  color:var(--p6-text)!important;
-  font-size:24px!important;
-  line-height:1.2!important;
-  font-weight:900!important;
-  letter-spacing:-.02em!important;
+.p6-body>.modalhead h3{
+  visibility:visible!important;display:block!important;height:auto!important;margin:0!important;overflow:visible!important;
+  color:var(--p6-text)!important;font-size:24px!important;line-height:1.2!important;font-weight:900!important;letter-spacing:-.02em!important
 }
-.p6-body>.modalhead button,
-.modalbox:has(#p6CatRows)>.modalhead button{
-  flex:0 0 auto!important;
-  min-width:100px!important;
-  height:54px!important;
-  margin:0!important;
-  border-radius:12px!important;
-}
+.p6-body>.modalhead button{flex:0 0 auto!important;min-width:100px!important;height:54px!important;margin:0!important;border-radius:12px!important}
 
-/* Master Kategori: the left identity panel must be a true full-height panel.
-   Do NOT make the pseudo-element a grid item; doing so makes the header row
-   grow to the panel height and produces the broken layout seen previously. */
+/* Master Kategori uses the exact same real .p6-side/.p6-body structure as the project form. */
 .modalbox:has(#p6CatRows){
-  position:relative!important;
-  display:grid!important;
-  grid-template-columns:280px minmax(0,1fr)!important;
-  grid-auto-rows:auto!important;
-  width:min(1040px,96vw)!important;
-  max-height:92vh!important;
-  padding:0!important;
-  border-radius:24px!important;
-  overflow:hidden!important;
-  background:#fff!important;
-  box-shadow:0 28px 70px rgba(11,31,58,.22)!important;
+  width:min(1040px,96vw)!important;max-height:92vh!important;padding:0!important;border-radius:24px!important;overflow:hidden!important;
+  display:grid!important;grid-template-columns:280px minmax(0,1fr)!important;background:#fff!important;box-shadow:0 28px 70px rgba(11,31,58,.22)!important
 }
-.modalbox:has(#p6CatRows)::before{
-  content:"MASTER DATA\\A\\A Kategori proyek\\A\\A Kelola kategori proyek sebagai master data terpusat."!important;
-  white-space:pre-wrap!important;
-  position:absolute!important;
-  left:0!important;
-  top:0!important;
-  bottom:0!important;
-  width:280px!important;
-  min-width:280px!important;
-  height:auto!important;
-  margin:0!important;
-  padding:30px 24px!important;
-  box-sizing:border-box!important;
-  background:linear-gradient(160deg,var(--p6-navy) 0%,var(--p6-navy2) 55%,var(--p6-teal) 120%)!important;
-  color:#fff!important;
-  font-size:12px!important;
-  line-height:1.7!important;
-  font-weight:800!important;
-  letter-spacing:.03em!important;
-  z-index:0!important;
-}
-.modalbox:has(#p6CatRows)>*{
-  grid-column:2!important;
-  position:relative!important;
-  z-index:1!important;
-  min-width:0!important;
-}
-.modalbox:has(#p6CatRows)>.modalhead{
-  grid-row:1!important;
-}
-.modalbox:has(#p6CatRows)>.category-master-toolbar{
-  grid-row:2!important;
-  margin:16px 26px 0!important;
-  display:flex!important;
-  align-items:end!important;
-  gap:12px!important;
-}
-.modalbox:has(#p6CatRows)>.category-master-toolbar .field{
-  flex:1!important;
-  margin:0!important;
-}
-.modalbox:has(#p6CatRows)>.p6-category-table{
-  grid-row:3!important;
-  margin:16px 26px 0!important;
-  max-height:360px!important;
-  overflow:auto!important;
-}
-.modalbox:has(#p6CatRows)>.p6-category-table .p6-category-head{
-  position:sticky!important;
-  top:0!important;
-  z-index:2!important;
-}
-.modalbox:has(#p6CatRows)>.formactions{
-  grid-row:4!important;
-  margin:16px 26px 0!important;
-  padding:14px 0 22px!important;
-  border-top:1px solid #edf1f5!important;
-  background:#fff!important;
-  position:sticky!important;
-  bottom:0!important;
-  z-index:7!important;
-  justify-content:center!important;
-  align-items:center!important;
-}
-.modalbox:has(#p6CatRows)>.formactions .btn{
-  min-width:180px!important;
-  border-radius:12px!important;
-}
+.modalbox:has(#p6CatRows)::before{display:none!important;content:none!important}
+.modalbox:has(#p6CatRows)>.p6-category-side{grid-column:1!important;grid-row:1!important;width:280px!important;min-width:280px!important;min-height:100%!important}
+.modalbox:has(#p6CatRows)>.p6-body{grid-column:2!important;grid-row:1!important;min-width:0!important;width:100%!important;max-height:92vh!important;overflow:auto!important}
+.modalbox:has(#p6CatRows)>.p6-body>.modalhead{display:flex!important}
+.modalbox:has(#p6CatRows)>.p6-body>.category-master-toolbar{margin:16px 26px 0!important;display:flex!important;align-items:end!important;gap:12px!important}
+.modalbox:has(#p6CatRows)>.p6-body>.category-master-toolbar .field{flex:1!important;margin:0!important}
+.modalbox:has(#p6CatRows)>.p6-body>.p6-category-table{margin:16px 26px 0!important;max-height:360px!important;overflow:auto!important}
+.modalbox:has(#p6CatRows)>.p6-body>.p6-category-table .p6-category-head{position:sticky!important;top:0!important;z-index:2!important}
+.modalbox:has(#p6CatRows)>.p6-body>.formactions{margin:16px 26px 0!important;padding:14px 0 22px!important;border-top:1px solid #edf1f5!important;background:#fff!important;position:sticky!important;bottom:0!important;z-index:7!important;justify-content:center!important;align-items:center!important}
+.modalbox:has(#p6CatRows)>.p6-body>.formactions .btn{min-width:180px!important;border-radius:12px!important}
 
 @media(max-width:780px){
-  .modalbox.p6-form,
-  .modalbox:has(#p6CatRows){grid-template-columns:1fr!important}
-  .modalbox.p6-form>.p6-side{
-    grid-column:1!important;
-    grid-row:1!important;
-    width:100%!important;
-    min-width:0!important;
-    min-height:200px!important;
-  }
+  .modalbox.p6-form,.modalbox:has(#p6CatRows){grid-template-columns:1fr!important;width:min(650px,96vw)!important}
+  .modalbox.p6-form>.p6-side{grid-column:1!important;grid-row:1!important;width:100%!important;min-width:0!important;min-height:200px!important}
   .modalbox.p6-form>.p6-body{grid-column:1!important;grid-row:2!important}
-  .modalbox:has(#p6CatRows)::before{
-    position:relative!important;
-    left:auto!important;
-    top:auto!important;
-    bottom:auto!important;
-    grid-column:1!important;
-    grid-row:1!important;
-    width:100%!important;
-    min-width:0!important;
-    min-height:200px!important;
-    height:auto!important;
-  }
-  .modalbox:has(#p6CatRows)>*{grid-column:1!important}
-  .modalbox:has(#p6CatRows)>.modalhead{grid-row:2!important}
-  .modalbox:has(#p6CatRows)>.category-master-toolbar{grid-row:3!important;margin-left:16px!important;margin-right:16px!important}
-  .modalbox:has(#p6CatRows)>.p6-category-table{grid-row:4!important;margin-left:16px!important;margin-right:16px!important;max-height:340px!important}
-  .modalbox:has(#p6CatRows)>.formactions{grid-row:5!important;margin-left:16px!important;margin-right:16px!important}
-  .p6-body>.modalhead,
-  .modalbox:has(#p6CatRows)>.modalhead{min-height:68px!important;height:68px!important;padding:16px 18px!important}
-  .p6-body>.modalhead h3,
-  .modalbox:has(#p6CatRows)>.modalhead h3{font-size:20px!important}
+  .modalbox:has(#p6CatRows)>.p6-category-side{grid-column:1!important;grid-row:1!important;width:100%!important;min-width:0!important;min-height:200px!important}
+  .modalbox:has(#p6CatRows)>.p6-body{grid-column:1!important;grid-row:2!important}
+  .modalbox:has(#p6CatRows)>.p6-body>.category-master-toolbar{margin-left:16px!important;margin-right:16px!important}
+  .modalbox:has(#p6CatRows)>.p6-body>.p6-category-table{margin-left:16px!important;margin-right:16px!important;max-height:340px!important}
+  .modalbox:has(#p6CatRows)>.p6-body>.formactions{margin-left:16px!important;margin-right:16px!important}
+  .p6-body>.modalhead{min-height:68px!important;height:68px!important;padding:16px 18px!important}
+  .p6-body>.modalhead h3{font-size:20px!important}
 }
