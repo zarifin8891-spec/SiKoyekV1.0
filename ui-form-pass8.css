@@ -1,0 +1,101 @@
+/* Pass 8: Master Kategori uses the exact same two-column shell as
+   Tambah Proyek Baru. The old pseudo-sidebar is disabled once the real
+   .p6-side is present. */
+
+.modalbox:has(#p6CatRows).p6-form{
+  display:grid!important;
+  grid-template-columns:280px minmax(0,1fr)!important;
+  grid-auto-rows:auto!important;
+  width:min(1040px,96vw)!important;
+  max-height:92vh!important;
+  padding:0!important;
+  border-radius:24px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+
+.modalbox:has(#p6CatRows).p6-form::before{
+  content:none!important;
+  display:none!important;
+}
+
+.modalbox:has(#p6CatRows).p6-form>.p6-side{
+  grid-column:1!important;
+  grid-row:1!important;
+  width:280px!important;
+  min-width:280px!important;
+  min-height:100%!important;
+  height:100%!important;
+  position:relative!important;
+  box-sizing:border-box!important;
+}
+
+.modalbox:has(#p6CatRows).p6-form>.p6-body{
+  grid-column:2!important;
+  grid-row:1!important;
+  min-width:0!important;
+  width:100%!important;
+  max-height:92vh!important;
+  overflow:auto!important;
+  background:#fff!important;
+}
+
+.modalbox:has(#p6CatRows).p6-form>.p6-body>.modalhead{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  min-height:76px!important;
+  height:76px!important;
+  padding:18px 26px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+  border-bottom:1px solid #e9eef4!important;
+  background:#fff!important;
+  position:sticky!important;
+  top:0!important;
+  z-index:8!important;
+}
+
+.modalbox:has(#p6CatRows).p6-form>.p6-body>.modalhead h3{
+  visibility:visible!important;
+  display:block!important;
+  height:auto!important;
+  margin:0!important;
+  color:var(--p6-text)!important;
+  font-size:24px!important;
+  line-height:1.2!important;
+  font-weight:900!important;
+}
+
+.modalbox:has(#p6CatRows).p6-form>.p6-body>.category-master-toolbar{
+  margin-left:26px!important;
+  margin-right:26px!important;
+}
+
+.modalbox:has(#p6CatRows).p6-form>.p6-body>.p6-category-table{
+  margin-left:26px!important;
+  margin-right:26px!important;
+}
+
+.modalbox:has(#p6CatRows).p6-form>.p6-body>.formactions{
+  margin-left:26px!important;
+  margin-right:26px!important;
+}
+
+@media(max-width:780px){
+  .modalbox:has(#p6CatRows).p6-form{
+    grid-template-columns:1fr!important;
+  }
+  .modalbox:has(#p6CatRows).p6-form>.p6-side{
+    grid-column:1!important;
+    grid-row:1!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:200px!important;
+    height:auto!important;
+  }
+  .modalbox:has(#p6CatRows).p6-form>.p6-body{
+    grid-column:1!important;
+    grid-row:2!important;
+  }
+}
