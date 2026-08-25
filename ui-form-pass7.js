@@ -1,7 +1,12 @@
 (function(){
+  function getCategoryModal(){
+    const modals=[...document.querySelectorAll('.modal')];
+    return [...modals].reverse().find(m=>m.querySelector('#p6CatRows'))||null;
+  }
+
   function getProjectModal(){
     const modals=[...document.querySelectorAll('.modal')];
-    return modals.find(m=>m.querySelector('#f_code,#f_name,.p6-form'))||modals[0]||null;
+    return modals.find(m=>!m.querySelector('#p6CatRows')&&(m.querySelector('#f_code,#f_name,.p6-form')||m.querySelector('.modalhead h3')?.textContent?.toLowerCase().includes('tambah proyek')))||null;
   }
 
   function restoreSnapshot(s){
@@ -21,8 +26,8 @@
   }
 
   function formifyCategoryMaster(){
-    const box=document.querySelector('#modal .modalbox');
-    if(!box||!box.querySelector('#p6CatRows')||box.dataset.p6MasterShell==='1')return;
+    const box=getCategoryModal()?.querySelector('.modalbox');
+    if(!box||box.dataset.p6MasterShell==='1')return;
     const head=box.querySelector('.modalhead');
     if(!head)return;
     const side=document.createElement('aside');
@@ -38,15 +43,15 @@
   }
 
   function hideCategoryTopClose(){
-    const box=document.querySelector('#modal .modalbox');
-    if(!box||!box.querySelector('#p6CatRows'))return;
+    const box=getCategoryModal()?.querySelector('.modalbox');
+    if(!box)return;
     box.querySelector('.modalhead button')?.remove();
   }
 
   function closeCategoryAndRestore(){
     const snap=window.__p6ProjectSnap;
     delete window.__p6ProjectSnap;
-    const categoryModal=[...document.querySelectorAll('.modal')].reverse().find(m=>m.querySelector('#p6CatRows'));
+    const categoryModal=getCategoryModal();
     if(categoryModal)categoryModal.remove();
     const projectModal=getProjectModal();
     if(projectModal){
