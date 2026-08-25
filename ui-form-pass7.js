@@ -1,40 +1,49 @@
 (function(){
-  const ids=['f_code','f_date','f_name','f_owner','f_cat','f_loc','f_contract','f_mgr','f_start','f_end','f_status'];
+  function getProjectModal(){
+    const modals=[...document.querySelectorAll('.modal')];
+    return modals.find(m=>m.querySelector('#f_code,#f_name,.p6-form'))||modals[0]||null;
+  }
 
   function restoreSnapshot(s){
     if(!s)return;
-    const box=document.querySelector('#modal .modalbox');
-    if(!box)return;
+    const modal=getProjectModal();
+    if(!modal)return;
     Object.entries(s.values||{}).forEach(([id,value])=>{
-      const el=document.getElementById(id);
+      const el=modal.querySelector('#'+id);
       if(el)el.value=value;
     });
-    const cat=document.getElementById('f_cat');
+    const cat=modal.querySelector('#f_cat');
     if(cat&&s.values?.f_cat)cat.value=s.values.f_cat;
     const step=s.step||1;
     window.__siKoyekProjectStep=step;
-    document.querySelectorAll('#modal .ui-step').forEach(x=>x.classList.toggle('active',Number(x.dataset.target)===Number(step)));
-    document.querySelectorAll('#modal .ui-pane').forEach(x=>x.style.display=Number(x.dataset.pane)===Number(step)?'block':'none');
+    modal.querySelectorAll('.ui-step').forEach(x=>x.classList.toggle('active',Number(x.dataset.target)===Number(step)));
+    modal.querySelectorAll('.ui-pane').forEach(x=>x.style.display=Number(x.dataset.pane)===Number(step)?'block':'none');
   }
 
   function closeCategoryAndRestore(){
     const snap=window.__p6ProjectSnap;
     delete window.__p6ProjectSnap;
-    if(typeof window.closeModal==='function')window.closeModal();
-    setTimeout(()=>{
-      // The project modal underneath is still the live modal. Do not call
-      // openProjectForm() here, otherwise a second project modal is created.
-      const existing=document.querySelector('#modal .modalbox');
-      if(existing){
-        restoreSnapshot(snap);
-        return;
-      }
-      // Defensive fallback only when no underlying project modal exists.
-      if(typeof window.openProjectForm==='function'){
-        window.openProjectForm();
-        setTimeout(()=>restoreSnapshot(snap),120);
-      }
-    },20);
+
+    // Two modal instances are stacked here: the original project modal and
+    // the category-master modal above it. Do not call closeModal(), because
+    // it uses the duplicate #modal id and can remove the wrong (underlying)
+    // project modal. Remove the category-master instance directly.
+    const categoryModal=[...document.querySelectorAll('.modal')]
+      .reverse()
+      .find(m=>m.querySelector('#p6CatRows'));
+    if(categoryModal)categoryModal.remove();
+
+    const projectModal=getProjectModal();
+    if(projectModal){
+      restoreSnapshot(snap);
+      return;
+    }
+
+    // Defensive fallback only if the original project modal truly vanished.
+    if(typeof window.openProjectForm==='function'){
+      window.openProjectForm();
+      setTimeout(()=>restoreSnapshot(snap),120);
+    }
   }
 
   function install(){
