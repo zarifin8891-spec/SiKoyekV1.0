@@ -20,26 +20,33 @@
     modal.querySelectorAll('.ui-pane').forEach(x=>x.style.display=Number(x.dataset.pane)===Number(step)?'block':'none');
   }
 
+  function formifyCategoryMaster(){
+    const box=document.querySelector('#modal .modalbox');
+    if(!box||!box.querySelector('#p6CatRows')||box.dataset.p6MasterShell==='1')return;
+    const head=box.querySelector('.modalhead');
+    if(!head)return;
+    const side=document.createElement('aside');
+    side.className='p6-side p6-category-side';
+    side.innerHTML='<div class="p6-mark">MASTER DATA</div><div class="p6-title">Kategori proyek</div><div class="p6-desc">Kelola kategori proyek sebagai master data terpusat.</div><div class="p6-hint">Edit, nonaktifkan, atau aktifkan kembali tanpa merusak histori.</div>';
+    const body=document.createElement('div');
+    body.className='p6-body';
+    while(box.firstChild)body.appendChild(box.firstChild);
+    box.appendChild(side);
+    box.appendChild(body);
+    box.dataset.p6MasterShell='1';
+    box.classList.add('p6-form','p6-master');
+  }
+
   function closeCategoryAndRestore(){
     const snap=window.__p6ProjectSnap;
     delete window.__p6ProjectSnap;
-
-    // Two modal instances are stacked here: the original project modal and
-    // the category-master modal above it. Do not call closeModal(), because
-    // it uses the duplicate #modal id and can remove the wrong (underlying)
-    // project modal. Remove the category-master instance directly.
-    const categoryModal=[...document.querySelectorAll('.modal')]
-      .reverse()
-      .find(m=>m.querySelector('#p6CatRows'));
+    const categoryModal=[...document.querySelectorAll('.modal')].reverse().find(m=>m.querySelector('#p6CatRows'));
     if(categoryModal)categoryModal.remove();
-
     const projectModal=getProjectModal();
     if(projectModal){
       restoreSnapshot(snap);
       return;
     }
-
-    // Defensive fallback only if the original project modal truly vanished.
     if(typeof window.openProjectForm==='function'){
       window.openProjectForm();
       setTimeout(()=>restoreSnapshot(snap),120);
@@ -47,6 +54,7 @@
   }
 
   function install(){
+    formifyCategoryMaster();
     if(typeof window.p6CloseCategoryMaster==='function'){
       window.p6CloseCategoryMaster=closeCategoryAndRestore;
       window.__p6Pass7Installed=true;
@@ -55,4 +63,6 @@
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
   setTimeout(install,100);
+  const obs=new MutationObserver(()=>{clearTimeout(window.__p7t);window.__p7t=setTimeout(install,40)});
+  obs.observe(document.body,{childList:true,subtree:true});
 })();
