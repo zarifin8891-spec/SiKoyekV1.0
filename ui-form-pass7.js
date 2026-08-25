@@ -35,6 +35,20 @@
     return{values,step:Number(window.__siKoyekProjectStep||1)};
   }
 
+  async function renderCategoryRows(){
+    const wrap=getCategoryModal()?.querySelector('#p6CatRows');
+    if(!wrap)return;
+    wrap.innerHTML='<div class="empty">Memuat kategori...</div>';
+    try{
+      const {data,error}=await sb.from('project_categories').select('id,name,sort_order,is_active').order('sort_order',{ascending:true}).order('name',{ascending:true});
+      if(error)throw error;
+      const rows=Array.isArray(data)?data:[];
+      wrap.innerHTML=rows.map(x=>`<div class="p6-category-row"><div><strong>${String(x.name??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}</strong><small>Urutan ${Number(x.sort_order||0)}</small></div><div><span class="p6-status ${x.is_active?'active':'off'}">${x.is_active?'AKTIF':'NONAKTIF'}</span></div><div class="p6-category-actions"><button class="btn ghost" type="button" onclick="p6EditCat('${x.id}',${JSON.stringify(x.name)})">Edit</button>${x.is_active?`<button class="btn danger" type="button" onclick="p6DeactivateCat('${x.id}',${JSON.stringify(x.name)})">Hapus</button>`:`<button class="btn ghost" type="button" onclick="p6ActivateCat('${x.id}')">Aktifkan</button>`}</div></div>`).join('')||'<div class="empty">Belum ada kategori.</div>';
+    }catch(error){
+      wrap.innerHTML=`<div class="empty">Gagal memuat kategori: ${String(error?.message||'Kesalahan tidak diketahui')}</div>`;
+    }
+  }
+
   function formifyCategoryMaster(){
     const box=getCategoryModal()?.querySelector('.modalbox');
     if(!box||box.dataset.p6MasterShell==='1')return;
@@ -60,7 +74,7 @@
     window.__p6ProjectSnap=snapshotProject();
     modal('Master Kategori Proyek',`<div class="ui-help">Daftar ini membaca seluruh kategori langsung dari database. Nonaktifkan kategori untuk menghapusnya dari dropdown tanpa menghapus histori proyek.</div><div class="category-master-toolbar"><div class="field"><label>Nama Kategori Baru</label><input id="p6NewCat" placeholder="Contoh: Pembangunan Gedung"></div><button class="btn primary" type="button" onclick="p6AddCat()">+ Tambah</button></div><div class="p6-category-table"><div class="p6-category-head"><div>Nama Kategori</div><div>Status</div><div>Aksi</div></div><div id="p6CatRows"></div></div><div class="formactions"><button class="btn ghost" type="button" onclick="p6CloseCategoryMaster()">Tutup & Kembali</button></div>`);
     hideCategoryTopClose();
-    if(typeof window.renderMaster==='function')window.renderMaster();
+    renderCategoryRows();
   }
 
   async function closeCategoryAndRestore(){
