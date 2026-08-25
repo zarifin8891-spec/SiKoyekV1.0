@@ -12,6 +12,8 @@ assert.ok(js.includes('decorateProjects'),'Project action decoration missing');
 assert.ok(js.includes('p5EditProject'),'Project edit integration missing');
 assert.ok(js.includes('p5DeleteProject'),'Project delete integration missing');
 assert.ok(js.includes('obs.observe(document.body'),'Dynamic modal observer missing');
+assert.ok(js.includes('categorySyncing'),'Category observer guard missing');
+assert.ok(js.includes('categorySynced'),'Category observer completion guard missing');
 assert.ok(css.includes('.modalbox.p6-form'),'Split-form visual system missing');
 assert.ok(css.includes('.p6-side'),'Form side panel missing');
 assert.ok(css.includes('.p6-project-actions'),'Project action styling missing');
