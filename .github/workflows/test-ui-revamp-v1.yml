@@ -3,6 +3,7 @@ name: Test UI Revamp V1
 on:
   push:
     branches:
+      - feature/ui-form-fixes-v3
       - feature/cleanup-duplicate-project-health
   pull_request:
     branches:
@@ -22,3 +23,5 @@ jobs:
         run: node --check ui-revamp-v1.js
       - name: Verify UI assets exist
         run: test -s ui-revamp-v1.css && test -s ui-revamp-v1.js
+      - name: Run form fix integration test
+        run: node tests/ui-form-fixes-v3.test.js
