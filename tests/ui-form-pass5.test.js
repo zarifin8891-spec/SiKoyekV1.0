@@ -13,6 +13,6 @@ assert.ok(js.includes("status!=='RENCANA'"),'Project start lock rule missing');
 assert.ok(css.includes('.p5-action.danger'),'Danger action styling missing');
 assert.ok(css.includes('.category-master-table'),'Category master table styling missing');
 assert.ok(css.includes('#f_cat'),'Category dropdown styling missing');
-assert.ok(deploy.includes('ui-form-pass5.js?v=1'),'Pass 5 JS deploy missing');
-assert.ok(deploy.includes('ui-form-pass5.css?v=1'),'Pass 5 CSS deploy missing');
+assert.ok(deploy.includes('ui-form-pass5.js?v=2'),'Pass 5 JS deploy missing');
+assert.ok(deploy.includes('ui-form-pass5.css?v=2'),'Pass 5 CSS deploy missing');
 console.log('UI Form Pass 5: PASS');
