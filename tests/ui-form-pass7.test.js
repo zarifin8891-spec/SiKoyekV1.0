@@ -13,7 +13,10 @@ assert.ok(js.includes('getProjectModal()'),'Existing project modal lookup missin
 assert.ok(css.includes('.modalbox.p6-form>.p6-side'),'Project side panel alignment missing');
 assert.ok(css.includes('.p6-body>.modalhead h3'),'Project modal header selector missing');
 assert.ok(css.includes('visibility:visible!important'),'Modal header title must be visible');
-assert.ok(css.includes('min-height:76px'),'Modal header sizing missing');
+assert.ok(css.includes('height:76px!important'),'Compact modal header height missing');
+assert.ok(css.includes('position:absolute!important'),'Master panel must be independent of header grid row');
+assert.ok(css.includes('bottom:0!important'),'Master panel must span full modal height');
+assert.ok(css.includes('.modalbox:has(#p6CatRows)>.modalhead{\n  grid-row:1!important'),'Master header must occupy its own grid row');
 assert.ok(pages.includes('ui-form-pass7.js?v=1'),'Pass 7 JS deployment missing');
 assert.ok(pages.includes('ui-form-pass7.css?v=1'),'Pass 7 CSS deployment missing');
 console.log('UI Form Pass 7: PASS');
