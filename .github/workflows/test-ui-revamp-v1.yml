@@ -57,12 +57,12 @@ jobs:
         run: |
           grep -q 'ui-form-fixes-v3.js?v=3' .github/workflows/pages.yml
           grep -q 'ui-form-fixes-v3.css?v=3' .github/workflows/pages.yml
-          grep -q 'ui-form-pass5.js?v=1' .github/workflows/pages.yml
-          grep -q 'ui-form-pass5.css?v=1' .github/workflows/pages.yml
-          grep -q 'ui-form-pass6.js?v=1' .github/workflows/pages.yml
-          grep -q 'ui-form-pass6.css?v=1' .github/workflows/pages.yml
-          grep -q 'ui-form-step1.js?v=1' .github/workflows/pages.yml
-          grep -q 'ui-form-step1.css?v=1' .github/workflows/pages.yml
+          grep -q 'ui-form-pass5.js?v=2' .github/workflows/pages.yml
+          grep -q 'ui-form-pass5.css?v=2' .github/workflows/pages.yml
+          grep -q 'ui-form-pass6.js?v=2' .github/workflows/pages.yml
+          grep -q 'ui-form-pass6.css?v=2' .github/workflows/pages.yml
+          grep -q 'ui-form-step1.js?v=2' .github/workflows/pages.yml
+          grep -q 'ui-form-step1.css?v=2' .github/workflows/pages.yml
       - name: Verify category master migration
         run: |
           test -s supabase/migrations/20260825045000_project_category_master.sql
