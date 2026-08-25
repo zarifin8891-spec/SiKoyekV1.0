@@ -6,7 +6,7 @@
 
   function getProjectModal(){
     const modals=[...document.querySelectorAll('.modal')];
-    return modals.find(m=>!m.querySelector('#p6CatRows')&&(m.querySelector('#f_code,#f_name,.p6-form')||m.querySelector('.modalhead h3')?.textContent?.toLowerCase().includes('tambah proyek')))||null;
+    return modals.find(m=>m.querySelector('#f_code,#f_name'))||null;
   }
 
   function restoreSnapshot(s){
@@ -28,8 +28,6 @@
   function formifyCategoryMaster(){
     const box=getCategoryModal()?.querySelector('.modalbox');
     if(!box||box.dataset.p6MasterShell==='1')return;
-    const head=box.querySelector('.modalhead');
-    if(!head)return;
     const side=document.createElement('aside');
     side.className='p6-side p6-category-side';
     side.innerHTML='<div class="p6-mark">MASTER DATA</div><div class="p6-title">Kategori proyek</div><div class="p6-desc">Kelola kategori proyek sebagai master data terpusat.</div><div class="p6-hint">Edit, nonaktifkan, atau aktifkan kembali tanpa merusak histori.</div>';
@@ -46,6 +44,20 @@
     const box=getCategoryModal()?.querySelector('.modalbox');
     if(!box)return;
     box.querySelector('.modalhead button')?.remove();
+  }
+
+  function openCategoryMaster(){
+    window.__p6ProjectSnap=typeof window.p6ProjectSnapshot==='function'?window.p6ProjectSnapshot():window.__p6ProjectSnap;
+    if(!window.__p6ProjectSnap){
+      const ids=['f_code','f_date','f_name','f_owner','f_cat','f_loc','f_contract','f_mgr','f_start','f_end','f_status'];
+      const values={};
+      ids.forEach(id=>{const el=getProjectModal()?.querySelector('#'+id);if(el)values[id]=el.value});
+      window.__p6ProjectSnap={values,step:Number(window.__siKoyekProjectStep||1)};
+    }
+    modal('Master Kategori Proyek',`<div class="ui-help">Daftar ini membaca seluruh kategori langsung dari database. Nonaktifkan kategori untuk menghapusnya dari dropdown tanpa menghapus histori proyek.</div><div class="category-master-toolbar"><div class="field"><label>Nama Kategori Baru</label><input id="p6NewCat" placeholder="Contoh: Pembangunan Gedung"></div><button class="btn primary" type="button" onclick="p6AddCat()">+ Tambah</button></div><div class="p6-category-table"><div class="p6-category-head"><div>Nama Kategori</div><div>Status</div><div>Aksi</div></div><div id="p6CatRows"></div></div><div class="formactions"><button class="btn ghost" type="button" onclick="p6CloseCategoryMaster()">Tutup & Kembali</button></div>`);
+    hideCategoryTopClose();
+    if(typeof window.renderMaster==='function')window.renderMaster();
+    else if(typeof renderMaster==='function')renderMaster();
   }
 
   function closeCategoryAndRestore(){
@@ -67,6 +79,7 @@
   function install(){
     formifyCategoryMaster();
     hideCategoryTopClose();
+    if(typeof window.p6OpenCategoryMaster==='function')window.p6OpenCategoryMaster=openCategoryMaster;
     if(typeof window.p6CloseCategoryMaster==='function'){
       window.p6CloseCategoryMaster=closeCategoryAndRestore;
       window.__p6Pass7Installed=true;
