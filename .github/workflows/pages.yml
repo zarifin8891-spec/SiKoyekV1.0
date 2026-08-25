@@ -114,8 +114,9 @@ jobs:
           html = path.read_text(encoding='utf-8')
           html = re.sub(r'<link rel="stylesheet" href="\\./ui-revamp-v1\\.css\\?v=\\d+">', '', html)
           html = re.sub(r'<script src="\\./ui-revamp-v1\\.js\\?v=\\d+"></script>', '', html)
+          html = re.sub(r'<script src="\\./ui-input-revamp-v1\\.js\\?v=\\d+"></script>', '', html)
           html = html.replace('</head>', '<link rel="stylesheet" href="./ui-revamp-v1.css?v=1"></head>', 1)
-          html = html.replace('</body>', '<script src="./ui-revamp-v1.js?v=1"></script></body>', 1)
+          html = html.replace('</body>', '<script src="./ui-revamp-v1.js?v=1"></script><script src="./ui-input-revamp-v1.js?v=1"></script></body>', 1)
           path.write_text(html, encoding='utf-8')
 
       - name: Configure GitHub Pages
