@@ -1,0 +1,1 @@
+Temporary branch marker for UI flicker fix. This file will be removed before merge.
