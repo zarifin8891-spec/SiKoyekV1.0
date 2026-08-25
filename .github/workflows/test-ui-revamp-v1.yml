@@ -19,9 +19,26 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Syntax check UI module
-        run: node --check ui-revamp-v1.js
+      - name: Syntax check UI modules
+        run: |
+          node --check ui-revamp-v1.js
+          node --check ui-input-revamp-v1.js
+          node --check ui-form-fixes-v3.js
       - name: Verify UI assets exist
-        run: test -s ui-revamp-v1.css && test -s ui-revamp-v1.js
+        run: |
+          test -s ui-revamp-v1.css
+          test -s ui-revamp-v1.js
+          test -s ui-form-fixes-v3.css
+          test -s ui-form-fixes-v3.js
       - name: Run form fix integration test
         run: node tests/ui-form-fixes-v3.test.js
+      - name: Run UI revamp integration test
+        run: node tests/ui-revamp-v1.test.js
+      - name: Verify deployment includes form assets
+        run: |
+          grep -q 'ui-form-fixes-v3.js' .github/workflows/pages.yml
+          grep -q 'ui-form-fixes-v3.css' .github/workflows/pages.yml
+      - name: Verify category master migration
+        run: |
+          test -s supabase/migrations/20260825045000_project_category_master.sql
+          grep -q 'project_categories' supabase/migrations/20260825045000_project_category_master.sql
