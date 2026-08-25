@@ -33,7 +33,6 @@
     if(active.some(x=>x.name===current))select.value=current;
     else if(active[0])select.value=active[0].name;
 
-    // Clean helpers left by previous UI passes so exactly one category-master row remains.
     field.querySelectorAll('.category-tools').forEach(row=>row.remove());
     field.querySelectorAll('[data-p6-cat-master]').forEach(button=>button.closest('div')?.remove());
     field.querySelectorAll('.step1-category-tools').forEach((row,i)=>{if(i>0)row.remove()});
@@ -67,7 +66,7 @@
 
   const observer=new MutationObserver(()=>sync());
   function boot(){
-    observer.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
+    observer.observe(document.body,{childList:true,subtree:true});
     sync();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
