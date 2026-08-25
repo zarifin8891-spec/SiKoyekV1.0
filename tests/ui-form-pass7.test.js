@@ -6,7 +6,7 @@ const pages=fs.readFileSync('.github/workflows/pages.yml','utf8');
 
 assert.ok(js.includes('p6CloseCategoryMaster'),'Pass 7 close hook missing');
 assert.ok(js.includes('window.p6CloseCategoryMaster=closeCategoryAndRestore'),'Category master close hook not replaced');
-assert.ok(js.includes("find(m=>m.querySelector('#p6CatRows'))'),'Category modal targeting guard missing');
+assert.ok(js.includes("find(m=>m.querySelector('#p6CatRows'))"),'Category modal targeting guard missing');
 assert.ok(js.includes('categoryModal.remove()'),'Category modal must be removed directly');
 assert.ok(js.includes('Do not call closeModal()'),'Duplicate #modal close guard missing');
 assert.ok(js.includes('getProjectModal()'),'Existing project modal lookup missing');
