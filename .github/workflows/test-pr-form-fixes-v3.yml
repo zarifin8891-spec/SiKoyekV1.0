@@ -1,0 +1,44 @@
+name: Test PR Form Fixes V3
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Syntax check form modules
+        run: |
+          node --check ui-form-fixes-v3.js
+          node --check ui-revamp-v1.js
+          node --check ui-input-revamp-v1.js
+
+      - name: Validate UI form revamp
+        run: node tests/ui-revamp-v1.test.js
+
+      - name: Validate wizard and category master
+        run: node tests/ui-form-fixes-v3.test.js
+
+      - name: Validate deployment workflow
+        run: |
+          test -s .github/workflows/pages.yml
+          grep -q 'ui-form-fixes-v3.js' .github/workflows/pages.yml
+          grep -q 'ui-form-fixes-v3.css' .github/workflows/pages.yml
+
+      - name: Validate category migration
+        run: |
+          test -s supabase/migrations/20260825045000_project_category_master.sql
+          grep -q 'project_categories' supabase/migrations/20260825045000_project_category_master.sql
