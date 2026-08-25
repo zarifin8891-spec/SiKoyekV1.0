@@ -37,6 +37,12 @@
     box.classList.add('p6-form','p6-master');
   }
 
+  function hideCategoryTopClose(){
+    const box=document.querySelector('#modal .modalbox');
+    if(!box||!box.querySelector('#p6CatRows'))return;
+    box.querySelector('.modalhead button')?.remove();
+  }
+
   function closeCategoryAndRestore(){
     const snap=window.__p6ProjectSnap;
     delete window.__p6ProjectSnap;
@@ -55,6 +61,7 @@
 
   function install(){
     formifyCategoryMaster();
+    hideCategoryTopClose();
     if(typeof window.p6CloseCategoryMaster==='function'){
       window.p6CloseCategoryMaster=closeCategoryAndRestore;
       window.__p6Pass7Installed=true;
