@@ -4,6 +4,23 @@
   function isDashboard(){const h=document.querySelector('.top h1');return !!h&&h.textContent.trim().toLowerCase()==='dashboard'}
   function formatDateTime(date){return new Intl.DateTimeFormat('id-ID',{weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(date).replace(',', ' •')}
   function movePeriodIntoHeader(top){const period=document.querySelector('.dashboard-view .periodbar');if(!period||!top)return;if(period.parentElement!==top)top.appendChild(period)}
+  function stabilizePeriodPreset(root){
+    const preset=root?.querySelector('#periodPreset');
+    if(!preset)return;
+    const key='sikoyek.dashboard.periodPreset';
+    if(!preset.dataset.stableBound){
+      preset.dataset.stableBound='1';
+      preset.addEventListener('change',()=>{
+        if(preset.value)localStorage.setItem(key,preset.value);else localStorage.removeItem(key);
+      });
+    }
+    const saved=localStorage.getItem(key);
+    if(saved && [...preset.options].some(o=>o.value===saved) && preset.value!==saved){
+      preset.value=saved;
+    }else if(preset.value){
+      localStorage.setItem(key,preset.value);
+    }
+  }
   function compactKpis(){const kpiStrip=document.querySelector('.dashboard-view .cards');const health=document.querySelector('.dashboard-view .health');if(!kpiStrip||!health)return;kpiStrip.classList.add('dashboard-kpi-strip');[...health.children].forEach(box=>kpiStrip.appendChild(box));health.closest('.section')?.remove()}
   function decorateKpis(){
     const strip=document.querySelector('.dashboard-view .dashboard-kpi-strip');if(!strip)return;
@@ -53,6 +70,6 @@
   }
   function compactHeaderTypography(top){const h1=top.querySelector('h1'),p=top.querySelector('p');if(h1)h1.style.cssText+=';font-size:28px!important;line-height:1.08!important';if(p)p.style.cssText+=';font-size:12px!important;line-height:1.2!important';top.querySelectorAll('.periodrow .field label').forEach(x=>x.style.cssText+=';font-size:10px!important');top.querySelectorAll('.periodrow input,.periodrow select,.periodrow .btn').forEach(x=>x.style.cssText+=';font-size:14px!important');top.querySelectorAll('.periodnote').forEach(x=>x.style.cssText+=';font-size:10px!important');top.querySelectorAll('.dashboard-userinfo .user-main').forEach(x=>x.style.cssText+=';font-size:10px!important');top.querySelectorAll('.dashboard-userinfo .user-time').forEach(x=>x.style.cssText+=';font-size:8px!important')}
   function requestPanelSync(){if(!isDashboard())return;const request=()=>window.dispatchEvent(new CustomEvent('sikoyek:dashboard-panel-request'));request();setTimeout(request,400);setTimeout(request,1200)}
-  function apply(){const content=document.querySelector('.content');const top=document.querySelector('.top');if(!content||!top)return;if(!isDashboard()){content.classList.remove('dashboard-view');top.classList.remove('dashboard-top');top.querySelector('.dashboard-userinfo')?.remove();return}content.classList.add('dashboard-view');top.classList.add('dashboard-top');injectReferenceStyles();movePeriodIntoHeader(top);const actions=top.querySelector('.actions');if(!actions)return;let info=actions.querySelector('.dashboard-userinfo');if(!info){info=document.createElement('div');info.className='dashboard-userinfo';info.innerHTML='<span class="user-copy"><div class="user-main">Pengguna</div><div class="user-time"></div></span>';actions.insertBefore(info,actions.firstChild)}const userMain=info.querySelector('.user-main'),userTime=info.querySelector('.user-time'),client=window.__siKoyekSupabase;if(client?.auth?.getSession){client.auth.getSession().then(({data})=>{const identity=data?.session?.user?.user_metadata?.full_name||data?.session?.user?.email||'Pengguna';if(userMain)userMain.textContent=identity}).catch(()=>{})}if(userTime)userTime.textContent=formatDateTime(new Date());compactHeaderTypography(top);compactKpis();decorateKpis();organizeLowerPanels();ensureMasterDataNav();requestPanelSync()}
+  function apply(){const content=document.querySelector('.content');const top=document.querySelector('.top');if(!content||!top)return;if(!isDashboard()){content.classList.remove('dashboard-view');top.classList.remove('dashboard-top');top.querySelector('.dashboard-userinfo')?.remove();return}content.classList.add('dashboard-view');top.classList.add('dashboard-top');injectReferenceStyles();movePeriodIntoHeader(top);stabilizePeriodPreset(content);const actions=top.querySelector('.actions');if(!actions)return;let info=actions.querySelector('.dashboard-userinfo');if(!info){info=document.createElement('div');info.className='dashboard-userinfo';info.innerHTML='<span class="user-copy"><div class="user-main">Pengguna</div><div class="user-time"></div></span>';actions.insertBefore(info,actions.firstChild)}const userMain=info.querySelector('.user-main'),userTime=info.querySelector('.user-time'),client=window.__siKoyekSupabase;if(client?.auth?.getSession){client.auth.getSession().then(({data})=>{const identity=data?.session?.user?.user_metadata?.full_name||data?.session?.user?.email||'Pengguna';if(userMain)userMain.textContent=identity}).catch(()=>{})}if(userTime)userTime.textContent=formatDateTime(new Date());compactHeaderTypography(top);compactKpis();decorateKpis();organizeLowerPanels();ensureMasterDataNav();requestPanelSync()}
   let scheduled=false;function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;apply()})}const observer=new MutationObserver(schedule);observer.observe(document.body,{childList:true,subtree:true});setInterval(()=>{if(isDashboard()){const time=document.querySelector('.dashboard-userinfo .user-time');if(time)time.textContent=formatDateTime(new Date())}},30000);schedule();
 })();
