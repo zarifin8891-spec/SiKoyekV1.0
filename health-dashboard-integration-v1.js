@@ -30,6 +30,7 @@
       const cardExists=!!document.getElementById('health-engine-v1-card');
       if(sig===lastSignature&&cardExists){hideLegacyProjectHealth();return}
       lastSignature=sig;render(rows);hideLegacyProjectHealth();
+      window.dispatchEvent(new CustomEvent('sikoyek:dashboard-panel-ready',{detail:{panel:'health'}}));
     }catch(e){console.warn('Health Dashboard integration:',e);hideLegacyProjectHealth()}finally{busy=false}
   }
   function render(rows){
@@ -42,6 +43,12 @@
     const kpiCards=dashboard.querySelector('.cards');
     if(kpiCards)kpiCards.parentNode.insertBefore(card,kpiCards.nextSibling);else dashboard.appendChild(card);
   }
-  function boot(){const s=document.createElement('script');s.src=ENGINE_URL;s.onload=load;document.body.appendChild(s);const obs=new MutationObserver(()=>{window.clearTimeout(window.__heTimer);window.__heTimer=setTimeout(load,250)});obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});window.setInterval(load,15000)}
+  function boot(){
+    const s=document.createElement('script');s.src=ENGINE_URL;s.onload=load;document.body.appendChild(s);
+    const obs=new MutationObserver(()=>{window.clearTimeout(window.__heTimer);window.__heTimer=setTimeout(load,250)});
+    obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
+    window.addEventListener('sikoyek:dashboard-panel-request',load);
+    window.setInterval(load,15000);
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
