@@ -66,3 +66,62 @@
   setInterval(render,500);
   render();
 })();
+
+/* Final dashboard polish: compact header controls and dashboard-only currency prefix removal. */
+(function(){
+  const STYLE_ID='sikoyek-dashboard-final-polish-v1';
+  function install(){
+    const dashboard=document.querySelector('.dashboard-view');
+    if(!dashboard)return;
+    let style=document.getElementById(STYLE_ID);
+    if(!style){
+      style=document.createElement('style');
+      style.id=STYLE_ID;
+      document.head.appendChild(style);
+    }
+    style.textContent=`
+      .dashboard-view .top.dashboard-top .actions .btn.primary,
+      .dashboard-view .top.dashboard-top .actions .btn.ghost{
+        height:36px!important;
+        padding:7px 12px!important;
+        font-size:14px!important;
+        font-weight:500!important;
+        line-height:1!important;
+        border-radius:9px!important;
+      }
+      .dashboard-view .top.dashboard-top .actions{gap:6px!important}
+      .dashboard-view .periodrow .field:first-child{width:210px!important;flex:0 0 210px!important}
+      .dashboard-view .periodrow .field:nth-child(2),
+      .dashboard-view .periodrow .field:nth-child(3){width:180px!important;flex:0 0 180px!important}
+      .dashboard-view .periodrow>.btn{
+        width:145px!important;
+        min-width:145px!important;
+        height:44px!important;
+        padding:8px 10px!important;
+        font-size:14px!important;
+        font-weight:500!important;
+      }
+      .dashboard-view .dashboard-kpi-strip .kpi .value{
+        font-size:18px!important;
+        letter-spacing:-.01em!important;
+      }
+    `;
+    dashboard.querySelectorAll('.dashboard-kpi-strip .kpi').forEach(card=>{
+      const label=card.querySelector('.label')?.textContent.trim();
+      if(!['NILAI KONTRAK','TOTAL RAP','TOTAL REALISASI'].includes(label))return;
+      const value=card.querySelector('.value');
+      if(!value)return;
+      const text=value.textContent.trim();
+      if(/^Rp\s*/i.test(text)) value.textContent=text.replace(/^Rp\s*/i,'');
+    });
+  }
+  let queued=false;
+  function schedule(){
+    if(queued)return;
+    queued=true;
+    requestAnimationFrame(()=>{queued=false;install()});
+  }
+  new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,characterData:true});
+  setTimeout(install,80);
+  setInterval(install,1000);
+})();
