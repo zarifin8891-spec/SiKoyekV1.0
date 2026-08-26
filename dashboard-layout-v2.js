@@ -26,6 +26,11 @@
     if(health&&health.parentNode!==grid)grid.appendChild(health);
     if(decision&&decision.parentNode!==grid)grid.appendChild(decision);
   }
+  function requestPanelSync(){
+    if(!isDashboard())return;
+    const request=()=>window.dispatchEvent(new CustomEvent('sikoyek:dashboard-panel-request'));
+    request();setTimeout(request,400);setTimeout(request,1200);
+  }
   function apply(){
     const content=document.querySelector('.content');const top=document.querySelector('.top');
     if(!content||!top)return;
@@ -40,7 +45,7 @@
     const userMain=info.querySelector('.user-main'),userTime=info.querySelector('.user-time'),client=window.__siKoyekSupabase;
     if(client?.auth?.getSession){client.auth.getSession().then(({data})=>{const identity=data?.session?.user?.user_metadata?.full_name||data?.session?.user?.email||'Pengguna';if(userMain)userMain.textContent=identity}).catch(()=>{})}
     if(userTime)userTime.textContent=formatDateTime(new Date());
-    compactKpis();organizeLowerPanels();
+    compactKpis();organizeLowerPanels();requestPanelSync();
   }
   let scheduled=false;
   function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;apply()})}
