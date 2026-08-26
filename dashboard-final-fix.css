@@ -1,0 +1,131 @@
+/* SiKoyek Dashboard Final UI Fix — header, KPI currency, Project Health. */
+
+/* 1) Header: make the top area materially shorter and cleaner. */
+.dashboard-view .top.dashboard-top{
+  min-height:0!important;
+  padding:13px 20px 12px!important;
+  margin-bottom:10px!important;
+  row-gap:6px!important;
+}
+.dashboard-view .top.dashboard-top h1{
+  font-size:26px!important;
+  line-height:1.05!important;
+}
+.dashboard-view .top.dashboard-top p{
+  font-size:11px!important;
+  line-height:1.15!important;
+  margin-top:3px!important;
+}
+.dashboard-view .top.dashboard-top .actions{
+  gap:7px!important;
+}
+.dashboard-view .top.dashboard-top .actions .btn.primary,
+.dashboard-view .top.dashboard-top .actions .btn.ghost{
+  height:36px!important;
+  min-height:36px!important;
+  padding:7px 13px!important;
+  font-size:14px!important;
+  font-weight:500!important;
+  border-radius:9px!important;
+}
+.dashboard-userinfo{
+  height:36px!important;
+  padding:4px 9px!important;
+  font-size:11px!important;
+}
+.dashboard-userinfo .user-main{font-size:10px!important;font-weight:500!important}
+.dashboard-userinfo .user-time{font-size:8px!important}
+
+/* 2) Period controls: one compact row, same visual weight as the buttons. */
+.dashboard-view .top.dashboard-top>.periodbar{
+  gap:7px!important;
+}
+.dashboard-view .periodrow{
+  gap:7px!important;
+}
+.dashboard-view .periodrow .field:first-child{
+  width:190px!important;
+  flex-basis:190px!important;
+}
+.dashboard-view .periodrow .field:nth-child(2),
+.dashboard-view .periodrow .field:nth-child(3){
+  width:155px!important;
+  flex-basis:155px!important;
+}
+.dashboard-view .periodrow .field label{
+  font-size:9px!important;
+  margin-bottom:3px!important;
+}
+.dashboard-view .periodrow .field input,
+.dashboard-view .periodrow .field select,
+.dashboard-view .periodrow .btn{
+  height:38px!important;
+  min-height:38px!important;
+  padding:7px 10px!important;
+  font-size:14px!important;
+  font-weight:500!important;
+  border-radius:9px!important;
+}
+.dashboard-view .periodnote{
+  font-size:9px!important;
+  line-height:1.15!important;
+}
+
+/* 3) KPI currency: no Rp prefix and never visually truncate the number. */
+.dashboard-view .dashboard-kpi-strip .kpi .value{
+  font-size:15.5px!important;
+  line-height:1.05!important;
+  letter-spacing:-.15px!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+
+/* 4) Project Health: compact, two-line project names, no horizontal scrollbar. */
+.dashboard-view #health-engine-v1-card .scroll{
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+}
+.dashboard-view #health-engine-v1-card .table{
+  width:100%!important;
+  table-layout:fixed!important;
+}
+.dashboard-view #health-engine-v1-card .table th,
+.dashboard-view #health-engine-v1-card .table td{
+  padding:6px 7px!important;
+  font-size:10.5px!important;
+  line-height:1.2!important;
+}
+.dashboard-view #health-engine-v1-card .table th:nth-child(1),
+.dashboard-view #health-engine-v1-card .table td:nth-child(1){width:38%!important;white-space:normal!important;overflow-wrap:anywhere!important}
+.dashboard-view #health-engine-v1-card .table th:nth-child(2),
+.dashboard-view #health-engine-v1-card .table td:nth-child(2){width:12%!important}
+.dashboard-view #health-engine-v1-card .table th:nth-child(3),
+.dashboard-view #health-engine-v1-card .table td:nth-child(3){width:12%!important}
+.dashboard-view #health-engine-v1-card .table th:nth-child(4),
+.dashboard-view #health-engine-v1-card .table td:nth-child(4){width:16%!important;max-width:none!important;white-space:normal!important}
+.dashboard-view #health-engine-v1-card .table th:nth-child(5),
+.dashboard-view #health-engine-v1-card .table td:nth-child(5){width:12%!important}
+.dashboard-view #health-engine-v1-card .table th:nth-child(6),
+.dashboard-view #health-engine-v1-card .table td:nth-child(6){width:10%!important}
+.dashboard-view #health-engine-v1-card .table td:first-child .linkbtn{
+  white-space:normal!important;
+  display:inline!important;
+  line-height:1.2!important;
+}
+
+@media(max-width:1100px){
+  .dashboard-view .top.dashboard-top{padding:12px 16px 11px!important}
+  .dashboard-view .periodrow .field:first-child{width:180px!important;flex-basis:180px!important}
+  .dashboard-view .periodrow .field:nth-child(2),
+  .dashboard-view .periodrow .field:nth-child(3){width:145px!important;flex-basis:145px!important}
+}
+@media(max-width:780px){
+  .dashboard-view .top.dashboard-top{padding:12px!important}
+  .dashboard-view .top.dashboard-top .actions{width:auto!important}
+  .dashboard-view .periodrow{flex-wrap:wrap!important}
+  .dashboard-view .periodrow .field:first-child,
+  .dashboard-view .periodrow .field:nth-child(2),
+  .dashboard-view .periodrow .field:nth-child(3){width:auto!important;flex:1 1 145px!important}
+  .dashboard-view .periodnote{white-space:normal!important}
+}
