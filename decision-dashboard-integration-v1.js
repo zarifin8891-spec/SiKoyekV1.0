@@ -17,6 +17,7 @@
       const cardExists=!!document.getElementById('decision-engine-v1-card');
       if(sig===lastSignature&&cardExists)return;
       lastSignature=sig;render(dashboard,rows);
+      window.dispatchEvent(new CustomEvent('sikoyek:dashboard-panel-ready',{detail:{panel:'decision'}}));
     }catch(e){console.warn('Decision Dashboard integration:',e)}finally{busy=false}
   }
   function render(dashboard,rows){
@@ -30,6 +31,12 @@
     const healthCard=document.getElementById('health-engine-v1-card');
     if(healthCard)healthCard.parentNode.insertBefore(card,healthCard.nextSibling);else{const kpiCards=dashboard.querySelector('.cards');if(kpiCards)kpiCards.parentNode.insertBefore(card,kpiCards.nextSibling);else dashboard.appendChild(card)}
   }
-  function boot(){const s=document.createElement('script');s.src='./project-decision-engine-v1.js?v=1';s.onload=load;document.body.appendChild(s);window.setInterval(load,15000)}
+  function boot(){
+    const s=document.createElement('script');s.src='./project-decision-engine-v1.js?v=1';document.body.appendChild(s);
+    const obs=new MutationObserver(()=>{window.clearTimeout(window.__deTimer);window.__deTimer=setTimeout(load,250)});
+    obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
+    window.addEventListener('sikoyek:dashboard-panel-request',load);
+    window.setInterval(load,15000);
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
