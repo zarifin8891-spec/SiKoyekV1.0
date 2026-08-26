@@ -3,7 +3,7 @@
   const SUPABASE_KEY='sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf';
   let busy=false;
   const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
-  const pct=n=>Number(n||0).toFixed(2)+'%';
+  const pct=n=>{const v=Number(n||0);const normalized=(Math.abs(v)>0&&Math.abs(v)<=1)?v*100:v;return normalized.toFixed(2)+'%'};
   function dashboard(){
     const app=document.getElementById('app');
     return app&&[...app.querySelectorAll('.content')].find(x=>x.querySelector('.top h1'));
