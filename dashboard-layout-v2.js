@@ -42,11 +42,11 @@
 
     const userMain=info.querySelector('.user-main');
     const userTime=info.querySelector('.user-time');
-    const email=window.sb?.auth?.getUser ? null : null;
+    const client=window.__siKoyekSupabase;
 
-    if(window.sb?.auth?.getSession){
-      window.sb.auth.getSession().then(({data})=>{
-        const identity=data?.session?.user?.email || data?.session?.user?.user_metadata?.full_name || 'Pengguna';
+    if(client?.auth?.getSession){
+      client.auth.getSession().then(({data})=>{
+        const identity=data?.session?.user?.user_metadata?.full_name || data?.session?.user?.email || 'Pengguna';
         if(userMain)userMain.textContent=identity;
       }).catch(()=>{});
     }
