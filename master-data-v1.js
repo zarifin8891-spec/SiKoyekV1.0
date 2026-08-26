@@ -1,6 +1,10 @@
 (function(){
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
-  const sbx=()=>window.sb;
+  const sbx=()=>{
+    if(window.sb)return window.sb;
+    if(typeof sb!=='undefined')return sb;
+    throw new Error('Koneksi database belum siap.');
+  };
   function navButton(){const nav=document.querySelector('.sidebar .nav');if(!nav||nav.querySelector('[data-master-data-nav]'))return;const b=document.createElement('button');b.type='button';b.dataset.masterDataNav='1';b.textContent='Master Data';b.onclick=()=>openMasterData();nav.appendChild(b)}
   function cleanProjectCategoryControl(){document.querySelectorAll('.category-tools,.step1-category-tools,[data-p6-cat-master]').forEach(x=>{const row=x.classList?.contains('category-tools')||x.classList?.contains('step1-category-tools')?x:x.closest('.category-tools,.step1-category-tools');if(row)row.remove();else x.remove()})}
   async function getCategories(){const {data,error}=await sbx().from('project_categories').select('id,name,sort_order,is_active').order('sort_order').order('name');if(error)throw error;return data||[]}
