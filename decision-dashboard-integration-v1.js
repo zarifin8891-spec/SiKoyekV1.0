@@ -5,7 +5,7 @@
   let client=null,lastSignature='',busy=false;
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
   async function load(){
-    if(busy||!window.SiKoyekHealthEngine||!window.SiKoyekDecisionEngine||!window.supabase)return;
+    if(busy||document.querySelector('#page .md-page')||!window.SiKoyekHealthEngine||!window.SiKoyekDecisionEngine||!window.supabase)return;
     const app=document.getElementById('app');
     const dashboard=app&&[...app.querySelectorAll('.content')].find(x=>x.querySelector('.top h1'));
     if(!dashboard)return;
@@ -21,6 +21,7 @@
     }catch(e){console.warn('Decision Dashboard integration:',e)}finally{busy=false}
   }
   function render(dashboard,rows){
+    if(document.querySelector('#page .md-page'))return;
     const old=document.getElementById('decision-engine-v1-card');if(old)old.remove();
     const rank={TINGGI:3,SEDANG:2,RENDAH:1};
     const priority=[...rows].sort((a,b)=>rank[b.decision.priority]-rank[a.decision.priority]||b.decision.costGap-a.decision.costGap).slice(0,5);
