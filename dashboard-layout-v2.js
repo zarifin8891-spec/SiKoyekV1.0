@@ -14,6 +14,34 @@
     }).format(date).replace(',', ' •');
   }
 
+  function compactKpis(){
+    const kpiStrip=document.querySelector('.dashboard-view .cards');
+    const health=document.querySelector('.dashboard-view .health');
+    if(!kpiStrip||!health)return;
+    kpiStrip.classList.add('dashboard-kpi-strip');
+    [...health.children].forEach(box=>kpiStrip.appendChild(box));
+    health.closest('.section')?.remove();
+  }
+
+  function organizeLowerPanels(){
+    const dashboard=document.querySelector('.dashboard-view');
+    if(!dashboard)return;
+    const health=document.getElementById('health-engine-v1-card');
+    const decision=document.getElementById('decision-engine-v1-card');
+    if(!health&&!decision)return;
+
+    let grid=dashboard.querySelector('.dashboard-lower-grid');
+    if(!grid){
+      grid=document.createElement('div');
+      grid.className='dashboard-lower-grid';
+      const anchor=health||decision;
+      anchor.parentNode.insertBefore(grid,anchor);
+    }
+
+    if(health)grid.appendChild(health);
+    if(decision)grid.appendChild(decision);
+  }
+
   function apply(){
     const content=document.querySelector('.content');
     const top=document.querySelector('.top');
@@ -52,6 +80,9 @@
     }
 
     if(userTime)userTime.textContent=formatDateTime(new Date());
+
+    compactKpis();
+    organizeLowerPanels();
   }
 
   let scheduled=false;
