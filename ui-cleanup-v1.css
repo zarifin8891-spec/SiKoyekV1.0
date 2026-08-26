@@ -1,0 +1,225 @@
+/* UI Cleanup V1 — visual consistency layer only.
+   Scope: application shell, common controls, cards and tables.
+   No database, business-logic, or modal lifecycle rules are changed here. */
+
+:root{
+  --ui-primary:#0f2f55;
+  --ui-primary-hover:#123b69;
+  --ui-accent:#245cff;
+  --ui-bg:#f4f7fb;
+  --ui-card:#ffffff;
+  --ui-text:#172033;
+  --ui-muted:#687386;
+  --ui-line:#dfe6ef;
+  --ui-shadow:0 10px 28px rgba(15,47,85,.07);
+}
+
+body{
+  background:linear-gradient(180deg,#f7f9fc 0%,#f1f5fa 100%);
+  color:var(--ui-text);
+}
+
+.shell{
+  grid-template-columns:252px minmax(0,1fr);
+}
+
+.sidebar{
+  background:linear-gradient(180deg,#0d1728 0%,#111d30 100%);
+  padding:22px 16px;
+  border-right:1px solid rgba(255,255,255,.06);
+}
+
+.sidebrand,
+.brand{
+  letter-spacing:-.02em;
+}
+
+.sidebrand{
+  font-size:24px;
+  padding:4px 10px 24px;
+}
+
+.nav{
+  gap:7px;
+}
+
+.nav button,
+.nav a{
+  min-height:44px;
+  padding:11px 13px;
+  border-radius:11px;
+  font-weight:750;
+  transition:background .16s ease,color .16s ease,transform .16s ease;
+}
+
+.nav button.active,
+.nav button:hover,
+.nav a.active,
+.nav a:hover{
+  background:linear-gradient(90deg,#245cff 0%,#1e4ed8 100%);
+  color:#fff;
+}
+
+.nav button:hover,
+.nav a:hover{
+  transform:translateX(1px);
+}
+
+.content{
+  width:100%;
+  max-width:1500px;
+  padding:30px 32px 42px;
+}
+
+.top{
+  margin-bottom:24px;
+  align-items:center;
+}
+
+.top h1{
+  font-size:30px;
+  line-height:1.15;
+  letter-spacing:-.025em;
+}
+
+.top p{
+  font-size:14px;
+  line-height:1.55;
+}
+
+.actions{
+  align-items:center;
+}
+
+.btn{
+  min-height:42px;
+  padding:10px 15px;
+  border-radius:10px;
+  border:1px solid transparent;
+  transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease;
+}
+
+.btn:not(:disabled):hover{
+  transform:translateY(-1px);
+}
+
+.btn.primary,
+.btn.primary:not(:disabled){
+  background:var(--ui-primary);
+  color:#fff;
+  box-shadow:0 6px 14px rgba(15,47,85,.14);
+}
+
+.btn.primary:hover:not(:disabled){
+  background:var(--ui-primary-hover);
+}
+
+.btn.ghost{
+  background:#fff;
+  border-color:var(--ui-line);
+  color:var(--ui-text);
+}
+
+.card{
+  border-color:var(--ui-line);
+  border-radius:18px;
+  box-shadow:var(--ui-shadow);
+}
+
+.cards,
+.health{
+  gap:15px;
+}
+
+.kpi{
+  min-height:112px;
+}
+
+.kpi .label{
+  letter-spacing:.02em;
+}
+
+.section{
+  margin-top:22px;
+}
+
+.sectiontitle{
+  margin-bottom:12px;
+}
+
+.sectiontitle h2{
+  font-size:18px;
+  letter-spacing:-.015em;
+}
+
+.tablecard{
+  border:1px solid var(--ui-line);
+  border-radius:16px;
+  background:#fff;
+  box-shadow:var(--ui-shadow);
+}
+
+.table th,
+.table td{
+  padding:13px 14px;
+}
+
+.table th{
+  background:#f7f9fc;
+  color:#65738a;
+  font-size:10px;
+  font-weight:850;
+}
+
+.table tbody tr:last-child td{
+  border-bottom:0;
+}
+
+.field label{
+  color:#25324a;
+  font-size:12px;
+  font-weight:800;
+}
+
+.field input,
+.field select,
+.field textarea,
+.search{
+  border-color:#cfd9e6;
+  color:var(--ui-text);
+  background:#fff;
+  transition:border-color .16s ease,box-shadow .16s ease;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.search:focus{
+  outline:0;
+  border-color:#8eace0;
+  box-shadow:0 0 0 3px rgba(36,92,255,.10);
+}
+
+.pill{
+  line-height:1;
+}
+
+@media(max-width:1100px){
+  .shell{grid-template-columns:230px minmax(0,1fr)}
+  .content{padding:26px 24px 36px}
+}
+
+@media(max-width:780px){
+  .shell{grid-template-columns:1fr}
+  .sidebar{padding:10px 12px}
+  .sidebrand{font-size:20px;padding:0 8px}
+  .content{padding:20px 17px 30px}
+  .top{align-items:flex-start;margin-bottom:18px}
+}
+
+@media(max-width:520px){
+  .content{padding:16px 13px 26px}
+  .top h1{font-size:23px}
+  .card{border-radius:15px}
+  .btn{min-height:40px;padding:9px 13px}
+}
