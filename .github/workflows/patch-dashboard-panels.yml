@@ -28,25 +28,27 @@ jobs:
           s = s.replace('<span class="note">Rekomendasi berbasis Project Health</span>', '<span class="note">Rekomendasi berbasis Kondisi Proyek</span>')
           s = s.replace('<span class="note">Rekomendasi berbasis Kesehatan Proyek</span>', '<span class="note">Rekomendasi berbasis Kondisi Proyek</span>')
 
-          marker = '/* SiKoyek V1.0 — equalized left panel padding v4 */'
+          marker = '/* SiKoyek V1.0 — final dashboard row-height alignment v4 */'
           css = '''
-/* SiKoyek V1.0 — equalized left panel padding v4 */
-.dashboard-panels{grid-template-columns:minmax(0,44fr) minmax(0,56fr)!important;gap:14px!important;align-items:start!important}
-.dashboard-panel{min-width:0!important;min-height:0!important;height:auto!important;align-self:start!important;display:block!important}
-.dashboard-panel .tablecard{min-height:0!important;max-height:none!important;height:auto!important;display:block!important}
+/* SiKoyek V1.0 — final dashboard row-height alignment v4 */
+/* Right panel is the visual height reference. Left rows absorb the difference; no empty block is created below. */
+.dashboard-panels{grid-template-columns:minmax(0,44fr) minmax(0,56fr)!important;gap:14px!important;align-items:stretch!important}
+.dashboard-panel{min-width:0!important;min-height:0!important;height:auto!important;align-self:stretch!important;display:flex!important;flex-direction:column!important}
+.dashboard-panel .sectiontitle{flex:0 0 auto!important;margin-bottom:8px!important}
+.dashboard-panel .tablecard{min-height:0!important;max-height:none!important;display:block!important;height:auto!important;overflow:hidden!important}
 .dashboard-panel .scroll{height:auto!important;max-height:none!important;overflow:hidden!important}
 .dashboard-panel .table{width:100%!important;table-layout:fixed!important}
-.dashboard-panel .table th,.dashboard-panel .table td{font-size:11px!important;line-height:1.12!important;vertical-align:middle!important}
-.dashboard-panel .table th{padding:4px 9px!important;font-size:9px!important;white-space:normal!important;line-height:1.05!important}
+/* Keep the approved compact right-panel spacing. */
+.dashboard-panel:last-child .table th,.dashboard-panel:last-child .table td{padding:4px 9px!important;font-size:11px!important;line-height:1.12!important;vertical-align:middle!important}
+/* Increase ONLY left-panel row height to use the vertical space naturally. */
+.dashboard-panel:first-child .table th{padding:5px 9px!important;font-size:9px!important;line-height:1.05!important}
+.dashboard-panel:first-child .table td{padding:11px 9px!important;font-size:11px!important;line-height:1.12!important;vertical-align:middle!important}
+.dashboard-panel .table th{white-space:normal!important}
 .dashboard-panel .table tbody tr:nth-child(odd){background:#ffffff!important}
 .dashboard-panel .table tbody tr:nth-child(even){background:#eef4f9!important}
 .dashboard-panel .table tbody tr td{border-bottom:1px solid #dfe7ef!important}
 .dashboard-panel .table tbody tr:last-child td{border-bottom:0!important}
 .dashboard-panel .table tbody tr:hover{background:#e7eef5!important}
-/* The right panel is the height reference. Increase ONLY the left panel row padding so its five project rows reach the same visual height. */
-.dashboard-panel:first-child .table tbody td{padding:12px 9px!important}
-.dashboard-panel:first-child .table thead th{padding:4px 9px!important}
-.dashboard-panel:last-child .table tbody td{padding:4px 9px!important}
 .dashboard-panel:first-child .table th:nth-child(1),.dashboard-panel:first-child .table td:nth-child(1){width:41%!important}
 .dashboard-panel:first-child .table th:nth-child(2),.dashboard-panel:first-child .table td:nth-child(2){width:12%!important}
 .dashboard-panel:first-child .table th:nth-child(3),.dashboard-panel:first-child .table td:nth-child(3){width:14%!important}
@@ -59,18 +61,18 @@ jobs:
 .dashboard-panel:last-child .table th:nth-child(4),.dashboard-panel:last-child .table td:nth-child(4){width:22%!important;white-space:normal!important}
 .dashboard-panel:last-child .table th:nth-child(5),.dashboard-panel:last-child .table td:nth-child(5){width:23%!important;white-space:normal!important}
 .dashboard-panel:last-child .table td:first-child{white-space:normal!important}
-@media(max-width:1100px){.dashboard-panels{grid-template-columns:1fr!important}.dashboard-panel:first-child .table tbody td{padding:4px 9px!important}}
+@media(max-width:1100px){.dashboard-panels{grid-template-columns:1fr!important}.dashboard-panel{display:block!important}.dashboard-panel:first-child .table td{padding:4px 9px!important}.dashboard-panel .tablecard{height:auto!important}}
 '''
           if marker not in s:
               s = s.replace('</style>', '\n' + css + '</style>', 1)
           else:
-              print('Equalized V4 CSS already present.')
+              print('Dashboard row-height alignment V4 CSS already present.')
 
           if s == original:
               print('No changes required.')
           else:
               p.write_text(s, encoding='utf-8')
-              print('Dashboard equalized left-panel padding patch applied.')
+              print('Dashboard row-height alignment V4 patch applied.')
 
       - name: Commit patched dashboard
         run: |
@@ -80,6 +82,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nothing to commit."
           else
-            git commit -m "fix dashboard equal height using left row padding"
+            git commit -m "fix dashboard left row height alignment v4"
             git push
           fi
