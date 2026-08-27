@@ -14,7 +14,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Patch dashboard lower panels
+      - name: Apply clean dashboard panel layout
         shell: python
         run: |
           from pathlib import Path
@@ -28,61 +28,60 @@ jobs:
           s = s.replace('<span class="note">Rekomendasi berbasis Project Health</span>', '<span class="note">Rekomendasi berbasis Kondisi Proyek</span>')
           s = s.replace('<span class="note">Rekomendasi berbasis Kesehatan Proyek</span>', '<span class="note">Rekomendasi berbasis Kondisi Proyek</span>')
 
-          # Remove ALL previous experimental lower-panel rules so they cannot override this version.
+          # Remove all earlier dashboard alignment experiments.
           markers = [
               '/* SiKoyek V1.0 — final dashboard row-height alignment v4 */',
               '/* SiKoyek V1.0 — final dashboard row-height alignment v5 */',
               '/* SiKoyek V1.0 — final dashboard row-height alignment v6 */',
               '/* SiKoyek V1.0 — final dashboard row-height alignment v7 */',
               '/* SiKoyek V1.0 — final dashboard row-height alignment v8 */',
+              '/* SiKoyek V1.0 — final dashboard row-height alignment v9 */',
+              '/* SiKoyek V1.0 — clean equal-row dashboard layout v9 */',
           ]
           for marker in markers:
-              start = s.find(marker)
-              while start != -1:
+              while True:
+                  start = s.find(marker)
+                  if start == -1:
+                      break
                   end = s.find('</style>', start)
                   if end == -1:
                       break
                   s = s[:start] + s[end:]
-                  start = s.find(marker)
 
           css = '''
-/* SiKoyek V1.0 — clean equal-row dashboard layout v9 */
-/* The two panels are independent cards, but their 5 data rows share the same vertical rhythm. */
+/* SiKoyek V1.0 — clean equal-row dashboard layout v10 */
+/* The left data area is a 5-row CSS grid. Each row is exactly the height of the right panel's visual rhythm. */
 .dashboard-panels{display:grid!important;grid-template-columns:minmax(0,44fr) minmax(0,56fr)!important;gap:14px!important;align-items:start!important}
-.dashboard-panel{min-width:0!important;min-height:0!important;height:auto!important;align-self:start!important;display:block!important}
+.dashboard-panel{min-width:0!important;min-height:0!important;height:auto!important;align-self:start!important}
 .dashboard-panel .tablecard{min-height:0!important;height:auto!important;max-height:none!important;overflow:hidden!important}
 .dashboard-panel .scroll{height:auto!important;max-height:none!important;overflow:hidden!important}
 .dashboard-panel .table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important}
 .dashboard-panel .table th{white-space:normal!important;vertical-align:middle!important}
-/* RIGHT PANEL: compact approved row rhythm. */
 .dashboard-panel:last-child .table th,.dashboard-panel:last-child .table td{padding:4px 9px!important;font-size:11px!important;line-height:1.12!important;vertical-align:middle!important}
-/* LEFT PANEL: five equal rows. 64px is the measured reference row height in the current desktop layout. */
-.dashboard-panel:first-child .table th{padding:5px 9px!important;font-size:9px!important;line-height:1.05!important}
-.dashboard-panel:first-child .table tbody tr{height:64px!important}
-.dashboard-panel:first-child .table tbody tr>td{box-sizing:border-box!important;height:64px!important;min-height:64px!important;padding:4px 9px!important;font-size:11px!important;line-height:1.12!important;vertical-align:middle!important}
-/* Approved zebra treatment. */
+/* LEFT: convert only the five body rows to an explicit grid. This is reliable; table-row height is not. */
+.dashboard-panel:first-child .table thead,.dashboard-panel:first-child .table tbody{display:block!important;width:100%!important}
+.dashboard-panel:first-child .table thead tr{display:grid!important;grid-template-columns:41% 12% 14% 18% 15%!important;width:100%!important}
+.dashboard-panel:first-child .table tbody{display:grid!important;grid-template-rows:repeat(5,64px)!important;width:100%!important}
+.dashboard-panel:first-child .table tbody tr{display:grid!important;grid-template-columns:41% 12% 14% 18% 15%!important;grid-template-rows:64px!important;height:64px!important;min-height:64px!important;width:100%!important}
+.dashboard-panel:first-child .table thead th{box-sizing:border-box!important;padding:5px 9px!important;font-size:9px!important;line-height:1.05!important}
+.dashboard-panel:first-child .table tbody td{box-sizing:border-box!important;height:64px!important;min-height:64px!important;padding:4px 9px!important;font-size:11px!important;line-height:1.12!important;vertical-align:middle!important;white-space:normal!important}
+/* Zebra rows. */
 .dashboard-panel .table tbody tr:nth-child(odd){background:#ffffff!important}
 .dashboard-panel .table tbody tr:nth-child(even){background:#eef4f9!important}
-.dashboard-panel .table tbody tr>td{border-bottom:1px solid #dfe7ef!important}
-.dashboard-panel .table tbody tr:last-child>td{border-bottom:0!important}
+.dashboard-panel .table tbody td{border-bottom:1px solid #dfe7ef!important}
+.dashboard-panel .table tbody tr:last-child td{border-bottom:0!important}
 .dashboard-panel .table tbody tr:hover{background:#e7eef5!important}
 /* Column proportions. */
-.dashboard-panel:first-child .table th:nth-child(1),.dashboard-panel:first-child .table td:nth-child(1){width:41%!important}
-.dashboard-panel:first-child .table th:nth-child(2),.dashboard-panel:first-child .table td:nth-child(2){width:12%!important}
-.dashboard-panel:first-child .table th:nth-child(3),.dashboard-panel:first-child .table td:nth-child(3){width:14%!important}
-.dashboard-panel:first-child .table th:nth-child(4),.dashboard-panel:first-child .table td:nth-child(4){width:18%!important}
-.dashboard-panel:first-child .table th:nth-child(5),.dashboard-panel:first-child .table td:nth-child(5){width:15%!important}
 .dashboard-panel:last-child .table th:nth-child(1),.dashboard-panel:last-child .table td:nth-child(1){width:32%!important}
 .dashboard-panel:last-child .table th:nth-child(2),.dashboard-panel:last-child .table td:nth-child(2){width:12%!important}
 .dashboard-panel:last-child .table th:nth-child(3),.dashboard-panel:last-child .table td:nth-child(3){width:11%!important}
 .dashboard-panel:last-child .table th:nth-child(4),.dashboard-panel:last-child .table td:nth-child(4){width:22%!important;white-space:normal!important}
 .dashboard-panel:last-child .table th:nth-child(5),.dashboard-panel:last-child .table td:nth-child(5){width:23%!important;white-space:normal!important}
-@media(max-width:1100px){.dashboard-panels{grid-template-columns:1fr!important}.dashboard-panel:first-child .table tbody tr,.dashboard-panel:first-child .table tbody tr>td{height:auto!important;min-height:0!important}.dashboard-panel:first-child .table tbody tr>td{padding:4px 9px!important}}
+@media(max-width:1100px){.dashboard-panels{grid-template-columns:1fr!important}.dashboard-panel:first-child .table thead,.dashboard-panel:first-child .table tbody{display:table-header-group!important}.dashboard-panel:first-child .table tbody{display:table-row-group!important}.dashboard-panel:first-child .table thead tr,.dashboard-panel:first-child .table tbody tr{display:table-row!important;grid-template-columns:none!important;height:auto!important;min-height:0!important}.dashboard-panel:first-child .table tbody td{height:auto!important;min-height:0!important;padding:4px 9px!important}}
 '''
           s = s.replace('</style>', '\n' + css + '</style>', 1)
-
           p.write_text(s, encoding='utf-8')
-          print('Clean equal-row dashboard layout v9 applied.')
+          print('Clean dashboard equal-row layout v10 applied.')
 
       - name: Commit patched dashboard
         run: |
@@ -92,6 +91,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nothing to commit."
           else
-            git commit -m "fix dashboard clean equal row layout v9"
+            git commit -m "fix dashboard clean equal row layout v10"
             git push
           fi
