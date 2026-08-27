@@ -18,21 +18,32 @@ function twoLine(a,b){return `<span class="two-line">${a}<br>${b}</span>`}
 function prepareHealth(section){if(!section)return;section.classList.add('dashboard-static-health');const title=qs('.sectiontitle h2',section);if(title)title.textContent='Kondisi Proyek';const note=qs('.sectiontitle .note',section);if(note)note.textContent='Progress vs Rasio Biaya & RAP Terpakai';const table=qs('.table',section);if(!table)return;table.classList.add('health-static-table');const head=qs('thead tr',table);if(head){const labels=['Proyek','Progress',twoLine('Rasio','Biaya'),twoLine('RAP','Terpakai'),'Status'];while(head.children.length>5)head.lastElementChild.remove();labels.forEach((v,i)=>{if(head.children[i])head.children[i].innerHTML=v})}qsa('tbody tr',table).forEach(tr=>{while(tr.children.length>5)tr.lastElementChild.remove()})}
 function prepareDecision(section){if(!section)return;section.classList.add('dashboard-static-decision');const title=qs('.sectiontitle h2',section);if(title)title.textContent='Prioritas & Tindakan';const note=qs('.sectiontitle .note',section);if(note)note.textContent='Rekomendasi berbasis Kondisi Proyek';const table=qs('.table',section);if(!table)return;table.classList.add('decision-static-table');const head=qs('thead tr',table);if(head){const labels=['Proyek','Prioritas','Status',twoLine('Masalah','Utama'),'Tindakan'];while(head.children.length>5)head.lastElementChild.remove();labels.forEach((v,i)=>{if(head.children[i])head.children[i].innerHTML=v;else{const th=document.createElement('th');th.innerHTML=v;head.appendChild(th)}})}qsa('tbody tr',table).forEach(tr=>{if(tr.children.length>=5)return;const td=document.createElement('td');td.textContent='Pertahankan kontrol dan lanjutkan pemantauan rutin.';tr.appendChild(td)})}
 function organizeStaticLowerPanels(){const d=qs('.dashboard-view');if(!d)return;const health=findSection(d,['Project Health','Kesehatan Proyek','Kondisi Proyek']),decision=findSection(d,['Prioritas & Tindakan']);if(!health&&!decision)return;let grid=qs('.dashboard-lower-v3-grid',d);if(!grid){grid=document.createElement('div');grid.className='dashboard-lower-v3-grid';const anchor=health||decision;if(anchor?.parentNode)anchor.parentNode.insertBefore(grid,anchor);else d.appendChild(grid)}if(health&&health.parentNode!==grid)grid.appendChild(health);if(decision&&decision.parentNode!==grid)grid.appendChild(decision);prepareHealth(health);prepareDecision(decision);qsa('#health-engine-v1-card,#decision-engine-v1-card',d).forEach(x=>x.style.setProperty('display','none','important'))}
-/* v6: the right panel is the height reference. The left panel is resized by matching its 5 data rows one-for-one. */
-function syncLowerPanelRowHeights(){
+/* v7: target the ACTUAL dashboard-panels markup. The right panel is the reference; copy each rendered row height to the matching left row. */
+function syncActualDashboardRows(){
  if(!isDashboard())return;
- const grid=qs('.dashboard-lower-v3-grid')||qs('.dashboard-panels');if(!grid)return;
- const left=qs('.dashboard-static-health',grid),right=qs('.dashboard-static-decision',grid);if(!left||!right)return;
+ const panels=qs('.dashboard-panels');if(!panels)return;
+ const cards=qsa(':scope > .dashboard-panel',panels);if(cards.length<2)return;
+ const left=cards[0],right=cards[1];
  const lt=qs('.table',left),rt=qs('.table',right);if(!lt||!rt)return;
  const lr=qsa('tbody tr',lt),rr=qsa('tbody tr',rt);if(!lr.length||!rr.length)return;
- /* Clear legacy inline heights/padding before measuring the right table. */
- lr.forEach(row=>{row.style.removeProperty('height');qsa('td',row).forEach(td=>{td.style.removeProperty('height');td.style.removeProperty('padding-top');td.style.removeProperty('padding-bottom')})});
- /* Let the browser calculate the reference rows exactly as displayed. */
+ // Clear all previous inline row sizing on the left, then measure the already-rendered right rows.
+ lr.forEach(row=>{row.style.removeProperty('height');qsa('td',row).forEach(td=>{td.style.removeProperty('height');td.style.removeProperty('min-height')})});
  const refs=rr.map(row=>Math.ceil(row.getBoundingClientRect().height));
- lr.forEach((row,i)=>{const target=refs[i];if(!target)return;row.style.setProperty('height',target+'px','important');qsa('td',row).forEach(td=>td.style.setProperty('height',target+'px','important'))});
+ if(!refs.length)return;
+ // Use fixed row heights only on the left. This leaves the right panel untouched and removes the empty tail below the left table.
+ lr.forEach((row,i)=>{
+   const target=refs[i];if(!target)return;
+   row.style.setProperty('height',target+'px','important');
+   qsa('td',row).forEach(td=>{
+     td.style.setProperty('height',target+'px','important');
+     td.style.setProperty('padding-top','0px','important');
+     td.style.setProperty('padding-bottom','0px','important');
+     td.style.setProperty('vertical-align','middle','important');
+   });
+ });
 }
-function requestPanelSync(){if(!isDashboard())return;const request=()=>window.dispatchEvent(new CustomEvent('sikoyek:dashboard-panel-request'));request();[500,1200].forEach(ms=>setTimeout(request,ms));[50,300,900,1800].forEach(ms=>setTimeout(syncLowerPanelRowHeights,ms))}
+function requestPanelSync(){if(!isDashboard())return;const request=()=>window.dispatchEvent(new CustomEvent('sikoyek:dashboard-panel-request'));request();[500,1200].forEach(ms=>setTimeout(request,ms));[50,250,500,900,1500,2200].forEach(ms=>setTimeout(syncActualDashboardRows,ms))}
 function apply(){const content=dashboard(),top=qs('.top');if(!content||!top)return;if(!isDashboard()){content.classList.remove('dashboard-view');top.classList.remove('dashboard-top');return}content.classList.add('dashboard-view');top.classList.add('dashboard-top');movePeriodIntoHeader(top);stabilizePeriodPreset(content);const actions=qs('.actions',top);if(!actions)return;let info=qs('.dashboard-userinfo',actions);if(!info){info=document.createElement('div');info.className='dashboard-userinfo';info.innerHTML='<span class="user-copy"><div class="user-main">Pengguna</div><div class="user-time"></div></span>';actions.insertBefore(info,actions.firstChild)}const userMain=qs('.user-main',info),userTime=qs('.user-time',info),client=window.__siKoyekSupabase;if(client?.auth?.getSession)client.auth.getSession().then(({data})=>{const identity=data?.session?.user?.user_metadata?.full_name||data?.session?.user?.email||'Pengguna';if(userMain)userMain.textContent=identity}).catch(()=>{});if(userTime)userTime.textContent=formatDateTime(new Date());compactHeaderTypography(top);compactKpis();decorateKpis();normalizePercentages(content);normalizeMoneyKpis(content);organizeStaticLowerPanels();ensureMasterDataNav();requestPanelSync()}
 let scheduled=false;function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;try{apply()}catch(e){console.warn('Dashboard layout helper:',e)}})}
-new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});setInterval(()=>{if(isDashboard()){const t=qs('.dashboard-userinfo .user-time');if(t)t.textContent=formatDateTime(new Date());syncLowerPanelRowHeights()}},30000);schedule();
+new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});setInterval(()=>{if(isDashboard()){const t=qs('.dashboard-userinfo .user-time');if(t)t.textContent=formatDateTime(new Date());syncActualDashboardRows()}},30000);schedule();
 })();
