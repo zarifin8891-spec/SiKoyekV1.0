@@ -1,76 +1,87 @@
 /* SiKoyek Dashboard Header Fix V2
    Scope: Header period controls only.
-   - Fixes local-date off-by-one caused by toISOString() in period presets.
-   - Keeps the selected preset visible after render.
-   - Gives period controls a coordinated non-white treatment and shared vertical geometry.
 */
 (function(){
   'use strict';
   const STYLE_ID='dashboard-header-fix-v2';
 
   function addStyle(){
-    if(document.getElementById(STYLE_ID)) return;
-    const s=document.createElement('style');
-    s.id=STYLE_ID;
+    let s=document.getElementById(STYLE_ID);
+    if(!s){ s=document.createElement('style'); s.id=STYLE_ID; document.head.appendChild(s); }
     s.textContent=`
-      .dashboard-view .top.dashboard-top > .periodbar{
-        align-items:flex-start!important;
+      .dashboard-view .dashboard-head .dashboard-period{
+        align-items:end!important;
       }
-      .dashboard-view .periodrow{
-        align-items:flex-end!important;
-      }
-      .dashboard-view .periodrow .field{
+      .dashboard-view .dashboard-head .dashboard-period .field{
         display:flex!important;
         flex-direction:column!important;
         justify-content:flex-end!important;
+        min-width:0!important;
+        margin:0!important;
       }
-      .dashboard-view .periodrow .field label{
+      .dashboard-view .dashboard-head .dashboard-period .field label{
         height:14px!important;
         line-height:14px!important;
         margin:0 0 4px!important;
+        color:rgba(255,255,255,.82)!important;
+        font-size:11px!important;
+        font-weight:500!important;
       }
-      .dashboard-view .periodrow .field input,
-      .dashboard-view .periodrow .field select{
+      .dashboard-view .dashboard-head .dashboard-period input,
+      .dashboard-view .dashboard-head .dashboard-period select{
+        width:100%!important;
         height:42px!important;
+        min-height:42px!important;
         box-sizing:border-box!important;
-        background:rgba(13,41,74,.34)!important;
-        background-color:rgba(13,41,74,.34)!important;
-        border:1px solid rgba(255,255,255,.38)!important;
+        padding:8px 12px!important;
+        background:#1b4b6d!important;
+        background-color:#1b4b6d!important;
+        border:1px solid rgba(255,255,255,.32)!important;
+        border-radius:10px!important;
         color:#fff!important;
-        box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important;
+        font-size:14px!important;
+        font-weight:400!important;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.07)!important;
       }
-      .dashboard-view .periodrow .field input:hover,
-      .dashboard-view .periodrow .field select:hover{
-        background:rgba(13,41,74,.46)!important;
-        border-color:rgba(255,255,255,.52)!important;
+      .dashboard-view .dashboard-head .dashboard-period input:hover,
+      .dashboard-view .dashboard-head .dashboard-period select:hover{
+        background:#235777!important;
+        border-color:rgba(255,255,255,.48)!important;
       }
-      .dashboard-view .periodrow .field input:focus,
-      .dashboard-view .periodrow .field select:focus{
-        background:rgba(13,41,74,.52)!important;
-        border-color:rgba(255,255,255,.72)!important;
+      .dashboard-view .dashboard-head .dashboard-period input:focus,
+      .dashboard-view .dashboard-head .dashboard-period select:focus{
+        background:#235777!important;
+        border-color:rgba(255,255,255,.75)!important;
         outline:none!important;
         box-shadow:0 0 0 2px rgba(255,255,255,.10)!important;
       }
-      .dashboard-view .periodrow .field select option{
+      .dashboard-view .dashboard-head .dashboard-period select option{
         color:#172033!important;
         background:#fff!important;
       }
-      .dashboard-view .periodrow .field input::placeholder{
-        color:rgba(255,255,255,.86)!important;
+      .dashboard-view .dashboard-head .dashboard-period input::placeholder{
+        color:rgba(255,255,255,.78)!important;
       }
-      .dashboard-view .periodrow .btn{
+      .dashboard-view .dashboard-head .dashboard-period input[type=date]::-webkit-calendar-picker-indicator{
+        filter:brightness(0) invert(1)!important;
+        opacity:.9!important;
+      }
+      .dashboard-view .dashboard-head .dashboard-period .btn{
         height:42px!important;
+        min-height:42px!important;
         box-sizing:border-box!important;
         align-self:flex-end!important;
       }
-      .dashboard-view .periodnote{
-        align-self:flex-end!important;
+      .dashboard-view .dashboard-head .dashboard-period-note{
+        height:42px!important;
         min-height:42px!important;
         display:flex!important;
         align-items:center!important;
+        align-self:end!important;
+        padding:0 4px!important;
+        margin:0!important;
       }
     `;
-    document.head.appendChild(s);
   }
 
   function localDate(y,m,d){
@@ -82,17 +93,18 @@
   function presetRange(v){
     const d=new Date();
     const y=d.getFullYear(), m=d.getMonth();
-    if(v==='thisMonth') return {from:localDate(y,m,1),to:localDate(y,m+1,new Date(y,m+1,0).getDate())};
-    if(v==='lastMonth') return {from:localDate(y,m-1,1),to:localDate(y,m,new Date(y,m,0).getDate())};
+    if(v==='thisMonth') return {from:localDate(y,m,1),to:localDate(y,m,new Date(y,m+1,0).getDate())};
+    if(v==='lastMonth') return {from:localDate(y,m-1,1),to:localDate(y,m-1,new Date(y,m,0).getDate())};
     if(v==='thisYear') return {from:`${y}-01-01`,to:`${y}-12-31`};
     return {from:'',to:''};
   }
 
   function selectedPreset(){
-    const from=state?.period?.from||'',to=state?.period?.to||'';
+    if(typeof state==='undefined') return '';
+    const from=state.period?.from||'',to=state.period?.to||'';
     const d=new Date(),y=d.getFullYear(),m=d.getMonth();
-    const thisFrom=localDate(y,m,1),thisTo=localDate(y,m+1,new Date(y,m+1,0).getDate());
-    const lastFrom=localDate(y,m-1,1),lastTo=localDate(y,m,new Date(y,m,0).getDate());
+    const thisFrom=localDate(y,m,1),thisTo=localDate(y,m,new Date(y,m+1,0).getDate());
+    const lastFrom=localDate(y,m-1,1),lastTo=localDate(y,m-1,new Date(y,m,0).getDate());
     if(from===thisFrom&&to===thisTo) return 'thisMonth';
     if(from===lastFrom&&to===lastTo) return 'lastMonth';
     if(from===`${y}-01-01`&&to===`${y}-12-31`) return 'thisYear';
@@ -100,19 +112,30 @@
   }
 
   function applyPresetFixed(v){
-    const range=presetRange(v);
     if(typeof state==='undefined') return;
-    state.period=range;
+    state.period=presetRange(v);
     if(typeof renderPage==='function') renderPage();
     setTimeout(()=>{
       const select=document.getElementById('periodPreset');
       if(select) select.value=v||selectedPreset();
+      syncDateInputs();
     },0);
+  }
+
+  function syncDateInputs(){
+    const select=document.getElementById('periodPreset');
+    if(!select || typeof state==='undefined') return;
+    const row=select.closest('.dashboard-period')||select.parentElement?.parentElement;
+    if(!row) return;
+    const fields=[...row.querySelectorAll('input[type="date"]')];
+    if(fields[0]) fields[0].value=state.period?.from||'';
+    if(fields[1]) fields[1].value=state.period?.to||'';
   }
 
   function syncPreset(){
     const select=document.getElementById('periodPreset');
     if(select) select.value=selectedPreset();
+    syncDateInputs();
   }
 
   function install(){
@@ -127,5 +150,5 @@
   observer.observe(document.body,{childList:true,subtree:true});
   addStyle();
   setTimeout(install,0);
-  setInterval(()=>{if(document.querySelector('.dashboard-view')) install()},800);
+  setInterval(()=>{if(document.querySelector('.dashboard-view')) install()},500);
 })();
