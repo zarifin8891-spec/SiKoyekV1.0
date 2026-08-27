@@ -28,60 +28,63 @@ jobs:
           s = s.replace('<span class="note">Rekomendasi berbasis Project Health</span>', '<span class="note">Rekomendasi berbasis Kondisi Proyek</span>')
           s = s.replace('<span class="note">Rekomendasi berbasis Kesehatan Proyek</span>', '<span class="note">Rekomendasi berbasis Kondisi Proyek</span>')
 
-          # Replace the previous alignment patch instead of stacking overrides.
-          old_marker = '/* SiKoyek V1.0 — final dashboard row-height alignment v4 */'
-          new_marker = '/* SiKoyek V1.0 — final dashboard row-height alignment v5 */'
-          start = s.find(old_marker)
-          if start != -1:
-              end = s.find('</style>', start)
-              if end != -1:
-                  s = s[:start] + s[end:]
+          # Replace every previous dashboard lower-panel alignment patch.
+          markers = [
+              '/* SiKoyek V1.0 — final dashboard row-height alignment v4 */',
+              '/* SiKoyek V1.0 — final dashboard row-height alignment v5 */',
+              '/* SiKoyek V1.0 — final dashboard row-height alignment v6 */',
+          ]
+          for marker in markers:
+              start = s.find(marker)
+              if start != -1:
+                  end = s.find('</style>', start)
+                  if end != -1:
+                      s = s[:start] + s[end:]
 
           css = '''
-/* SiKoyek V1.0 — final dashboard row-height alignment v5 */
-/* Exact visual target: no empty block below the left table; left rows are taller so both panels finish together. */
-.dashboard-panels{grid-template-columns:minmax(0,44fr) minmax(0,56fr)!important;gap:14px!important;align-items:stretch!important}
-.dashboard-panel{min-width:0!important;min-height:0!important;height:auto!important;align-self:stretch!important;display:flex!important;flex-direction:column!important}
-.dashboard-panel .sectiontitle{flex:0 0 auto!important;margin-bottom:8px!important}
-.dashboard-panel .tablecard{min-height:0!important;max-height:none!important;display:block!important;height:auto!important;overflow:hidden!important}
+/* SiKoyek V1.0 — final dashboard row-height alignment v6 */
+/* Exact target: the two dashboard tables finish on the same baseline. The RIGHT table is the reference. */
+.dashboard-panels{grid-template-columns:minmax(0,44fr) minmax(0,56fr)!important;gap:14px!important;align-items:start!important}
+.dashboard-panel{min-width:0!important;min-height:0!important;height:auto!important;align-self:start!important}
+.dashboard-panel .tablecard{min-height:0!important;height:auto!important;max-height:none!important;overflow:hidden!important}
 .dashboard-panel .scroll{height:auto!important;max-height:none!important;overflow:hidden!important}
-.dashboard-panel .table{width:100%!important;table-layout:fixed!important}
-/* Right panel keeps the compact row spacing already approved. */
-.dashboard-panel:last-child .table th,.dashboard-panel:last-child .table td{padding:4px 9px!important;font-size:11px!important;line-height:1.12!important;vertical-align:middle!important}
-/* Left panel: deliberately taller rows, not empty space below the table. */
-.dashboard-panel:first-child .table th{padding:5px 9px!important;font-size:9px!important;line-height:1.05!important}
-.dashboard-panel:first-child .table td{padding:19px 9px!important;font-size:11px!important;line-height:1.12!important;vertical-align:middle!important}
+.dashboard-panel .table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important}
 .dashboard-panel .table th{white-space:normal!important}
+/* RIGHT = reference. Keep its approved compact spacing exactly as-is. */
+.dashboard-panel:last-child .table th,.dashboard-panel:last-child .table td{padding:4px 9px!important;font-size:11px!important;line-height:1.12!important;vertical-align:middle!important}
+/* LEFT = same five-row height as RIGHT. We use an explicit 64px data-row box so there is NO blank block underneath. */
+.dashboard-panel:first-child .table th{padding:5px 9px!important;font-size:9px!important;line-height:1.05!important}
+.dashboard-panel:first-child .table td{height:64px!important;padding:4px 9px!important;font-size:11px!important;line-height:1.12!important;vertical-align:middle!important}
+.dashboard-panel:first-child .table tbody tr{height:64px!important}
 /* Zebra rows — preserve the approved alternating light/dark reading aid. */
 .dashboard-panel .table tbody tr:nth-child(odd){background:#ffffff!important}
 .dashboard-panel .table tbody tr:nth-child(even){background:#eef4f9!important}
 .dashboard-panel .table tbody tr td{border-bottom:1px solid #dfe7ef!important}
 .dashboard-panel .table tbody tr:last-child td{border-bottom:0!important}
 .dashboard-panel .table tbody tr:hover{background:#e7eef5!important}
+/* Left column proportions */
 .dashboard-panel:first-child .table th:nth-child(1),.dashboard-panel:first-child .table td:nth-child(1){width:41%!important}
 .dashboard-panel:first-child .table th:nth-child(2),.dashboard-panel:first-child .table td:nth-child(2){width:12%!important}
 .dashboard-panel:first-child .table th:nth-child(3),.dashboard-panel:first-child .table td:nth-child(3){width:14%!important}
 .dashboard-panel:first-child .table th:nth-child(4),.dashboard-panel:first-child .table td:nth-child(4){width:18%!important}
 .dashboard-panel:first-child .table th:nth-child(5),.dashboard-panel:first-child .table td:nth-child(5){width:15%!important}
 .dashboard-panel:first-child .table td:first-child{white-space:normal!important}
+/* Right column proportions */
 .dashboard-panel:last-child .table th:nth-child(1),.dashboard-panel:last-child .table td:nth-child(1){width:32%!important}
 .dashboard-panel:last-child .table th:nth-child(2),.dashboard-panel:last-child .table td:nth-child(2){width:12%!important}
 .dashboard-panel:last-child .table th:nth-child(3),.dashboard-panel:last-child .table td:nth-child(3){width:11%!important}
 .dashboard-panel:last-child .table th:nth-child(4),.dashboard-panel:last-child .table td:nth-child(4){width:22%!important;white-space:normal!important}
 .dashboard-panel:last-child .table th:nth-child(5),.dashboard-panel:last-child .table td:nth-child(5){width:23%!important;white-space:normal!important}
 .dashboard-panel:last-child .table td:first-child{white-space:normal!important}
-@media(max-width:1100px){.dashboard-panels{grid-template-columns:1fr!important}.dashboard-panel{display:block!important}.dashboard-panel:first-child .table td{padding:4px 9px!important}.dashboard-panel .tablecard{height:auto!important}}
+@media(max-width:1100px){.dashboard-panels{grid-template-columns:1fr!important}.dashboard-panel:first-child .table tbody tr,.dashboard-panel:first-child .table td{height:auto!important}.dashboard-panel:first-child .table td{padding:4px 9px!important}.dashboard-panel .tablecard{height:auto!important}}
 '''
-          if new_marker not in s:
-              s = s.replace('</style>', '\n' + css + '</style>', 1)
-          else:
-              print('Dashboard row-height alignment V5 CSS already present.')
+          s = s.replace('</style>', '\n' + css + '</style>', 1)
 
           if s == original:
               print('No changes required.')
           else:
               p.write_text(s, encoding='utf-8')
-              print('Dashboard row-height alignment V5 patch applied.')
+              print('Dashboard row-height alignment V6 patch applied.')
 
       - name: Commit patched dashboard
         run: |
@@ -91,6 +94,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nothing to commit."
           else
-            git commit -m "fix dashboard left row height alignment v5"
+            git commit -m "fix dashboard equal five-row height v6"
             git push
           fi
