@@ -31,8 +31,12 @@
     if(typeof state==='undefined' || state.page!=='dashboard') return;
     const page=document.getElementById('page');
     if(!page || page.querySelector('.'+SECTION_CLASS)) return;
-    const health=[...page.querySelectorAll('.sectiontitle h2')].find(x=>x.textContent.trim()==='Project Health');
-    if(!health) return;
+
+    // The dashboard panels are the stable insertion anchor. The previous
+    // implementation used health.closest('.section'), but Project Health is
+    // rendered inside .dashboard-panel and therefore has no .section parent.
+    const panels=page.querySelector('.dashboard-panels');
+    if(!panels) return;
 
     const projects=(state.summary||[]).filter(typeof periodMatch==='function'?periodMatch:()=>true);
     const ids=projects.map(x=>x.project_id).filter(Boolean);
@@ -75,7 +79,10 @@
             </table>
           </div>
         </div>`;
-      health.closest('.section').before(wrap);
+
+      // Put Kinerja Periode below the two dashboard panels, rather than trying
+      // to insert it relative to a non-existent .section wrapper.
+      panels.after(wrap);
     }catch(e){
       try{toast(e?.message||'Gagal membaca kinerja periode')}catch(_){ }
     }finally{loading=false;}
