@@ -26,16 +26,23 @@ function syncLowerPanelRowHeights(){
   if(!left||!right)return;
   const leftRows=qsa('tbody tr',left), rightRows=qsa('tbody tr',right);
   if(!leftRows.length||!rightRows.length)return;
-  /* Use the actual rendered right-row heights as the reference. This avoids a blank block and makes every left row absorb the exact difference. */
-  rightRows.forEach((r,i)=>{
-    const h=r.getBoundingClientRect().height;
-    const l=leftRows[i];
-    if(l&&h>0){l.style.setProperty('height',Math.ceil(h)+'px','important');qsa('td',l).forEach(td=>td.style.setProperty('padding-top','10px','important'));qsa('td',l).forEach(td=>td.style.setProperty('padding-bottom','10px','important'))}
+  /* The right table is the reference. We deliberately size the LEFT CELLS, not the panel. */
+  leftRows.forEach((row,i)=>{
+    const ref=rightRows[i];
+    if(!ref)return;
+    const target=Math.ceil(ref.getBoundingClientRect().height);
+    if(!target)return;
+    qsa('td',row).forEach(td=>{
+      td.style.setProperty('height',target+'px','important');
+      td.style.setProperty('padding-top','8px','important');
+      td.style.setProperty('padding-bottom','8px','important');
+    });
+    row.style.removeProperty('height');
   });
   left.style.setProperty('min-height','0','important');
   right.style.setProperty('min-height','0','important');
 }
-function requestPanelSync(){if(!isDashboard())return;const request=()=>window.dispatchEvent(new CustomEvent('sikoyek:dashboard-panel-request'));request();setTimeout(request,500);setTimeout(request,1200);setTimeout(syncLowerPanelRowHeights,50);setTimeout(syncLowerPanelRowHeights,300);setTimeout(syncLowerPanelRowHeights,900)}
+function requestPanelSync(){if(!isDashboard())return;const request=()=>window.dispatchEvent(new CustomEvent('sikoyek:dashboard-panel-request'));request();setTimeout(request,500);setTimeout(request,1200);setTimeout(syncLowerPanelRowHeights,50);setTimeout(syncLowerPanelRowHeights,300);setTimeout(syncLowerPanelRowHeights,900);setTimeout(syncLowerPanelRowHeights,1800)}
 function apply(){const content=dashboard(),top=qs('.top');if(!content||!top)return;if(!isDashboard()){content.classList.remove('dashboard-view');top.classList.remove('dashboard-top');return}content.classList.add('dashboard-view');top.classList.add('dashboard-top');movePeriodIntoHeader(top);stabilizePeriodPreset(content);const actions=qs('.actions',top);if(!actions)return;let info=qs('.dashboard-userinfo',actions);if(!info){info=document.createElement('div');info.className='dashboard-userinfo';info.innerHTML='<span class="user-copy"><div class="user-main">Pengguna</div><div class="user-time"></div></span>';actions.insertBefore(info,actions.firstChild)}const userMain=qs('.user-main',info),userTime=qs('.user-time',info),client=window.__siKoyekSupabase;if(client?.auth?.getSession)client.auth.getSession().then(({data})=>{const identity=data?.session?.user?.user_metadata?.full_name||data?.session?.user?.email||'Pengguna';if(userMain)userMain.textContent=identity}).catch(()=>{});if(userTime)userTime.textContent=formatDateTime(new Date());compactHeaderTypography(top);compactKpis();decorateKpis();normalizePercentages(content);normalizeMoneyKpis(content);organizeStaticLowerPanels();ensureMasterDataNav();requestPanelSync()}
 let scheduled=false;function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;try{apply()}catch(e){console.warn('Dashboard layout helper:',e)}})}
 new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});setInterval(()=>{if(isDashboard()){const t=qs('.dashboard-userinfo .user-time');if(t)t.textContent=formatDateTime(new Date())}},30000);schedule();
