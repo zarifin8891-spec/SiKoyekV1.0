@@ -22,20 +22,20 @@ jobs:
           s = p.read_text(encoding='utf-8')
           original = s
 
-          # Keep the approved dashboard header/KPI implementation untouched.
           s = s.replace('>PERLU PENGAWASAN</div></div><div class="dashboard-status red">', '>AWASI</div></div><div class="dashboard-status red">')
           s = s.replace('<h2>Project Health</h2><span class="note">Progress vs Cost Ratio &amp; RAP Consumption</span>', '<h2>Kondisi Proyek</h2><span class="note">Progress vs Rasio Biaya &amp; RAP Terpakai</span>')
           s = s.replace('<h2>Kesehatan Proyek</h2><span class="note">Progress vs Rasio Biaya &amp; RAP Terpakai</span>', '<h2>Kondisi Proyek</h2><span class="note">Progress vs Rasio Biaya &amp; RAP Terpakai</span>')
           s = s.replace('<span class="note">Rekomendasi berbasis Project Health</span>', '<span class="note">Rekomendasi berbasis Kondisi Proyek</span>')
           s = s.replace('<span class="note">Rekomendasi berbasis Kesehatan Proyek</span>', '<span class="note">Rekomendasi berbasis Kondisi Proyek</span>')
 
+          marker = '/* SiKoyek V1.0 — final equal-height lower dashboard panels v3 */'
           css = '''
-/* SiKoyek V1.0 — final equal-height lower dashboard panels */
+/* SiKoyek V1.0 — final equal-height lower dashboard panels v3 */
 .dashboard-panels{grid-template-columns:minmax(0,44fr) minmax(0,56fr)!important;gap:14px!important;align-items:stretch!important}
-.dashboard-panel{min-width:0!important;align-self:stretch!important;height:auto!important;min-height:0!important;display:flex!important;flex-direction:column!important}
+.dashboard-panel{min-width:0!important;min-height:0!important;height:auto!important;align-self:stretch!important;display:flex!important;flex-direction:column!important}
 .dashboard-panel .sectiontitle{flex:0 0 auto!important}
-.dashboard-panel .tablecard{height:auto!important;min-height:0!important;max-height:none!important;flex:1 1 auto!important}
-.dashboard-panel .scroll{height:auto!important;max-height:none!important;overflow:hidden!important}
+.dashboard-panel .tablecard{min-height:0!important;max-height:none!important;height:auto!important;flex:1 1 auto!important;display:flex!important;flex-direction:column!important}
+.dashboard-panel .scroll{height:auto!important;max-height:none!important;overflow:hidden!important;flex:1 1 auto!important}
 .dashboard-panel .table{width:100%!important;table-layout:fixed!important}
 .dashboard-panel .table th,.dashboard-panel .table td{padding:4px 9px!important;font-size:11px!important;line-height:1.12!important;vertical-align:middle!important}
 .dashboard-panel .table th{font-size:9px!important;white-space:normal!important;line-height:1.05!important}
@@ -56,20 +56,20 @@ jobs:
 .dashboard-panel:last-child .table th:nth-child(4),.dashboard-panel:last-child .table td:nth-child(4){width:22%!important;white-space:normal!important}
 .dashboard-panel:last-child .table th:nth-child(5),.dashboard-panel:last-child .table td:nth-child(5){width:23%!important;white-space:normal!important}
 .dashboard-panel:last-child .table td:first-child{white-space:normal!important}
-@media(max-width:1100px){.dashboard-panels{grid-template-columns:1fr!important}}
+/* Keep the compact row padding and zebra colors; only stretch the shorter left panel to the right panel height. */
+.dashboard-panel:first-child .tablecard{height:100%!important}
+@media(max-width:1100px){.dashboard-panels{grid-template-columns:1fr!important}.dashboard-panel{display:block!important}.dashboard-panel .tablecard{height:auto!important}}
 '''
-
-          marker = '/* SiKoyek V1.0 — final equal-height lower dashboard panels */'
           if marker not in s:
               s = s.replace('</style>', '\n' + css + '</style>', 1)
           else:
-              print('Final equal-height CSS already present.')
+              print('Equal-height V3 CSS already present.')
 
           if s == original:
               print('No changes required.')
           else:
               p.write_text(s, encoding='utf-8')
-              print('Dashboard final equal-height patch applied.')
+              print('Dashboard equal-height V3 patch applied.')
 
       - name: Commit patched dashboard
         run: |
@@ -79,6 +79,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nothing to commit."
           else
-            git commit -m "fix equal height dashboard lower panels"
+            git commit -m "fix equal height dashboard panels v3"
             git push
           fi
