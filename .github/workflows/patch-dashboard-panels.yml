@@ -22,26 +22,54 @@ jobs:
           s = p.read_text(encoding='utf-8')
           original = s
 
-          # Keep the already-approved header/KPI implementation untouched.
+          # Keep the approved dashboard header/KPI implementation untouched.
           s = s.replace('>PERLU PENGAWASAN</div></div><div class="dashboard-status red">', '>AWASI</div></div><div class="dashboard-status red">')
           s = s.replace('<h2>Project Health</h2><span class="note">Progress vs Cost Ratio &amp; RAP Consumption</span>', '<h2>Kondisi Proyek</h2><span class="note">Progress vs Rasio Biaya &amp; RAP Terpakai</span>')
           s = s.replace('<h2>Kesehatan Proyek</h2><span class="note">Progress vs Rasio Biaya &amp; RAP Terpakai</span>', '<h2>Kondisi Proyek</h2><span class="note">Progress vs Rasio Biaya &amp; RAP Terpakai</span>')
-          s = s.replace('<th>Proyek</th><th>Progress</th><th>Cost Ratio</th><th>RAP<br>Consumption</th><th>Health</th><th>Gap Cost</th>', '<th>Proyek</th><th>Progress</th><th>Rasio<br>Biaya</th><th>RAP<br>Terpakai</th><th>Status</th>')
-          s = s.replace('<td><span class="pill ${healthClass(x.health_status)}">${esc(x.health_status)}</span></td><td>${Number(x.cost_ratio||0)-Number(x.rap_consumption||0>=0)?\'\':\'\'}${pct(Number(x.cost_ratio||0)-Number(x.rap_consumption||0))}</td>', '<td><span class="pill ${healthClass(x.health_status)}">${esc(x.health_status)}</span></td>')
           s = s.replace('<span class="note">Rekomendasi berbasis Project Health</span>', '<span class="note">Rekomendasi berbasis Kondisi Proyek</span>')
           s = s.replace('<span class="note">Rekomendasi berbasis Kesehatan Proyek</span>', '<span class="note">Rekomendasi berbasis Kondisi Proyek</span>')
-          s = s.replace('<th>Proyek</th><th>Prioritas</th><th>Status</th><th>Masalah Utama</th><th>Tindakan</th>', '<th>Proyek</th><th>Prioritas</th><th>Status</th><th>Masalah<br>Utama</th><th>Tindakan</th>')
 
-          css = '''\n/* SiKoyek V1.0 — final lower dashboard panel override v2 */\n.dashboard-panels{grid-template-columns:minmax(0,44fr) minmax(0,56fr)!important;gap:14px!important;align-items:start!important}\n.dashboard-panel{min-width:0!important;align-self:start!important;height:auto!important;min-height:0!important}\n.dashboard-panel .tablecard{height:auto!important;min-height:0!important;max-height:none!important;flex:none!important}\n.dashboard-panel .scroll{height:auto!important;max-height:none!important;overflow:hidden!important}\n.dashboard-panel .table{width:100%!important;table-layout:fixed!important}\n.dashboard-panel .table th,.dashboard-panel .table td{padding:4px 9px!important;font-size:11px!important;line-height:1.12!important;vertical-align:middle!important}\n.dashboard-panel .table th{font-size:9px!important;white-space:normal!important;line-height:1.05!important}\n.dashboard-panel .table tbody tr:nth-child(odd){background:#ffffff!important}\n.dashboard-panel .table tbody tr:nth-child(even){background:#eef4f9!important}\n.dashboard-panel .table tbody tr td{border-bottom:1px solid #dfe7ef!important}\n.dashboard-panel .table tbody tr:last-child td{border-bottom:0!important}\n.dashboard-panel .table tbody tr:hover{background:#e7eef5!important}\n.dashboard-panel:first-child .table th:nth-child(1),.dashboard-panel:first-child .table td:nth-child(1){width:41%!important}\n.dashboard-panel:first-child .table th:nth-child(2),.dashboard-panel:first-child .table td:nth-child(2){width:12%!important}\n.dashboard-panel:first-child .table th:nth-child(3),.dashboard-panel:first-child .table td:nth-child(3){width:14%!important}\n.dashboard-panel:first-child .table th:nth-child(4),.dashboard-panel:first-child .table td:nth-child(4){width:18%!important}\n.dashboard-panel:first-child .table th:nth-child(5),.dashboard-panel:first-child .table td:nth-child(5){width:15%!important}\n.dashboard-panel:first-child .table td:first-child{white-space:normal!important}\n.dashboard-panel:last-child .table th:nth-child(1),.dashboard-panel:last-child .table td:nth-child(1){width:32%!important}\n.dashboard-panel:last-child .table th:nth-child(2),.dashboard-panel:last-child .table td:nth-child(2){width:12%!important}\n.dashboard-panel:last-child .table th:nth-child(3),.dashboard-panel:last-child .table td:nth-child(3){width:11%!important}\n.dashboard-panel:last-child .table th:nth-child(4),.dashboard-panel:last-child .table td:nth-child(4){width:22%!important;white-space:normal!important}\n.dashboard-panel:last-child .table th:nth-child(5),.dashboard-panel:last-child .table td:nth-child(5){width:23%!important;white-space:normal!important}\n.dashboard-panel:last-child .table td:first-child{white-space:normal!important}\n@media(max-width:1100px){.dashboard-panels{grid-template-columns:1fr!important}}\n'''
-          marker = '/* SiKoyek V1.0 — final lower dashboard panel override v2 */'
+          css = '''
+/* SiKoyek V1.0 — final equal-height lower dashboard panels */
+.dashboard-panels{grid-template-columns:minmax(0,44fr) minmax(0,56fr)!important;gap:14px!important;align-items:stretch!important}
+.dashboard-panel{min-width:0!important;align-self:stretch!important;height:auto!important;min-height:0!important;display:flex!important;flex-direction:column!important}
+.dashboard-panel .sectiontitle{flex:0 0 auto!important}
+.dashboard-panel .tablecard{height:auto!important;min-height:0!important;max-height:none!important;flex:1 1 auto!important}
+.dashboard-panel .scroll{height:auto!important;max-height:none!important;overflow:hidden!important}
+.dashboard-panel .table{width:100%!important;table-layout:fixed!important}
+.dashboard-panel .table th,.dashboard-panel .table td{padding:4px 9px!important;font-size:11px!important;line-height:1.12!important;vertical-align:middle!important}
+.dashboard-panel .table th{font-size:9px!important;white-space:normal!important;line-height:1.05!important}
+.dashboard-panel .table tbody tr:nth-child(odd){background:#ffffff!important}
+.dashboard-panel .table tbody tr:nth-child(even){background:#eef4f9!important}
+.dashboard-panel .table tbody tr td{border-bottom:1px solid #dfe7ef!important}
+.dashboard-panel .table tbody tr:last-child td{border-bottom:0!important}
+.dashboard-panel .table tbody tr:hover{background:#e7eef5!important}
+.dashboard-panel:first-child .table th:nth-child(1),.dashboard-panel:first-child .table td:nth-child(1){width:41%!important}
+.dashboard-panel:first-child .table th:nth-child(2),.dashboard-panel:first-child .table td:nth-child(2){width:12%!important}
+.dashboard-panel:first-child .table th:nth-child(3),.dashboard-panel:first-child .table td:nth-child(3){width:14%!important}
+.dashboard-panel:first-child .table th:nth-child(4),.dashboard-panel:first-child .table td:nth-child(4){width:18%!important}
+.dashboard-panel:first-child .table th:nth-child(5),.dashboard-panel:first-child .table td:nth-child(5){width:15%!important}
+.dashboard-panel:first-child .table td:first-child{white-space:normal!important}
+.dashboard-panel:last-child .table th:nth-child(1),.dashboard-panel:last-child .table td:nth-child(1){width:32%!important}
+.dashboard-panel:last-child .table th:nth-child(2),.dashboard-panel:last-child .table td:nth-child(2){width:12%!important}
+.dashboard-panel:last-child .table th:nth-child(3),.dashboard-panel:last-child .table td:nth-child(3){width:11%!important}
+.dashboard-panel:last-child .table th:nth-child(4),.dashboard-panel:last-child .table td:nth-child(4){width:22%!important;white-space:normal!important}
+.dashboard-panel:last-child .table th:nth-child(5),.dashboard-panel:last-child .table td:nth-child(5){width:23%!important;white-space:normal!important}
+.dashboard-panel:last-child .table td:first-child{white-space:normal!important}
+@media(max-width:1100px){.dashboard-panels{grid-template-columns:1fr!important}}
+'''
+
+          marker = '/* SiKoyek V1.0 — final equal-height lower dashboard panels */'
           if marker not in s:
               s = s.replace('</style>', '\n' + css + '</style>', 1)
+          else:
+              print('Final equal-height CSS already present.')
 
           if s == original:
               print('No changes required.')
           else:
               p.write_text(s, encoding='utf-8')
-              print('Dashboard lower panel patch applied.')
+              print('Dashboard final equal-height patch applied.')
 
       - name: Commit patched dashboard
         run: |
@@ -51,6 +79,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nothing to commit."
           else
-            git commit -m "fix final dashboard panel height and zebra rows"
+            git commit -m "fix equal height dashboard lower panels"
             git push
           fi
