@@ -1,162 +1,156 @@
-/* SiKoyek Dashboard Final UI Fix V2 — visual cleanup only. */
+/* SiKoyek Dashboard Final UI Fix V3 — incremental dashboard refinement. */
 
-/* HEADER */
-.dashboard-view .top.dashboard-top{
+/* Preserve existing compact KPI and lower-panel behavior. */
+.dashboard-view .top.dashboard-top{min-height:0!important}
+.dashboard-view .top.dashboard-top .actions{gap:7px!important}
+.dashboard-userinfo{padding:6px 10px!important;border-radius:9px!important}
+.dashboard-view .cards.dashboard-kpi-strip{gap:8px!important}
+.dashboard-view .dashboard-kpi-strip .kpi,.dashboard-view .dashboard-kpi-strip .box{min-width:0!important}
+.dashboard-view .dashboard-kpi-strip .kpi .label{font-size:9px!important;line-height:1.1!important}
+.dashboard-view .dashboard-kpi-strip .kpi .value{display:block!important;width:100%!important;max-width:none!important;font-size:14.5px!important;line-height:1.08!important;letter-spacing:-.2px!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important}
+.dashboard-view #health-engine-v1-card .scroll{overflow-x:hidden!important;overflow-y:auto!important}
+.dashboard-view #health-engine-v1-card .table{width:100%!important;table-layout:fixed!important}
+.dashboard-view #health-engine-v1-card .table th,.dashboard-view #health-engine-v1-card .table td{padding:7px 7px!important;font-size:10.5px!important;line-height:1.18!important}
+.dashboard-view #health-engine-v1-card .table th{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;word-break:normal!important;vertical-align:middle!important}
+.dashboard-view #health-engine-v1-card .table th:nth-child(1),.dashboard-view #health-engine-v1-card .table td:nth-child(1){width:38%!important}
+.dashboard-view #health-engine-v1-card .table th:nth-child(2),.dashboard-view #health-engine-v1-card .table td:nth-child(2){width:11%!important}
+.dashboard-view #health-engine-v1-card .table th:nth-child(3),.dashboard-view #health-engine-v1-card .table td:nth-child(3){width:11%!important}
+.dashboard-view #health-engine-v1-card .table th:nth-child(4),.dashboard-view #health-engine-v1-card .table td:nth-child(4){width:15%!important}
+.dashboard-view #health-engine-v1-card .table th:nth-child(5),.dashboard-view #health-engine-v1-card .table td:nth-child(5){width:11%!important}
+.dashboard-view #health-engine-v1-card .table th:nth-child(6),.dashboard-view #health-engine-v1-card .table td:nth-child(6){width:14%!important}
+.dashboard-view #health-engine-v1-card .table td:first-child{white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important}
+.dashboard-view #health-engine-v1-card .table td:first-child .linkbtn{white-space:normal!important;display:inline!important;line-height:1.18!important}
+.dashboard-view #health-engine-v1-card .table td:nth-child(2),.dashboard-view #health-engine-v1-card .table td:nth-child(3),.dashboard-view #health-engine-v1-card .table td:nth-child(4),.dashboard-view #health-engine-v1-card .table td:nth-child(5),.dashboard-view #health-engine-v1-card .table td:nth-child(6){white-space:nowrap!important}
+.dashboard-view #health-engine-v1-card .tablecard,.dashboard-view #decision-engine-v1-card .tablecard{min-height:0!important}
+
+/* =========================================================
+   HEADER — incremental change requested from reference image 2.
+   This selector is intentionally more specific than dashboard-layout-v2
+   and its injected reference styles, so only the header is changed.
+   ========================================================= */
+.dashboard-view .top.dashboard-top.top{
   min-height:0!important;
-  padding:13px 20px 12px!important;
-  margin-bottom:10px!important;
+  height:auto!important;
+  margin:0 0 10px!important;
+  padding:16px 20px 14px!important;
+  border-radius:16px!important;
   row-gap:7px!important;
 }
-.dashboard-view .top.dashboard-top h1{
-  font-size:26px!important;
+.dashboard-view .top.dashboard-top.top h1{
+  font-size:25px!important;
   line-height:1.05!important;
+  margin:0!important;
 }
-.dashboard-view .top.dashboard-top p{
+.dashboard-view .top.dashboard-top.top p{
   font-size:11px!important;
   line-height:1.15!important;
-  margin-top:3px!important;
+  margin:3px 0 0!important;
 }
-.dashboard-view .top.dashboard-top .actions{gap:7px!important}
-.dashboard-view .top.dashboard-top .actions .btn.primary,
-.dashboard-view .top.dashboard-top .actions .btn.ghost{
+.dashboard-view .top.dashboard-top.top .actions{
+  gap:6px!important;
+  align-items:center!important;
+}
+.dashboard-view .top.dashboard-top.top .actions .btn.primary,
+.dashboard-view .top.dashboard-top.top .actions .btn.ghost{
   height:36px!important;
   min-height:36px!important;
   padding:7px 13px!important;
-  font-size:14px!important;
-  font-weight:500!important;
+  font-size:13px!important;
+  font-weight:650!important;
   line-height:1!important;
   border-radius:9px!important;
 }
-.dashboard-userinfo{
+.dashboard-view .top.dashboard-top.top .actions .btn.primary{
+  background:#0d294a!important;
+  color:#fff!important;
+  border-color:#0d294a!important;
+}
+.dashboard-view .top.dashboard-top.top .actions .btn.ghost{
+  background:#fff!important;
+  color:#0d294a!important;
+  border-color:#fff!important;
+}
+.dashboard-view .top.dashboard-top.top .dashboard-userinfo{
   height:36px!important;
+  min-width:175px!important;
   padding:4px 9px!important;
-  font-size:11px!important;
-}
-.dashboard-userinfo .user-main{font-size:10px!important;font-weight:500!important}
-.dashboard-userinfo .user-time{font-size:8px!important}
-
-/* PERIOD FILTER */
-.dashboard-view .top.dashboard-top>.periodbar{gap:7px!important}
-.dashboard-view .periodrow{gap:7px!important}
-.dashboard-view .periodrow .field:first-child{width:190px!important;flex-basis:190px!important}
-.dashboard-view .periodrow .field:nth-child(2),
-.dashboard-view .periodrow .field:nth-child(3){width:155px!important;flex-basis:155px!important}
-.dashboard-view .periodrow .field label{
-  font-size:9px!important;
-  margin-bottom:3px!important;
-}
-.dashboard-view .periodrow .field input,
-.dashboard-view .periodrow .field select,
-.dashboard-view .periodrow .btn{
-  height:38px!important;
-  min-height:38px!important;
-  padding:7px 10px!important;
-  font-size:14px!important;
-  font-weight:500!important;
   border-radius:9px!important;
 }
-.dashboard-view .periodnote{
-  font-size:9px!important;
-  line-height:1.15!important;
-}
+.dashboard-view .top.dashboard-top.top .dashboard-userinfo .user-main{font-size:10px!important;font-weight:650!important}
+.dashboard-view .top.dashboard-top.top .dashboard-userinfo .user-time{font-size:8px!important}
 
-/* KPI STRIP — give financial KPIs enough room for the full number. */
-.dashboard-view .cards.dashboard-kpi-strip{
-  grid-template-columns:1.05fr 1.25fr 1.25fr 1.25fr 1.10fr .90fr .90fr .90fr!important;
+/* Period controls: match reference 2 — compact, readable, one row. */
+.dashboard-view .top.dashboard-top.top>.periodbar{
+  order:3!important;
+  flex:1 1 100%!important;
+  width:100%!important;
+  display:flex!important;
+  align-items:center!important;
   gap:8px!important;
+  padding:0!important;
+  margin:0!important;
 }
-.dashboard-view .dashboard-kpi-strip .kpi,
-.dashboard-view .dashboard-kpi-strip .box{
-  min-width:0!important;
+.dashboard-view .top.dashboard-top.top .periodrow{
+  gap:7px!important;
+  align-items:flex-end!important;
+  flex-wrap:nowrap!important;
 }
-.dashboard-view .dashboard-kpi-strip .kpi .label{
+.dashboard-view .top.dashboard-top.top .periodrow .field:first-child{
+  width:170px!important;
+  flex:0 0 170px!important;
+}
+.dashboard-view .top.dashboard-top.top .periodrow .field:nth-child(2),
+.dashboard-view .top.dashboard-top.top .periodrow .field:nth-child(3){
+  width:155px!important;
+  flex:0 0 155px!important;
+}
+.dashboard-view .top.dashboard-top.top .periodrow .field label{
   font-size:9px!important;
-  line-height:1.1!important;
+  line-height:1!important;
+  margin-bottom:3px!important;
+  color:rgba(255,255,255,.88)!important;
 }
-.dashboard-view .dashboard-kpi-strip .kpi .value{
-  display:block!important;
-  width:100%!important;
-  max-width:none!important;
-  font-size:14.5px!important;
-  line-height:1.08!important;
-  letter-spacing:-.2px!important;
+.dashboard-view .top.dashboard-top.top .periodrow .field input,
+.dashboard-view .top.dashboard-top.top .periodrow .field select{
+  height:34px!important;
+  min-height:34px!important;
+  padding:6px 10px!important;
+  border-radius:9px!important;
+  font-size:13px!important;
+  font-weight:500!important;
+}
+.dashboard-view .top.dashboard-top.top .periodrow .btn{
+  height:34px!important;
+  min-height:34px!important;
+  padding:6px 12px!important;
+  border-radius:9px!important;
+  font-size:13px!important;
+  font-weight:650!important;
+}
+.dashboard-view .top.dashboard-top.top .periodnote{
+  font-size:9px!important;
+  line-height:1.2!important;
   white-space:nowrap!important;
-  overflow:visible!important;
-  text-overflow:clip!important;
-}
-
-/* PROJECT HEALTH — headers and columns must never collide. */
-.dashboard-view #health-engine-v1-card .scroll{
-  overflow-x:hidden!important;
-  overflow-y:auto!important;
-}
-.dashboard-view #health-engine-v1-card .table{
-  width:100%!important;
-  table-layout:fixed!important;
-}
-.dashboard-view #health-engine-v1-card .table th,
-.dashboard-view #health-engine-v1-card .table td{
-  padding:7px 7px!important;
-  font-size:10.5px!important;
-  line-height:1.18!important;
-}
-.dashboard-view #health-engine-v1-card .table th{
-  white-space:normal!important;
-  overflow:visible!important;
-  text-overflow:clip!important;
-  word-break:normal!important;
-  vertical-align:middle!important;
-}
-.dashboard-view #health-engine-v1-card .table th:nth-child(1),
-.dashboard-view #health-engine-v1-card .table td:nth-child(1){width:38%!important}
-.dashboard-view #health-engine-v1-card .table th:nth-child(2),
-.dashboard-view #health-engine-v1-card .table td:nth-child(2){width:11%!important}
-.dashboard-view #health-engine-v1-card .table th:nth-child(3),
-.dashboard-view #health-engine-v1-card .table td:nth-child(3){width:11%!important}
-.dashboard-view #health-engine-v1-card .table th:nth-child(4),
-.dashboard-view #health-engine-v1-card .table td:nth-child(4){width:15%!important}
-.dashboard-view #health-engine-v1-card .table th:nth-child(5),
-.dashboard-view #health-engine-v1-card .table td:nth-child(5){width:11%!important}
-.dashboard-view #health-engine-v1-card .table th:nth-child(6),
-.dashboard-view #health-engine-v1-card .table td:nth-child(6){width:14%!important}
-.dashboard-view #health-engine-v1-card .table td:first-child{
-  white-space:normal!important;
-  overflow-wrap:anywhere!important;
-  word-break:normal!important;
-}
-.dashboard-view #health-engine-v1-card .table td:first-child .linkbtn{
-  white-space:normal!important;
-  display:inline!important;
-  line-height:1.18!important;
-}
-.dashboard-view #health-engine-v1-card .table td:nth-child(2),
-.dashboard-view #health-engine-v1-card .table td:nth-child(3),
-.dashboard-view #health-engine-v1-card .table td:nth-child(4),
-.dashboard-view #health-engine-v1-card .table td:nth-child(5),
-.dashboard-view #health-engine-v1-card .table td:nth-child(6){
-  white-space:nowrap!important;
-}
-
-/* Keep the two lower panels visually aligned. */
-.dashboard-view #health-engine-v1-card .tablecard,
-.dashboard-view #decision-engine-v1-card .tablecard{
-  min-height:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
 }
 
 @media(max-width:1100px){
-  .dashboard-view .top.dashboard-top{padding:12px 16px 11px!important}
-  .dashboard-view .periodrow .field:first-child{width:180px!important;flex-basis:180px!important}
-  .dashboard-view .periodrow .field:nth-child(2),
-  .dashboard-view .periodrow .field:nth-child(3){width:145px!important;flex-basis:145px!important}
-  .dashboard-view .cards.dashboard-kpi-strip{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  .dashboard-view .top.dashboard-top.top{padding:14px 16px 12px!important}
+  .dashboard-view .top.dashboard-top.top .periodrow .field:first-child{width:165px!important;flex-basis:165px!important}
+  .dashboard-view .top.dashboard-top.top .periodrow .field:nth-child(2),.dashboard-view .top.dashboard-top.top .periodrow .field:nth-child(3){width:145px!important;flex-basis:145px!important}
 }
 @media(max-width:780px){
-  .dashboard-view .top.dashboard-top{padding:12px!important}
-  .dashboard-view .top.dashboard-top .actions{width:auto!important}
-  .dashboard-view .periodrow{flex-wrap:wrap!important}
-  .dashboard-view .periodrow .field:first-child,
-  .dashboard-view .periodrow .field:nth-child(2),
-  .dashboard-view .periodrow .field:nth-child(3){width:auto!important;flex:1 1 145px!important}
-  .dashboard-view .periodnote{white-space:normal!important}
-  .dashboard-view .cards.dashboard-kpi-strip{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .dashboard-view .top.dashboard-top.top{padding:14px!important}
+  .dashboard-view .top.dashboard-top.top .actions{width:auto!important}
+  .dashboard-view .top.dashboard-top.top>.periodbar{display:block!important}
+  .dashboard-view .top.dashboard-top.top .periodrow{flex-wrap:wrap!important}
+  .dashboard-view .top.dashboard-top.top .periodrow .field:first-child,.dashboard-view .top.dashboard-top.top .periodrow .field:nth-child(2),.dashboard-view .top.dashboard-top.top .periodrow .field:nth-child(3){width:auto!important;flex:1 1 145px!important}
+  .dashboard-view .top.dashboard-top.top .periodnote{margin-top:4px!important;white-space:normal!important}
+}
+@media(max-width:520px){
+  .dashboard-view .top.dashboard-top.top h1{font-size:22px!important}
+  .dashboard-view .top.dashboard-top.top .actions{width:100%!important;margin-left:0!important}
+  .dashboard-view .top.dashboard-top.top .dashboard-userinfo{flex:1;min-width:0!important}
+  .dashboard-view .top.dashboard-top.top .periodrow .field:first-child,.dashboard-view .top.dashboard-top.top .periodrow .field:nth-child(2),.dashboard-view .top.dashboard-top.top .periodrow .field:nth-child(3){flex-basis:100%!important}
 }
