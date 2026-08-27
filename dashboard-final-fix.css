@@ -1,21 +1,27 @@
-/* SiKoyek Dashboard Final UI Fix V5 */
-.dashboard-view .dashboard-panels{grid-template-columns:44% 56%!important;gap:14px!important}
-.dashboard-view #health-engine-v1-card .scroll,.dashboard-view #decision-engine-v1-card .scroll{overflow-x:hidden!important;overflow-y:hidden!important}
-.dashboard-view #health-engine-v1-card .table,.dashboard-view #decision-engine-v1-card .table{width:100%!important;table-layout:fixed!important}
-.dashboard-view #health-engine-v1-card .table th,.dashboard-view #health-engine-v1-card .table td,.dashboard-view #decision-engine-v1-card .table th,.dashboard-view #decision-engine-v1-card .table td{padding:9px 8px!important;font-size:11px!important;line-height:1.2!important}
-.dashboard-view #health-engine-v1-card .table th{white-space:normal!important;line-height:1.15!important;vertical-align:middle!important}
-.dashboard-view #health-engine-v1-card .table th:nth-child(1),.dashboard-view #health-engine-v1-card .table td:nth-child(1){width:41%!important}
-.dashboard-view #health-engine-v1-card .table th:nth-child(2),.dashboard-view #health-engine-v1-card .table td:nth-child(2){width:12%!important}
-.dashboard-view #health-engine-v1-card .table th:nth-child(3),.dashboard-view #health-engine-v1-card .table td:nth-child(3){width:13%!important}
-.dashboard-view #health-engine-v1-card .table th:nth-child(4),.dashboard-view #health-engine-v1-card .table td:nth-child(4){width:19%!important;white-space:normal!important}
-.dashboard-view #health-engine-v1-card .table th:nth-child(5),.dashboard-view #health-engine-v1-card .table td:nth-child(5){width:15%!important}
-.dashboard-view #health-engine-v1-card .table td:first-child{white-space:normal!important;word-break:normal!important}
-.dashboard-view #decision-engine-v1-card .table th,.dashboard-view #decision-engine-v1-card .table td{white-space:normal!important;vertical-align:top!important;word-break:normal!important}
-.dashboard-view #decision-engine-v1-card .table th:nth-child(1),.dashboard-view #decision-engine-v1-card .table td:nth-child(1){width:34%!important;min-width:0!important}
-.dashboard-view #decision-engine-v1-card .table th:nth-child(2),.dashboard-view #decision-engine-v1-card .table td:nth-child(2){width:13%!important;min-width:0!important}
-.dashboard-view #decision-engine-v1-card .table th:nth-child(3),.dashboard-view #decision-engine-v1-card .table td:nth-child(3){width:12%!important;min-width:0!important}
-.dashboard-view #decision-engine-v1-card .table th:nth-child(4),.dashboard-view #decision-engine-v1-card .table td:nth-child(4){width:22%!important;min-width:0!important}
-.dashboard-view #decision-engine-v1-card .table th:nth-child(5),.dashboard-view #decision-engine-v1-card .table td:nth-child(5){width:19%!important;min-width:0!important}
-.dashboard-view #decision-engine-v1-card .table td:first-child{min-width:0!important}
-@media(max-width:1100px){.dashboard-view .dashboard-panels{grid-template-columns:1fr!important}.dashboard-view #health-engine-v1-card .scroll,.dashboard-view #decision-engine-v1-card .scroll{overflow-x:hidden!important}}
-@media(max-width:780px){.dashboard-view #health-engine-v1-card .scroll,.dashboard-view #decision-engine-v1-card .scroll{overflow-x:auto!important}}
+/* SiKoyek Dashboard lower panels — reference layout */
+.dashboard-view .dashboard-lower-v3-grid{display:grid!important;grid-template-columns:minmax(0,44fr) minmax(0,56fr)!important;gap:14px!important;align-items:stretch!important;margin-top:18px!important}
+.dashboard-view .dashboard-lower-v3-grid>.section{margin-top:0!important;min-width:0!important}
+.dashboard-view .dashboard-lower-v3-grid .sectiontitle{margin-bottom:8px!important}
+.dashboard-view .dashboard-lower-v3-grid .sectiontitle h2{font-size:17px!important;line-height:1.1!important}
+.dashboard-view .dashboard-lower-v3-grid .sectiontitle .note{font-size:11px!important;line-height:1.2!important}
+.dashboard-view .dashboard-lower-v3-grid .tablecard{min-height:330px!important;overflow:hidden!important;border-radius:14px!important}
+.dashboard-view .dashboard-lower-v3-grid .scroll{overflow-x:hidden!important;overflow-y:hidden!important}
+.dashboard-view .dashboard-lower-v3-grid .table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important}
+.dashboard-view .dashboard-lower-v3-grid .table th,.dashboard-view .dashboard-lower-v3-grid .table td{padding:9px 8px!important;font-size:11px!important;line-height:1.2!important;vertical-align:middle!important}
+.dashboard-view .dashboard-lower-v3-grid .table th{font-size:9px!important;white-space:normal!important;line-height:1.1!important;vertical-align:middle!important}
+.dashboard-view .dashboard-lower-v3-grid .table td:first-child{font-weight:500!important;white-space:normal!important;word-break:normal!important}
+.dashboard-view .dashboard-lower-v3-grid .table th .two-line{display:inline-block!important;line-height:1.05!important}
+.dashboard-view .dashboard-lower-v3-grid .health-static-table th:nth-child(1),.dashboard-view .dashboard-lower-v3-grid .health-static-table td:nth-child(1){width:39%!important}
+.dashboard-view .dashboard-lower-v3-grid .health-static-table th:nth-child(2),.dashboard-view .dashboard-lower-v3-grid .health-static-table td:nth-child(2){width:14%!important}
+.dashboard-view .dashboard-lower-v3-grid .health-static-table th:nth-child(3),.dashboard-view .dashboard-lower-v3-grid .health-static-table td:nth-child(3){width:14%!important}
+.dashboard-view .dashboard-lower-v3-grid .health-static-table th:nth-child(4),.dashboard-view .dashboard-lower-v3-grid .health-static-table td:nth-child(4){width:19%!important}
+.dashboard-view .dashboard-lower-v3-grid .health-static-table th:nth-child(5),.dashboard-view .dashboard-lower-v3-grid .health-static-table td:nth-child(5){width:14%!important}
+.dashboard-view .dashboard-lower-v3-grid .decision-static-table th:nth-child(1),.dashboard-view .dashboard-lower-v3-grid .decision-static-table td:nth-child(1){width:31%!important}
+.dashboard-view .dashboard-lower-v3-grid .decision-static-table th:nth-child(2),.dashboard-view .dashboard-lower-v3-grid .decision-static-table td:nth-child(2){width:12%!important}
+.dashboard-view .dashboard-lower-v3-grid .decision-static-table th:nth-child(3),.dashboard-view .dashboard-lower-v3-grid .decision-static-table td:nth-child(3){width:11%!important}
+.dashboard-view .dashboard-lower-v3-grid .decision-static-table th:nth-child(4),.dashboard-view .dashboard-lower-v3-grid .decision-static-table td:nth-child(4){width:25%!important}
+.dashboard-view .dashboard-lower-v3-grid .decision-static-table th:nth-child(5),.dashboard-view .dashboard-lower-v3-grid .decision-static-table td:nth-child(5){width:21%!important}
+.dashboard-view .dashboard-lower-v3-grid .decision-static-table td{white-space:normal!important;vertical-align:top!important}
+.dashboard-view #health-engine-v1-card,.dashboard-view #decision-engine-v1-card{display:none!important}
+@media(max-width:1100px){.dashboard-view .dashboard-lower-v3-grid{grid-template-columns:1fr!important}}
+@media(max-width:780px){.dashboard-view .dashboard-lower-v3-grid .scroll{overflow-x:auto!important}}
