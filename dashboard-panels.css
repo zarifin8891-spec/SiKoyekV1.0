@@ -17,7 +17,7 @@
 /* Let each table use only the height its rows actually need. */
 .dashboard-panel .tablecard {
   flex: 0 0 auto;
-  min-height: 0;
+  min-height: 0 !important;
   overflow: hidden;
 }
 
@@ -147,9 +147,16 @@
   height: auto;
 }
 
-/* Period notice: reserve two visual lines without changing the surrounding layout. */
-.dashboard-period .period-note {
-  line-height: 1.25;
+/* Force the period notice into the requested two visual lines:
+   line 1 = Periode aktif + date, line 2 = project-counting explanation. */
+.dashboard-period-note {
+  line-height: 1.35 !important;
+}
+
+.dashboard-period-note strong::after {
+  content: "";
+  display: block;
+  height: 0;
 }
 
 @media (max-width: 1100px) {
