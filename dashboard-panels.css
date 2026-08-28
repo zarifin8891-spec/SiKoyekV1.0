@@ -64,6 +64,72 @@
 .dashboard-panel .table tbody td { border-bottom: 1px solid #dfe7ef; }
 .dashboard-panel .table tbody tr:last-child td { border-bottom: 0; }
 
+/* Requested visual refinements: preserve the existing Dashboard structure. */
+.dashboard-period .field label {
+  color: #eef7fb !important;
+  font-weight: 600;
+}
+
+.dashboard-period input,
+.dashboard-period select {
+  height: 42px !important;
+  background: rgba(255,255,255,.08) !important;
+  border: 1px solid rgba(255,255,255,.22) !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+.dashboard-period input::placeholder { color: #d9edf2 !important; }
+.dashboard-period select option { color: #172033; background: #fff; }
+.dashboard-period input[type=date]::-webkit-calendar-picker-indicator {
+  filter: brightness(0) invert(1);
+  opacity: .9;
+}
+
+.dashboard-period .btn {
+  height: 42px !important;
+  background: #fff !important;
+  border-color: #fff !important;
+  color: #172033 !important;
+}
+
+/* Give the left project's name a little more breathing room. */
+#dashboard-health-panel .table col:nth-child(1) { width: 45% !important; }
+#dashboard-health-panel .table col:nth-child(2) { width: 12% !important; }
+#dashboard-health-panel .table col:nth-child(3) { width: 13% !important; }
+#dashboard-health-panel .table col:nth-child(4) { width: 15% !important; }
+#dashboard-health-panel .table col:nth-child(5) { width: 15% !important; }
+
+#dashboard-decision-panel .table col:nth-child(1) { width: 36% !important; }
+#dashboard-decision-panel .table col:nth-child(2) { width: 15% !important; }
+#dashboard-decision-panel .table col:nth-child(3) { width: 24.5% !important; }
+#dashboard-decision-panel .table col:nth-child(4) { width: 24.5% !important; }
+
+.dashboard-panel .table th,
+.dashboard-panel .table td {
+  line-height: 1.22;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+#dashboard-health-panel .table td:first-child,
+#dashboard-decision-panel .table td:first-child {
+  text-align: left;
+}
+
+#dashboard-health-panel .table td:first-child strong,
+#dashboard-decision-panel .table td:first-child strong {
+  font-weight: 800;
+}
+
+/* Do not stretch one panel as a whole to hide a mismatch. Individual rows are
+   synchronized by the renderer so row 1↔1, row 2↔2, etc. have equal height. */
+#dashboard-health-panel .table tbody tr,
+#dashboard-decision-panel .table tbody tr {
+  height: auto;
+}
+
 @media (max-width: 1100px) {
   .dashboard-panels { grid-template-columns: 1fr; }
   .dashboard-panel .scroll { overflow-x: auto; }
