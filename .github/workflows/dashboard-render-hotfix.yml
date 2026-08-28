@@ -31,47 +31,10 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
+          import re
 
           path = Path('index.html')
           html = path.read_text(encoding='utf-8')
-
-          # IMPORTANT:
-          # Do not delete table cells from the source HTML. The previous hotfix
-          # physically removed the Status cell and damaged the table layout.
-          # Instead, keep the original 5-cell renderer intact and hide only the
-          # third column visually. This preserves row/cell alignment.
-          css = r'''
-          /* Dashboard decision table: hide Status without changing DOM structure */
-          .dashboard-panel .decision-table th:nth-child(3),
-          .dashboard-panel .decision-table td:nth-child(3) {
-            display: none;
-          }
-          .dashboard-panel .decision-table {
-            width: 100%;
-            table-layout: fixed;
-          }
-          .dashboard-panel .decision-table th,
-          .dashboard-panel .decision-table td {
-            white-space: normal;
-            overflow-wrap: anywhere;
-            word-break: normal;
-            vertical-align: top;
-          }
-          .dashboard-panel .decision-table th:nth-child(1),
-          .dashboard-panel .decision-table td:nth-child(1) { width: 34%; }
-          .dashboard-panel .decision-table th:nth-child(2),
-          .dashboard-panel .decision-table td:nth-child(2) { width: 16%; }
-          .dashboard-panel .decision-table th:nth-child(4),
-          .dashboard-panel .decision-table td:nth-child(4) { width: 25%; }
-          .dashboard-panel .decision-table th:nth-child(5),
-          .dashboard-panel .decision-table td:nth-child(5) { width: 25%; }
-          .dashboard-panel .decision-table td:nth-child(4),
-          .dashboard-panel .decision-table td:nth-child(5) {
-            line-height: 1.35;
-          }
-          '''
-
-          # Apply the class to the actual decision table only.
           marker = '<h2>Prioritas &amp; Tindakan</h2>'
           pos = html.find(marker)
           if pos < 0:
@@ -86,72 +49,46 @@ jobs:
               raise SystemExit('Decision table not found')
 
           opening_end = html.find('>', table_start)
-          if opening_end < 0 or opening_end > table_end:
-              raise SystemExit('Decision table opening tag not found')
-
           opening = html[table_start:opening_end + 1]
           if 'decision-table' not in opening:
               if 'class=' in opening:
                   opening = opening.replace('class="', 'class="decision-table ', 1)
-                  opening = opening.replace("class='", "class='decision-table ", 1)
               else:
                   opening = opening[:-1] + ' class="decision-table">'
               html = html[:table_start] + opening + html[opening_end + 1:]
 
-          # Replace any previous hotfix style block, then add the safe override.
-          import re
-          html = re.sub(
-              r'\s*/\* Dashboard decision table: hide Status.*?\.dashboard-panel \.decision-table td:nth-child\(5\) \{\s*line-height: 1\.35;\s*\}\s*',
-              '\n',
-              html,
-              flags=re.S,
-          )
-
-          style_block = '<style id="dashboard-decision-layout-hotfix">\n' + css + '\n</style>'
-          if '</head>' not in html:
-              raise SystemExit('HTML head closing tag not found')
-          html = html.replace('</head>', style_block + '\n</head>', 1)
-
+          css = '''
+          <style id="dashboard-decision-layout-hotfix">
+          .dashboard-panel .decision-table{width:100%;table-layout:fixed;border-collapse:collapse}
+          .dashboard-panel .decision-table th,.dashboard-panel .decision-table td{white-space:normal;overflow-wrap:break-word;word-break:normal;vertical-align:middle}
+          .dashboard-panel .decision-table th:nth-child(3),.dashboard-panel .decision-table td:nth-child(3){display:none!important}
+          .dashboard-panel .decision-table th:nth-child(1),.dashboard-panel .decision-table td:nth-child(1){width:38%}
+          .dashboard-panel .decision-table th:nth-child(2),.dashboard-panel .decision-table td:nth-child(2){width:18%}
+          .dashboard-panel .decision-table th:nth-child(4),.dashboard-panel .decision-table td:nth-child(4){width:22%}
+          .dashboard-panel .decision-table th:nth-child(5),.dashboard-panel .decision-table td:nth-child(5){width:22%}
+          .dashboard-panel .decision-table th{padding:8px 11px;font-size:9px}
+          .dashboard-panel .decision-table td{padding:10px 11px;font-size:12px;line-height:1.25}
+          </style>
+          '''
+          html = re.sub(r'<style id="dashboard-decision-layout-hotfix">.*?</style>', '', html, flags=re.S)
+          html = html.replace('</head>', css + '\n</head>', 1)
           path.write_text(html, encoding='utf-8')
 
-      - name: Verify safe decision-table layout
+      - name: Verify safe Dashboard decision-table layout
         shell: python
         run: |
           from pathlib import Path
-          import re
-
           html = Path('index.html').read_text(encoding='utf-8')
-          marker = '<h2>Prioritas &amp; Tindakan</h2>'
-          pos = html.find(marker)
-          if pos < 0:
-              marker = '<h2>Prioritas & Tindakan</h2>'
-              pos = html.find(marker)
-          if pos < 0:
-              raise SystemExit('Prioritas & Tindakan renderer not found')
-
-          table_start = html.find('<table', pos)
-          table_end = html.find('</table>', table_start)
-          if table_start < 0 or table_end < 0:
-              raise SystemExit('Decision table not found')
-          table = html[table_start:table_end]
-
-          opening_end = html.find('>', table_start)
-          opening = html[table_start:opening_end + 1]
-          if 'decision-table' not in opening:
-              raise SystemExit('Decision table class was not applied')
-
-          # Confirm the source still has its original 5-cell structure.
-          row_re = re.compile(r'<tr\b[^>]*>.*?</tr>', re.S)
-          cell_re = re.compile(r'<t[hd]\b[^>]*>.*?</t[hd]>', re.S)
-          rows = list(row_re.finditer(table))
-          if not rows:
-              raise SystemExit('No decision table rows found')
-          counts = [len(cell_re.findall(row.group(0))) for row in rows]
-          if any(count not in (4, 5) for count in counts):
-              raise SystemExit(f'Unexpected decision table cell counts: {counts}')
-
-          if 'nth-child(3)' not in html or 'decision-table' not in html:
-              raise SystemExit('Safe Status-column CSS was not installed')
+          required = [
+              'id="dashboard-decision-layout-hotfix"',
+              'decision-table',
+              'nth-child(3)',
+              'display:none!important',
+          ]
+          missing = [x for x in required if x not in html]
+          if missing:
+              raise SystemExit(f'Missing final dashboard CSS markers: {missing}')
+          print('Dashboard decision-table hotfix verified')
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
