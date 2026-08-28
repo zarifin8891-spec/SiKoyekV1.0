@@ -13,10 +13,18 @@
     const right=dashboard?.querySelectorAll('#dashboard-decision-panel tbody tr');
     if(!left||!right||!left.length||!right.length)return;
     const count=Math.min(left.length,right.length);
-    for(let i=0;i<count;i++){left[i].style.height='auto';right[i].style.height='auto';}
+    for(let i=0;i<count;i++){
+      left[i].style.removeProperty('height');
+      right[i].style.removeProperty('height');
+      left[i].querySelectorAll('td').forEach(cell=>cell.style.removeProperty('height'));
+      right[i].querySelectorAll('td').forEach(cell=>cell.style.removeProperty('height'));
+    }
     for(let i=0;i<count;i++){
       const h=Math.max(left[i].getBoundingClientRect().height,right[i].getBoundingClientRect().height);
-      left[i].style.height=h+'px';right[i].style.height=h+'px';
+      left[i].style.setProperty('height',h+'px','important');
+      right[i].style.setProperty('height',h+'px','important');
+      left[i].querySelectorAll('td').forEach(cell=>cell.style.setProperty('height',h+'px','important'));
+      right[i].querySelectorAll('td').forEach(cell=>cell.style.setProperty('height',h+'px','important'));
     }
   }
   window.syncSikoyekDashboardRows=syncDashboardRows;
@@ -29,17 +37,28 @@
     const d=new Date();
     const pad=n=>String(n).padStart(2,'0');
     const fmt=x=>`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;
-    const thisMonthFrom=fmt(new Date(d.getFullYear(),d.getMonth(),1));
-    const thisMonthTo=fmt(new Date(d.getFullYear(),d.getMonth()+1,0));
-    const lastMonthFrom=fmt(new Date(d.getFullYear(),d.getMonth()-1,1));
-    const lastMonthTo=fmt(new Date(d.getFullYear(),d.getMonth(),0));
-    const thisYearFrom=`${d.getFullYear()}-01-01`;
-    const thisYearTo=`${d.getFullYear()}-12-31`;
+    const fmtUTC=x=>x.toISOString().slice(0,10);
+    const local={
+      thisMonth:[fmt(new Date(d.getFullYear(),d.getMonth(),1)),fmt(new Date(d.getFullYear(),d.getMonth()+1,0))],
+      lastMonth:[fmt(new Date(d.getFullYear(),d.getMonth()-1,1)),fmt(new Date(d.getFullYear(),d.getMonth(),0))],
+      thisYear:[`${d.getFullYear()}-01-01`,`${d.getFullYear()}-12-31`]
+    };
+    const utc={
+      thisMonth:[fmtUTC(new Date(d.getFullYear(),d.getMonth(),1)),fmtUTC(new Date(d.getFullYear(),d.getMonth()+1,0))],
+      lastMonth:[fmtUTC(new Date(d.getFullYear(),d.getMonth()-1,1)),fmtUTC(new Date(d.getFullYear(),d.getMonth(),0))],
+      thisYear:[`${d.getFullYear()}-01-01`,`${d.getFullYear()}-12-31`]
+    };
     let value='';
-    if(from===thisMonthFrom&&to===thisMonthTo)value='thisMonth';
-    else if(from===lastMonthFrom&&to===lastMonthTo)value='lastMonth';
-    else if(from===thisYearFrom&&to===thisYearTo)value='thisYear';
+    for(const key of ['thisMonth','lastMonth','thisYear']){
+      const pair=local[key];
+      const legacy=utc[key];
+      if((from===pair[0]&&to===pair[1])||(from===legacy[0]&&to===legacy[1])){value=key;break}
+    }
     select.value=value;
+  }
+
+  function syncDashboardLayout(){
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{syncDashboardRows();syncPeriodPreset()}));
   }
 
   function installPeriodPresetFix(){
@@ -49,17 +68,17 @@
     if(typeof originalApply==='function'){
       window.applyPreset=function(value){
         originalApply(value);
-        requestAnimationFrame(syncPeriodPreset);
+        syncDashboardLayout();
       };
     }
     if(typeof originalClear==='function'){
       window.clearPeriod=function(){
         originalClear();
-        requestAnimationFrame(syncPeriodPreset);
+        syncDashboardLayout();
       };
     }
     window.__sikoyekPeriodPresetFixInstalled=true;
-    requestAnimationFrame(syncPeriodPreset);
+    syncDashboardLayout();
   }
 
   async function load(){
@@ -74,7 +93,7 @@
       const rows=(data||[]).map(r=>({...r,project_progress:Number(r.project_progress||0),cost_ratio:Number(r.cost_ratio||0),rap_consumption:Number(r.rap_consumption||0)})).map(r=>({...r,health:window.SiKoyekHealthEngine.evaluate(r)}));
       const sig=JSON.stringify(rows.map(r=>[r.project_code,r.health.status,r.project_progress,r.cost_ratio,r.rap_consumption]));
       const cardExists=dashboard.querySelector('#dashboard-health-panel')?.dataset.renderer==='health';
-      if(sig===lastSignature&&cardExists){requestAnimationFrame(()=>{syncDashboardRows();syncPeriodPreset()});return}
+      if(sig===lastSignature&&cardExists){syncDashboardLayout();return}
       lastSignature=sig;render(rows);
       window.dispatchEvent(new CustomEvent('sikoyek:dashboard-panel-ready',{detail:{panel:'health'}}));
     }catch(e){console.warn('Health Dashboard integration:',e)}finally{busy=false}
@@ -85,7 +104,7 @@
     const priority=[...rows].sort((a,b)=>{const rank={red:3,amber:2,green:1};return rank[b.health.level]-rank[a.health.level]||b.health.costGap-a.health.costGap}).slice(0,5);
     card.dataset.renderer='health';
     card.innerHTML=`<div class="sectiontitle"><h2>Kondisi Proyek</h2><span class="note">Progress vs Rasio Biaya & RAP Terpakai</span></div><div class="card tablecard"><div class="scroll"><table class="table"><colgroup><col style="width:45%"><col style="width:12%"><col style="width:13%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr><th>Proyek</th><th>Progress</th><th>Rasio<br>Biaya</th><th>RAP<br>Terpakai</th><th>Status</th></tr></thead><tbody>${priority.map(r=>`<tr><td><strong>${esc(r.project_code)}</strong> — ${esc(r.project_name)}</td><td>${r.project_progress.toFixed(2)}%</td><td>${r.cost_ratio.toFixed(2)}%</td><td>${r.rap_consumption.toFixed(2)}%</td><td><span class="pill ${r.health.level}">${r.health.status}</span></td></tr>`).join('')||'<tr><td colspan="5" class="empty">Belum ada data proyek.</td></tr>'}</tbody></table></div></div>`;
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{syncDashboardRows();syncPeriodPreset()}));
+    syncDashboardLayout();
   }
 
   function boot(){
@@ -94,7 +113,8 @@
     const obs=new MutationObserver(()=>{window.clearTimeout(window.__heTimer);window.__heTimer=setTimeout(()=>{installPeriodPresetFix();load()},250)});
     obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
     window.addEventListener('sikoyek:dashboard-panel-request',load);
-    window.addEventListener('resize',()=>requestAnimationFrame(syncDashboardRows));
+    window.addEventListener('sikoyek:dashboard-panel-ready',syncDashboardLayout);
+    window.addEventListener('resize',syncDashboardLayout);
     window.setInterval(load,15000);
     setTimeout(load,500);
   }
