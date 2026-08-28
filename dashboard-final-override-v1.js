@@ -1,4 +1,4 @@
-/* SiKoyek Dashboard Final Override V11 — target the visible static dashboard panels. */
+/* SiKoyek Dashboard Final Override V12 — visual authority for lower Dashboard panels. */
 (function(){
 'use strict';
 const dashboard=()=>[...document.querySelectorAll('.content')].find(x=>(x.querySelector('.top h1')?.textContent||'').trim().toLowerCase()==='dashboard');
@@ -11,7 +11,7 @@ function panels(){
  const p=d.querySelector('.dashboard-panels');
  return p?[p.querySelector('#health-engine-v1-card')||p.children[0],p.querySelector('#decision-engine-v1-card')||p.children[1]]:[];
 }
-function style(){if(document.getElementById('dashboard-final-v11-style'))return;const s=document.createElement('style');s.id='dashboard-final-v11-style';s.textContent=`
+function style(){if(document.getElementById('dashboard-final-v12-style'))return;const s=document.createElement('style');s.id='dashboard-final-v12-style';s.textContent=`
 .dashboard-panels{display:grid!important;grid-template-columns:minmax(0,40fr) minmax(0,60fr)!important;gap:14px!important;align-items:start!important}
 .dashboard-panel{min-width:0!important;min-height:0!important;height:auto!important;box-sizing:border-box!important}
 .dashboard-lower-v3-grid{display:grid!important;grid-template-columns:minmax(0,40fr) minmax(0,60fr)!important;gap:14px!important;align-items:start!important}
@@ -20,32 +20,32 @@ function style(){if(document.getElementById('dashboard-final-v11-style'))return;
 .dashboard-static-health .scroll,.dashboard-static-decision .scroll,#health-engine-v1-card .scroll,#decision-engine-v1-card .scroll{height:auto!important;max-height:none!important;overflow:hidden!important}
 .dashboard-static-health .table,.dashboard-static-decision .table,#health-engine-v1-card .table,#decision-engine-v1-card .table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important}
 .dashboard-static-health .table th,.dashboard-static-health .table td,.dashboard-static-decision .table th,.dashboard-static-decision .table td,#health-engine-v1-card .table th,#health-engine-v1-card .table td,#decision-engine-v1-card .table th,#decision-engine-v1-card .table td{box-sizing:border-box!important;min-width:0!important;vertical-align:middle!important}
+/* FINAL VISUAL REQUIREMENT: Status belongs only to the right panel. */
+.dashboard-static-health .table th:nth-child(5),.dashboard-static-health .table td:nth-child(5),#health-engine-v1-card .table th:nth-child(5),#health-engine-v1-card .table td:nth-child(5){display:none!important}
+.dashboard-static-decision .table th:nth-child(3),.dashboard-static-decision .table td:nth-child(3),#decision-engine-v1-card .table th:nth-child(3),#decision-engine-v1-card .table td:nth-child(3){display:none!important}
 .dashboard-static-health .table th{font-size:8.5px!important;line-height:1.1!important;padding:5px 9px!important}
 .dashboard-static-health .table td{padding:4px 9px!important;font-size:10.5px!important;line-height:1.16!important;white-space:normal!important}
-.dashboard-static-health .table th:nth-child(1),.dashboard-static-health .table td:nth-child(1){width:39%!important}
-.dashboard-static-health .table th:nth-child(2),.dashboard-static-health .table td:nth-child(2){width:13%!important}
-.dashboard-static-health .table th:nth-child(3),.dashboard-static-health .table td:nth-child(3){width:14%!important}
-.dashboard-static-health .table th:nth-child(4),.dashboard-static-health .table td:nth-child(4){width:19%!important}
-.dashboard-static-health .table th:nth-child(5),.dashboard-static-health .table td:nth-child(5){width:15%!important}
+.dashboard-static-health .table th:nth-child(1),.dashboard-static-health .table td:nth-child(1){width:43%!important}
+.dashboard-static-health .table th:nth-child(2),.dashboard-static-health .table td:nth-child(2){width:16%!important}
+.dashboard-static-health .table th:nth-child(3),.dashboard-static-health .table td:nth-child(3){width:18%!important}
+.dashboard-static-health .table th:nth-child(4),.dashboard-static-health .table td:nth-child(4){width:23%!important}
 .dashboard-static-health .table td:first-child{font-weight:700!important}
+#health-engine-v1-card .table th{font-size:8.5px!important;line-height:1.1!important}
+#health-engine-v1-card .table td{padding:4px 9px!important;font-size:10.5px!important;line-height:1.16!important;white-space:normal!important}
+#health-engine-v1-card .table th:nth-child(1),#health-engine-v1-card .table td:nth-child(1){width:43%!important}
+#health-engine-v1-card .table th:nth-child(2),#health-engine-v1-card .table td:nth-child(2){width:16%!important}
+#health-engine-v1-card .table th:nth-child(3),#health-engine-v1-card .table td:nth-child(3){width:18%!important}
+#health-engine-v1-card .table th:nth-child(4),#health-engine-v1-card .table td:nth-child(4){width:23%!important}
 .dashboard-static-decision .table th,.dashboard-static-decision .table td{padding:4px 9px!important;font-size:10.5px!important;line-height:1.16!important;vertical-align:middle!important;box-sizing:border-box!important;white-space:normal!important}
 .dashboard-static-decision .table th{font-size:8.5px!important;line-height:1.1!important}
-.dashboard-static-decision .table th:nth-child(1),.dashboard-static-decision .table td:nth-child(1){width:34%!important}
-.dashboard-static-decision .table th:nth-child(2),.dashboard-static-decision .table td:nth-child(2){width:16%!important}
-.dashboard-static-decision .table th:nth-child(3),.dashboard-static-decision .table td:nth-child(3){width:25%!important}
-.dashboard-static-decision .table th:nth-child(4),.dashboard-static-decision .table td:nth-child(4){width:25%!important}
-#health-engine-v1-card .table th,#health-engine-v1-card .table td,#decision-engine-v1-card .table th,#decision-engine-v1-card .table td{padding:4px 9px!important;font-size:10.5px!important;line-height:1.16!important;vertical-align:middle!important;box-sizing:border-box!important;white-space:normal!important}
-#health-engine-v1-card .table th{font-size:8.5px!important;line-height:1.1!important}
-#health-engine-v1-card .table th:nth-child(1),#health-engine-v1-card .table td:nth-child(1){width:39%!important}
-#health-engine-v1-card .table th:nth-child(2),#health-engine-v1-card .table td:nth-child(2){width:13%!important}
-#health-engine-v1-card .table th:nth-child(3),#health-engine-v1-card .table td:nth-child(3){width:14%!important}
-#health-engine-v1-card .table th:nth-child(4),#health-engine-v1-card .table td:nth-child(4){width:19%!important}
-#health-engine-v1-card .table th:nth-child(5),#health-engine-v1-card .table td:nth-child(5){width:15%!important}
-#health-engine-v1-card .table td:first-child{font-weight:700!important}
-#decision-engine-v1-card .table th:nth-child(1),#decision-engine-v1-card .table td:nth-child(1){width:34%!important}
-#decision-engine-v1-card .table th:nth-child(2),#decision-engine-v1-card .table td:nth-child(2){width:16%!important}
-#decision-engine-v1-card .table th:nth-child(3),#decision-engine-v1-card .table td:nth-child(3){width:25%!important}
-#decision-engine-v1-card .table th:nth-child(4),#decision-engine-v1-card .table td:nth-child(4){width:25%!important}
+.dashboard-static-decision .table th:nth-child(1),.dashboard-static-decision .table td:nth-child(1){width:38%!important}
+.dashboard-static-decision .table th:nth-child(2),.dashboard-static-decision .table td:nth-child(2){width:18%!important}
+.dashboard-static-decision .table th:nth-child(4),.dashboard-static-decision .table td:nth-child(4){width:20%!important}
+.dashboard-static-decision .table th:nth-child(5),.dashboard-static-decision .table td:nth-child(5){width:24%!important}
+#decision-engine-v1-card .table th:nth-child(1),#decision-engine-v1-card .table td:nth-child(1){width:38%!important}
+#decision-engine-v1-card .table th:nth-child(2),#decision-engine-v1-card .table td:nth-child(2){width:18%!important}
+#decision-engine-v1-card .table th:nth-child(4),#decision-engine-v1-card .table td:nth-child(4){width:20%!important}
+#decision-engine-v1-card .table th:nth-child(5),#decision-engine-v1-card .table td:nth-child(5){width:24%!important}
 .dashboard-static-health .table tbody tr:nth-child(odd),.dashboard-static-decision .table tbody tr:nth-child(odd),.dashboard-panel .table tbody tr:nth-child(odd){background:#fff!important}
 .dashboard-static-health .table tbody tr:nth-child(even),.dashboard-static-decision .table tbody tr:nth-child(even),.dashboard-panel .table tbody tr:nth-child(even){background:#eef4f9!important}
 .dashboard-static-health .table tbody td,.dashboard-static-decision .table tbody td,.dashboard-panel .table tbody td{border-bottom:1px solid #dfe7ef!important}
