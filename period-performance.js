@@ -8,13 +8,96 @@
     const s=document.createElement('style');
     s.id=STYLE_ID;
     s.textContent=`
-      .period-performance-section{margin-top:18px}
-      .period-performance-section .sectiontitle{margin-bottom:10px}
-      .period-performance-section .pp-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
-      .period-performance-section .pp-note{font-size:12px;color:var(--muted)}
-      .period-performance-section .pp-table{margin-top:13px}
-      @media(max-width:1100px){.period-performance-section .pp-cards{grid-template-columns:repeat(2,1fr)}}
-      @media(max-width:520px){.period-performance-section .pp-cards{grid-template-columns:1fr}}
+      /* Period Performance follows the same visual rhythm as the closed Dashboard. */
+      .period-performance-section{margin-top:16px}
+      .period-performance-section .sectiontitle{margin-bottom:8px}
+      .period-performance-section .sectiontitle h2{font-size:17px;line-height:1.2;margin:0}
+      .period-performance-section .pp-note{font-size:11px;line-height:1.2;color:var(--muted)}
+
+      .period-performance-section .pp-cards{
+        display:grid;
+        grid-template-columns:repeat(4,minmax(0,1fr));
+        gap:10px;
+      }
+      .period-performance-section .pp-cards .card.kpi{
+        height:82px;
+        min-width:0;
+        padding:13px 14px;
+        border-radius:15px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+      }
+      .period-performance-section .pp-cards .kpi .label{
+        font-size:10px;
+        line-height:1.15;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      .period-performance-section .pp-cards .kpi .value{
+        font-size:20px;
+        line-height:1.15;
+        font-weight:750;
+        margin-top:6px;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+
+      .period-performance-section .pp-table{
+        margin-top:12px;
+        border-radius:15px;
+        overflow:hidden;
+      }
+      .period-performance-section .pp-table .scroll{overflow-x:hidden}
+      .period-performance-section .pp-table .table{
+        width:100%;
+        table-layout:fixed;
+      }
+      .period-performance-section .pp-table .table th,
+      .period-performance-section .pp-table .table td{
+        box-sizing:border-box;
+        padding:10px 11px;
+        font-size:12px;
+        line-height:1.22;
+        vertical-align:middle;
+      }
+      .period-performance-section .pp-table .table th{
+        padding-top:9px;
+        padding-bottom:9px;
+        font-size:9px;
+        line-height:1.1;
+      }
+      .period-performance-section .pp-table .table th:nth-child(1),
+      .period-performance-section .pp-table .table td:nth-child(1){width:40%;text-align:left}
+      .period-performance-section .pp-table .table th:nth-child(2),
+      .period-performance-section .pp-table .table td:nth-child(2){width:17%}
+      .period-performance-section .pp-table .table th:nth-child(3),
+      .period-performance-section .pp-table .table td:nth-child(3){width:17%}
+      .period-performance-section .pp-table .table th:nth-child(4),
+      .period-performance-section .pp-table .table td:nth-child(4){width:18%}
+      .period-performance-section .pp-table .table th:nth-child(5),
+      .period-performance-section .pp-table .table td:nth-child(5){width:8%}
+      .period-performance-section .pp-table .linkbtn{
+        display:block;
+        width:100%;
+        text-align:left;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      .period-performance-section .pp-table .table tbody tr:last-child td{border-bottom:0}
+
+      @media(max-width:1100px){
+        .period-performance-section .pp-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+        .period-performance-section .pp-table .scroll{overflow-x:auto}
+        .period-performance-section .pp-table .table{min-width:760px}
+      }
+      @media(max-width:520px){
+        .period-performance-section .pp-cards{grid-template-columns:1fr}
+        .period-performance-section .pp-cards .card.kpi{height:76px}
+      }
     `;
     document.head.appendChild(s);
   }
@@ -32,9 +115,6 @@
     const page=document.getElementById('page');
     if(!page || page.querySelector('.'+SECTION_CLASS)) return;
 
-    // The dashboard panels are the stable insertion anchor. The previous
-    // implementation used health.closest('.section'), but Project Health is
-    // rendered inside .dashboard-panel and therefore has no .section parent.
     const panels=page.querySelector('.dashboard-panels');
     if(!panels) return;
 
@@ -80,8 +160,6 @@
           </div>
         </div>`;
 
-      // Put Kinerja Periode below the two dashboard panels, rather than trying
-      // to insert it relative to a non-existent .section wrapper.
       panels.after(wrap);
     }catch(e){
       try{toast(e?.message||'Gagal membaca kinerja periode')}catch(_){ }
