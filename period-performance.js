@@ -8,11 +8,11 @@
     const s=document.createElement('style');
     s.id=STYLE_ID;
     s.textContent=`
-      /* Kinerja Periode: compact two-panel layout matching the closed Dashboard. */
+      /* Kinerja Periode: compact 25/75 two-panel layout matching the closed Dashboard. */
       .period-performance-section{margin-top:16px}
       .period-performance-section .pp-layout{
         display:grid;
-        grid-template-columns:minmax(0,35%) minmax(0,65%);
+        grid-template-columns:minmax(0,25%) minmax(0,75%);
         gap:14px;
         align-items:stretch;
       }
@@ -27,61 +27,61 @@
       }
 
       .period-performance-section .pp-panel-head{
-        min-height:46px;
-        padding:14px 18px 8px;
+        min-height:42px;
+        padding:11px 14px 7px;
         display:flex;
         align-items:flex-start;
         justify-content:space-between;
-        gap:10px;
+        gap:8px;
         box-sizing:border-box;
       }
       .period-performance-section .pp-panel-head h2{
         margin:0;
-        font-size:17px;
+        font-size:15px;
         line-height:1.2;
         font-weight:800;
       }
       .period-performance-section .pp-panel-head .pp-note{
         margin:0;
-        font-size:11px;
-        line-height:1.25;
+        font-size:10px;
+        line-height:1.2;
         color:var(--muted);
         text-align:right;
         white-space:nowrap;
       }
 
-      /* Four KPI cards stacked vertically, using the same compact card rhythm as the closed Dashboard KPI row. */
+      /* Four compact KPI cards stacked vertically in the 25% panel. */
       .period-performance-section .pp-kpi-stack{
         display:grid;
         grid-template-rows:repeat(4,minmax(0,1fr));
-        gap:8px;
-        padding:8px 18px 18px;
+        gap:7px;
+        padding:7px 14px 14px;
         box-sizing:border-box;
       }
       .period-performance-section .pp-kpi{
         min-width:0;
-        min-height:60px;
-        height:60px;
-        padding:10px 13px;
+        min-height:50px;
+        height:50px;
+        padding:8px 10px;
         border:1px solid var(--border,#dce5ef);
-        border-radius:15px;
+        border-radius:12px;
         background:var(--card,#fff);
         display:flex;
         align-items:center;
-        gap:12px;
+        gap:9px;
         box-sizing:border-box;
         box-shadow:0 1px 3px rgba(15,35,60,.03);
       }
       .period-performance-section .pp-kpi-icon{
-        width:38px;
-        height:38px;
-        flex:0 0 38px;
+        width:31px;
+        height:31px;
+        flex:0 0 31px;
         border-radius:50%;
         display:grid;
         place-items:center;
         background:#eef5ff;
         color:#1465d8;
-        font-size:18px;
+        font-size:15px;
         font-weight:800;
       }
       .period-performance-section .pp-kpi:nth-child(1) .pp-kpi-icon{background:#e9f8f1;color:#0b9a65}
@@ -91,8 +91,8 @@
       .period-performance-section .pp-kpi-copy{min-width:0}
       .period-performance-section .pp-kpi .label{
         margin:0;
-        font-size:10px;
-        line-height:1.15;
+        font-size:8.5px;
+        line-height:1.1;
         font-weight:700;
         color:var(--muted);
         white-space:nowrap;
@@ -100,9 +100,9 @@
         text-overflow:ellipsis;
       }
       .period-performance-section .pp-kpi .value{
-        margin-top:4px;
-        font-size:19px;
-        line-height:1.1;
+        margin-top:3px;
+        font-size:16px;
+        line-height:1.05;
         font-weight:800;
         color:var(--text,#10213a);
         white-space:nowrap;
@@ -110,11 +110,11 @@
         text-overflow:ellipsis;
       }
 
-      .period-performance-section .pp-table-panel .pp-panel-head{padding-bottom:10px}
+      .period-performance-section .pp-table-panel .pp-panel-head{padding-bottom:8px}
       .period-performance-section .pp-table-wrap{
-        margin:0 18px 18px;
+        margin:0 14px 14px;
         border:1px solid var(--border,#dce5ef);
-        border-radius:15px;
+        border-radius:12px;
         overflow:hidden;
       }
       .period-performance-section .pp-table-wrap .scroll{overflow-x:hidden}
@@ -161,7 +161,7 @@
       @media(max-width:1100px){
         .period-performance-section .pp-layout{grid-template-columns:1fr}
         .period-performance-section .pp-kpi-stack{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:none}
-        .period-performance-section .pp-kpi{height:60px}
+        .period-performance-section .pp-kpi{height:50px}
         .period-performance-section .pp-table-wrap .scroll{overflow-x:auto}
         .period-performance-section .pp-table-wrap .table{min-width:760px}
       }
@@ -170,9 +170,9 @@
       }
       @media(max-width:520px){
         .period-performance-section .pp-kpi-stack{grid-template-columns:1fr}
-        .period-performance-section .pp-panel-head{padding-left:14px;padding-right:14px}
-        .period-performance-section .pp-kpi-stack{padding-left:14px;padding-right:14px}
-        .period-performance-section .pp-table-wrap{margin-left:14px;margin-right:14px}
+        .period-performance-section .pp-panel-head{padding-left:12px;padding-right:12px}
+        .period-performance-section .pp-kpi-stack{padding-left:12px;padding-right:12px}
+        .period-performance-section .pp-table-wrap{margin-left:12px;margin-right:12px}
       }
     `;
     document.head.appendChild(s);
