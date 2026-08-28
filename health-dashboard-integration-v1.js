@@ -5,6 +5,19 @@
   let healthClient=null,lastSignature='',busy=false;
   function esc(s){return String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
   function dashboardEl(){return [...document.querySelectorAll('.content')].find(x=>x.querySelector('.top h1')?.textContent.trim().toLowerCase()==='dashboard')}
+  function syncDashboardRows(){
+    const dashboard=dashboardEl();
+    const left=dashboard?.querySelectorAll('#dashboard-health-panel tbody tr');
+    const right=dashboard?.querySelectorAll('#dashboard-decision-panel tbody tr');
+    if(!left||!right||!left.length||!right.length)return;
+    const count=Math.min(left.length,right.length);
+    for(let i=0;i<count;i++){left[i].style.height='auto';right[i].style.height='auto';}
+    for(let i=0;i<count;i++){
+      const h=Math.max(left[i].getBoundingClientRect().height,right[i].getBoundingClientRect().height);
+      left[i].style.height=h+'px';right[i].style.height=h+'px';
+    }
+  }
+  window.syncSikoyekDashboardRows=syncDashboardRows;
   async function load(){
     if(busy||!window.SiKoyekHealthEngine||!window.supabase)return;
     const app=document.getElementById('app');if(!app||!app.querySelector('.shell'))return;
@@ -17,7 +30,7 @@
       const rows=(data||[]).map(r=>({...r,project_progress:Number(r.project_progress||0),cost_ratio:Number(r.cost_ratio||0),rap_consumption:Number(r.rap_consumption||0)})).map(r=>({...r,health:window.SiKoyekHealthEngine.evaluate(r)}));
       const sig=JSON.stringify(rows.map(r=>[r.project_code,r.health.status,r.project_progress,r.cost_ratio,r.rap_consumption]));
       const cardExists=dashboard.querySelector('#dashboard-health-panel')?.dataset.renderer==='health';
-      if(sig===lastSignature&&cardExists){return}
+      if(sig===lastSignature&&cardExists){requestAnimationFrame(syncDashboardRows);return}
       lastSignature=sig;render(rows);
       window.dispatchEvent(new CustomEvent('sikoyek:dashboard-panel-ready',{detail:{panel:'health'}}));
     }catch(e){console.warn('Health Dashboard integration:',e)}finally{busy=false}
@@ -26,13 +39,14 @@
     const dashboard=dashboardEl();const card=dashboard?.querySelector('#dashboard-health-panel');if(!card)return;
     const priority=[...rows].sort((a,b)=>{const rank={red:3,amber:2,green:1};return rank[b.health.level]-rank[a.health.level]||b.health.costGap-a.health.costGap}).slice(0,5);
     card.dataset.renderer='health';
-    card.innerHTML=`<div class="sectiontitle"><h2>Kondisi Proyek</h2><span class="note">Progress vs Rasio Biaya & RAP Terpakai</span></div><div class="card tablecard"><div class="scroll"><table class="table"><colgroup><col style="width:41%"><col style="width:12%"><col style="width:13%"><col style="width:19%"><col style="width:15%"></colgroup><thead><tr><th>Proyek</th><th>Progress</th><th>Rasio<br>Biaya</th><th>RAP<br>Terpakai</th><th>Status</th></tr></thead><tbody>${priority.map(r=>`<tr><td><strong>${esc(r.project_code)}</strong> — ${esc(r.project_name)}</td><td>${r.project_progress.toFixed(2)}%</td><td>${r.cost_ratio.toFixed(2)}%</td><td>${r.rap_consumption.toFixed(2)}%</td><td><span class="pill ${r.health.level}">${r.health.status}</span></td></tr>`).join('')||'<tr><td colspan="5" class="empty">Belum ada data proyek.</td></tr>'}</tbody></table></div></div>`;
+    card.innerHTML=`<div class="sectiontitle"><h2>Kondisi Proyek</h2><span class="note">Progress vs Rasio Biaya & RAP Terpakai</span></div><div class="card tablecard"><div class="scroll"><table class="table"><colgroup><col style="width:45%"><col style="width:12%"><col style="width:13%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr><th>Proyek</th><th>Progress</th><th>Rasio<br>Biaya</th><th>RAP<br>Terpakai</th><th>Status</th></tr></thead><tbody>${priority.map(r=>`<tr><td><strong>${esc(r.project_code)}</strong> — ${esc(r.project_name)}</td><td>${r.project_progress.toFixed(2)}%</td><td>${r.cost_ratio.toFixed(2)}%</td><td>${r.rap_consumption.toFixed(2)}%</td><td><span class="pill ${r.health.level}">${r.health.status}</span></td></tr>`).join('')||'<tr><td colspan="5" class="empty">Belum ada data proyek.</td></tr>'}</tbody></table></div></div>`;
+    requestAnimationFrame(()=>requestAnimationFrame(syncDashboardRows));
   }
   function boot(){
     const s=document.createElement('script');s.src=ENGINE_URL+'?v=3';s.onload=load;document.body.appendChild(s);
     const obs=new MutationObserver(()=>{window.clearTimeout(window.__heTimer);window.__heTimer=setTimeout(load,250)});
     obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
-    window.addEventListener('sikoyek:dashboard-panel-request',load);window.setInterval(load,15000);setTimeout(load,500);
+    window.addEventListener('sikoyek:dashboard-panel-request',load);window.addEventListener('resize',()=>requestAnimationFrame(syncDashboardRows));window.setInterval(load,15000);setTimeout(load,500);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
