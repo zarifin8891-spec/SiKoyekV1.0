@@ -59,12 +59,16 @@ jobs:
           .dashboard-panel .decision-table{width:100%;table-layout:fixed;border-collapse:collapse}
           .dashboard-panel .decision-table th,.dashboard-panel .decision-table td{white-space:normal;overflow-wrap:break-word;word-break:normal;vertical-align:middle}
           .dashboard-panel .decision-table th:nth-child(3),.dashboard-panel .decision-table td:nth-child(3){display:none!important}
-          .dashboard-panel .decision-table th:nth-child(1),.dashboard-panel .decision-table td:nth-child(1){width:38%}
-          .dashboard-panel .decision-table th:nth-child(2),.dashboard-panel .decision-table td:nth-child(2){width:18%}
-          .dashboard-panel .decision-table th:nth-child(4),.dashboard-panel .decision-table td:nth-child(4){width:22%}
+          .dashboard-panel .decision-table th:nth-child(1),.dashboard-panel .decision-table td:nth-child(1){width:42%}
+          .dashboard-panel .decision-table th:nth-child(2),.dashboard-panel .decision-table td:nth-child(2){width:15%}
+          .dashboard-panel .decision-table th:nth-child(4),.dashboard-panel .decision-table td:nth-child(4){width:21%}
           .dashboard-panel .decision-table th:nth-child(5),.dashboard-panel .decision-table td:nth-child(5){width:22%}
           .dashboard-panel .decision-table th{padding:8px 11px;font-size:9px}
-          .dashboard-panel .decision-table td{padding:10px 11px;font-size:12px;line-height:1.25}
+          .dashboard-panel .decision-table td{padding:9px 11px;font-size:11px;line-height:1.18}
+          .dashboard-panel .decision-table td:nth-child(1){padding-right:8px}
+          .dashboard-panel .decision-table td:nth-child(2){text-align:left}
+          .dashboard-panel .decision-table td:nth-child(4),.dashboard-panel .decision-table td:nth-child(5){line-height:1.18}
+          .dashboard-panel .decision-table .pill{font-size:10px;padding:4px 8px}
           </style>
           '''
 
