@@ -50,7 +50,6 @@
         white-space:nowrap;
       }
 
-      /* Four compact KPI cards stacked vertically in the 20% panel. */
       .period-performance-section .pp-kpi-stack{
         display:grid;
         grid-template-rows:repeat(4,minmax(0,1fr));
@@ -117,10 +116,11 @@
         border-radius:11px;
         overflow:hidden;
       }
-      /* Show at most six data rows; additional projects scroll vertically. */
+      /* Exactly six data rows are visible; additional projects scroll vertically. */
       .period-performance-section .pp-table-wrap .scroll{
-        height:260px;
-        max-height:260px;
+        height:220px !important;
+        max-height:220px !important;
+        min-height:220px !important;
         overflow-x:hidden;
         overflow-y:auto;
         scrollbar-width:thin;
@@ -174,7 +174,7 @@
         .period-performance-section .pp-layout{grid-template-columns:1fr}
         .period-performance-section .pp-kpi-stack{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:none}
         .period-performance-section .pp-kpi{height:46px}
-        .period-performance-section .pp-table-wrap .scroll{height:auto;max-height:none;overflow-x:auto}
+        .period-performance-section .pp-table-wrap .scroll{height:auto !important;min-height:0 !important;max-height:none !important;overflow-x:auto}
         .period-performance-section .pp-table-wrap .table{min-width:760px}
       }
       @media(max-width:720px){
