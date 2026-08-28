@@ -14,14 +14,15 @@
 
 .dashboard-panel .sectiontitle { flex: 0 0 auto; }
 
+/* Let each table use only the height its rows actually need. */
 .dashboard-panel .tablecard {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   overflow: hidden;
 }
 
 .dashboard-panel .scroll {
-  height: 100%;
+  height: auto;
   overflow: hidden;
 }
 
@@ -144,6 +145,11 @@
 #dashboard-health-panel .table tbody tr,
 #dashboard-decision-panel .table tbody tr {
   height: auto;
+}
+
+/* Period notice: reserve two visual lines without changing the surrounding layout. */
+.dashboard-period .period-note {
+  line-height: 1.25;
 }
 
 @media (max-width: 1100px) {
