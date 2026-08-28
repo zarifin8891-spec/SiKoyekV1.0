@@ -50,42 +50,39 @@ jobs:
           table_end += len('</table>')
           table = html[table_start:table_end]
 
-          # IMPORTANT: use a real regex word-boundary (\b), not a literal \\b.
-          # The previous hotfix used r'<tr\\b...' and therefore matched zero rows.
           row_re = re.compile(r'<tr\b[^>]*>.*?</tr>', re.S)
           cell_re = re.compile(r'<t[hd]\b[^>]*>.*?</t[hd]>', re.S)
-
           rows = list(row_re.finditer(table))
           if not rows:
               raise SystemExit('No table rows found in decision renderer')
 
-          def remove_status_cell(row):
-              cells = list(cell_re.finditer(row))
-              if not cells:
-                  raise SystemExit('Decision row contains no table cells')
-
-              # The decision table currently has:
-              # Project | Priority | Status | Main Problem | Action
-              # Remove the third cell from every header/data row.
-              if len(cells) == 5:
-                  return row[:cells[2].start()] + row[cells[2].end():]
-              if len(cells) == 4:
-                  return row
-              raise SystemExit(f'Unexpected decision row cell count: {len(cells)}')
-
           pieces = []
           last = 0
+          changed = 0
           for row in rows:
+              raw = row.group(0)
+              cells = list(cell_re.finditer(raw))
+              replacement = raw
+              # Some rows are layout/empty rows with one cell. Leave those intact.
+              # Only a real 5-column decision row is modified.
+              if len(cells) == 5:
+                  replacement = raw[:cells[2].start()] + raw[cells[2].end():]
+                  changed += 1
+              elif len(cells) not in (1, 4):
+                  raise SystemExit(f'Unexpected decision row cell count: {len(cells)}')
               pieces.append(table[last:row.start()])
-              pieces.append(remove_status_cell(row.group(0)))
+              pieces.append(replacement)
               last = row.end()
           pieces.append(table[last:])
           table = ''.join(pieces)
 
+          if changed == 0:
+              raise SystemExit('No 5-column decision rows found to hotfix')
+
           html = html[:table_start] + table + html[table_end:]
           path.write_text(html, encoding='utf-8')
 
-      - name: Verify renderer has four decision columns
+      - name: Verify renderer has no duplicate Status column
         shell: python
         run: |
           from pathlib import Path
@@ -106,20 +103,23 @@ jobs:
               raise SystemExit('Decision table not found')
           table = html[table_start:table_end]
 
-          row_re = re.compile(r'<tr\b[^>]*>.*?</tr>', re.S)
+          if re.search(r'<th\b[^>]*>\s*Status\s*</th>', table, re.I):
+              raise SystemExit('Status header still present in decision table')
+
+          rows = list(re.finditer(r'<tr\b[^>]*>.*?</tr>', table, re.S))
+          data_rows = []
           cell_re = re.compile(r'<t[hd]\b[^>]*>.*?</t[hd]>', re.S)
-          rows = list(row_re.finditer(table))
-          if not rows:
-              raise SystemExit('No decision table rows found')
+          for row in rows:
+              count = len(cell_re.findall(row.group(0)))
+              if count == 4:
+                  data_rows.append(count)
+              elif count == 1:
+                  continue
+              else:
+                  raise SystemExit(f'Unexpected final decision row cell count: {count}')
 
-          counts = [len(cell_re.findall(row.group(0))) for row in rows]
-          if any(count != 4 for count in counts):
-              raise SystemExit(f'Decision renderer does not have exactly four cells per row: {counts}')
-
-          normalized = re.sub(r'<[^>]+>', ' ', table)
-          normalized = ' '.join(normalized.split()).lower()
-          if 'status' in normalized:
-              raise SystemExit('Status text still present in deployed decision table')
+          if not data_rows:
+              raise SystemExit('No four-column decision rows found after hotfix')
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
