@@ -50,24 +50,37 @@ jobs:
           table_end += len('</table>')
           table = html[table_start:table_end]
 
-          row_re = re.compile(r'<tr\\b[^>]*>.*?</tr>', re.S)
-          cell_re = re.compile(r'<t[hd]\\b[^>]*>.*?</t[hd]>', re.S)
-
-          def remove_third(row):
-              cells = list(cell_re.finditer(row))
-              if len(cells) >= 5:
-                  return row[:cells[2].start()] + row[cells[2].end():]
-              return row
+          # IMPORTANT: use a real regex word-boundary (\b), not a literal \\b.
+          # The previous hotfix used r'<tr\\b...' and therefore matched zero rows.
+          row_re = re.compile(r'<tr\b[^>]*>.*?</tr>', re.S)
+          cell_re = re.compile(r'<t[hd]\b[^>]*>.*?</t[hd]>', re.S)
 
           rows = list(row_re.finditer(table))
-          if rows:
-              pieces=[]; last=0
-              for row in rows:
-                  pieces.append(table[last:row.start()])
-                  pieces.append(remove_third(row.group(0)))
-                  last=row.end()
-              pieces.append(table[last:])
-              table=''.join(pieces)
+          if not rows:
+              raise SystemExit('No table rows found in decision renderer')
+
+          def remove_status_cell(row):
+              cells = list(cell_re.finditer(row))
+              if not cells:
+                  raise SystemExit('Decision row contains no table cells')
+
+              # The decision table currently has:
+              # Project | Priority | Status | Main Problem | Action
+              # Remove the third cell from every header/data row.
+              if len(cells) == 5:
+                  return row[:cells[2].start()] + row[cells[2].end():]
+              if len(cells) == 4:
+                  return row
+              raise SystemExit(f'Unexpected decision row cell count: {len(cells)}')
+
+          pieces = []
+          last = 0
+          for row in rows:
+              pieces.append(table[last:row.start()])
+              pieces.append(remove_status_cell(row.group(0)))
+              last = row.end()
+          pieces.append(table[last:])
+          table = ''.join(pieces)
 
           html = html[:table_start] + table + html[table_end:]
           path.write_text(html, encoding='utf-8')
@@ -76,13 +89,37 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
-          html=Path('index.html').read_text(encoding='utf-8')
-          pos=html.find('<h2>Prioritas &amp; Tindakan</h2>')
-          table_start=html.find('<table',pos)
-          table_end=html.find('</table>',table_start)
-          table=html[table_start:table_end]
-          if '<th>Status</th>' in table or '<th>\nStatus\n</th>' in table:
-              raise SystemExit('Status column still present in deployed decision table')
+          import re
+
+          html = Path('index.html').read_text(encoding='utf-8')
+          marker = '<h2>Prioritas &amp; Tindakan</h2>'
+          pos = html.find(marker)
+          if pos < 0:
+              marker = '<h2>Prioritas & Tindakan</h2>'
+              pos = html.find(marker)
+          if pos < 0:
+              raise SystemExit('Prioritas & Tindakan renderer not found')
+
+          table_start = html.find('<table', pos)
+          table_end = html.find('</table>', table_start)
+          if table_start < 0 or table_end < 0:
+              raise SystemExit('Decision table not found')
+          table = html[table_start:table_end]
+
+          row_re = re.compile(r'<tr\b[^>]*>.*?</tr>', re.S)
+          cell_re = re.compile(r'<t[hd]\b[^>]*>.*?</t[hd]>', re.S)
+          rows = list(row_re.finditer(table))
+          if not rows:
+              raise SystemExit('No decision table rows found')
+
+          counts = [len(cell_re.findall(row.group(0))) for row in rows]
+          if any(count != 4 for count in counts):
+              raise SystemExit(f'Decision renderer does not have exactly four cells per row: {counts}')
+
+          normalized = re.sub(r'<[^>]+>', ' ', table)
+          normalized = ' '.join(normalized.split()).lower()
+          if 'status' in normalized:
+              raise SystemExit('Status text still present in deployed decision table')
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
