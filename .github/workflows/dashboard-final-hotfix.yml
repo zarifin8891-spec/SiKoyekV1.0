@@ -1,98 +1,11 @@
-name: Dashboard Final Hotfix
+name: Retired Dashboard Final Hotfix
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: dashboard-final-hotfix
-  cancel-in-progress: true
-
+# Retained for traceability only. It must not patch or publish a Pages artifact.
 jobs:
-  hotfix:
-    if: contains(github.event.head_commit.message, '[dashboard-final-hotfix]')
+  retired:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Apply final decision panel layout
-        shell: python
-        run: |
-          from pathlib import Path
-          import re
-
-          path = Path('index.html')
-          html = path.read_text(encoding='utf-8')
-
-          marker = '<h2>Prioritas &amp; Tindakan</h2>'
-          pos = html.find(marker)
-          if pos < 0:
-              marker = '<h2>Prioritas & Tindakan</h2>'
-              pos = html.find(marker)
-          if pos < 0:
-              raise SystemExit('Decision panel heading not found')
-
-          table_start = html.find('<table', pos)
-          table_end = html.find('</table>', table_start)
-          if table_start < 0 or table_end < 0:
-              raise SystemExit('Decision table not found')
-
-          opening_end = html.find('>', table_start)
-          opening = html[table_start:opening_end + 1]
-          if 'decision-table' not in opening:
-              if 'class=' in opening:
-                  opening = opening.replace('class="', 'class="decision-table ', 1)
-              else:
-                  opening = opening[:-1] + ' class="decision-table">'
-              html = html[:table_start] + opening + html[opening_end + 1:]
-
-          css = '''
-          <style id="dashboard-final-hotfix">
-          .dashboard-panel .decision-table{width:100%;table-layout:fixed;border-collapse:collapse}
-          .dashboard-panel .decision-table th,.dashboard-panel .decision-table td{white-space:normal;overflow-wrap:break-word;word-break:normal;vertical-align:middle}
-          .dashboard-panel .decision-table th:nth-child(3),.dashboard-panel .decision-table td:nth-child(3){display:none!important}
-          .dashboard-panel .decision-table th:nth-child(1),.dashboard-panel .decision-table td:nth-child(1){width:42%}
-          .dashboard-panel .decision-table th:nth-child(2),.dashboard-panel .decision-table td:nth-child(2){width:15%}
-          .dashboard-panel .decision-table th:nth-child(4),.dashboard-panel .decision-table td:nth-child(4){width:21%}
-          .dashboard-panel .decision-table th:nth-child(5),.dashboard-panel .decision-table td:nth-child(5){width:22%}
-          .dashboard-panel .decision-table th{padding:8px 11px;font-size:9px}
-          .dashboard-panel .decision-table td{padding:9px 11px;font-size:11px;line-height:1.18}
-          .dashboard-panel .decision-table td:nth-child(1){padding-right:8px}
-          .dashboard-panel .decision-table td:nth-child(2){text-align:left}
-          .dashboard-panel .decision-table td:nth-child(4),.dashboard-panel .decision-table td:nth-child(5){line-height:1.18}
-          .dashboard-panel .decision-table .pill{font-size:10px;padding:4px 8px}
-          </style>
-          '''
-
-          html = re.sub(r'<style id="dashboard-final-hotfix">.*?</style>', '', html, flags=re.S)
-          html = html.replace('</head>', css + '\n</head>', 1)
-          path.write_text(html, encoding='utf-8')
-
-      - name: Verify final layout patch
-        shell: python
-        run: |
-          from pathlib import Path
-          html = Path('index.html').read_text(encoding='utf-8')
-          assert 'id="dashboard-final-hotfix"' in html
-          assert 'decision-table' in html
-          assert 'nth-child(3)' in html
-          print('Dashboard final hotfix verified')
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload site
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-
-      - name: Deploy site
-        uses: actions/deploy-pages@v4
+      - run: echo "Retired: canonical Dashboard changes belong in source files."

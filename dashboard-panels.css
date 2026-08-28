@@ -1,0 +1,70 @@
+/* Canonical Dashboard lower-panel layout. The table structures are defined by
+   the health and decision renderers; this file only presents them. */
+.dashboard-panels {
+  display: grid;
+  grid-template-columns: minmax(0, 40fr) minmax(0, 60fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.dashboard-panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-panel .sectiontitle { flex: 0 0 auto; }
+
+.dashboard-panel .tablecard {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dashboard-panel .scroll {
+  height: 100%;
+  overflow: hidden;
+}
+
+.dashboard-panel .table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.dashboard-panel .table th,
+.dashboard-panel .table td {
+  box-sizing: border-box;
+  padding: 6px 9px;
+  font-size: 11px;
+  line-height: 1.18;
+  vertical-align: middle;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.dashboard-panel .table th {
+  font-size: 9px;
+  line-height: 1.1;
+}
+
+#dashboard-health-panel .linkbtn,
+#dashboard-decision-panel .linkbtn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+#dashboard-decision-panel td { vertical-align: top; }
+
+.dashboard-panel .table tbody tr:nth-of-type(odd) { background: #fff; }
+.dashboard-panel .table tbody tr:nth-of-type(even) { background: #eef4f9; }
+.dashboard-panel .table tbody td { border-bottom: 1px solid #dfe7ef; }
+.dashboard-panel .table tbody tr:last-child td { border-bottom: 0; }
+
+@media (max-width: 1100px) {
+  .dashboard-panels { grid-template-columns: 1fr; }
+  .dashboard-panel .scroll { overflow-x: auto; }
+}

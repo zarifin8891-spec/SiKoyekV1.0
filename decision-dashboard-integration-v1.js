@@ -14,21 +14,18 @@
       if(error)throw error;
       const rows=(data||[]).map(r=>({...r,project_progress:Number(r.project_progress||0),cost_ratio:Number(r.cost_ratio||0),rap_consumption:Number(r.rap_consumption||0)})).map(r=>{const health=window.SiKoyekHealthEngine.evaluate(r);return {...r,health,decision:window.SiKoyekDecisionEngine.evaluate(r,health)}});
       const sig=JSON.stringify(rows.map(r=>[r.project_code,r.decision.priority,r.decision.action,r.project_progress,r.cost_ratio,r.rap_consumption]));
-      if(sig===lastSignature&&document.getElementById('decision-engine-v1-card'))return;
+      if(sig===lastSignature&&dashboard.querySelector('#dashboard-decision-panel')?.dataset.renderer==='decision')return;
       lastSignature=sig;render(dashboard,rows);
       window.dispatchEvent(new CustomEvent('sikoyek:dashboard-panel-ready',{detail:{panel:'decision'}}));
     }catch(e){console.warn('Decision Dashboard integration:',e)}finally{busy=false}
   }
   function render(dashboard,rows){
-    const panels=dashboard.querySelector('.dashboard-panels');
-    const target=panels?.children?.[1];
+    const target=dashboard.querySelector('#dashboard-decision-panel');
     if(!target)return;
     const rank={TINGGI:3,SEDANG:2,RENDAH:1};
     const priority=[...rows].sort((a,b)=>rank[b.decision.priority]-rank[a.decision.priority]||b.decision.costGap-a.decision.costGap).slice(0,5);
-    target.id='decision-engine-v1-card';
-    target.className='dashboard-panel section';
-    target.innerHTML=`<div class="sectiontitle"><h2>Prioritas & Tindakan</h2><span class="note">Rekomendasi berbasis Kondisi Proyek</span></div><div class="card tablecard de-table-card"><div class="scroll"><table class="table"><thead><tr><th>Proyek</th><th>Prioritas</th><th>Masalah<br>Utama</th><th>Tindakan</th></tr></thead><tbody>${priority.map(r=>`<tr><td><strong>${esc(r.project_code)}</strong> — ${esc(r.project_name)}</td><td><span class="pill ${r.decision.priority==='TINGGI'?'red':r.decision.priority==='SEDANG'?'amber':'green'}">${r.decision.priority}</span></td><td>${esc(r.decision.reason)}</td><td>${esc(r.decision.action)}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Belum ada data proyek.</td></tr>'}</tbody></table></div></div>`;
-    const style=document.createElement('style');style.textContent='#decision-engine-v1-card .de-table-card{overflow:hidden}#decision-engine-v1-card .table td{white-space:normal;vertical-align:middle}#decision-engine-v1-card .table th{vertical-align:middle}#decision-engine-v1-card .table td:first-child{min-width:150px}#decision-engine-v1-card .table td:nth-child(3){min-width:150px}#decision-engine-v1-card .table td:nth-child(4){min-width:160px}@media(max-width:780px){#decision-engine-v1-card .table td{min-width:0!important}}';target.appendChild(style);
+    target.dataset.renderer='decision';
+    target.innerHTML=`<div class="sectiontitle"><h2>Prioritas & Tindakan</h2><span class="note">Rekomendasi berbasis Kondisi Proyek</span></div><div class="card tablecard"><div class="scroll"><table class="table"><colgroup><col style="width:34%"><col style="width:16%"><col style="width:25%"><col style="width:25%"></colgroup><thead><tr><th>Proyek</th><th>Prioritas</th><th>Masalah<br>Utama</th><th>Tindakan</th></tr></thead><tbody>${priority.map(r=>`<tr><td><strong>${esc(r.project_code)}</strong> — ${esc(r.project_name)}</td><td><span class="pill ${r.decision.priority==='TINGGI'?'red':r.decision.priority==='SEDANG'?'amber':'green'}">${r.decision.priority}</span></td><td>${esc(r.decision.reason)}</td><td>${esc(r.decision.action)}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Belum ada data proyek.</td></tr>'}</tbody></table></div></div>`;
   }
   function boot(){
     const s=document.createElement('script');s.src='./project-decision-engine-v1.js?v=3';document.body.appendChild(s);

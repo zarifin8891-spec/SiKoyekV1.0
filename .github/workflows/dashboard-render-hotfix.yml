@@ -1,103 +1,11 @@
-name: Dashboard Render Hotfix
+name: Retired Dashboard Render Hotfix
 
 on:
-  workflow_run:
-    workflows: ["Deploy SiKoyek V1.0"]
-    types: [completed]
-    branches: [main]
+  workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
+# Retained for traceability only. Publishing is exclusively owned by pages.yml.
 jobs:
-  hotfix:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  retired:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
     steps:
-      - name: Checkout deployed source
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Apply safe Dashboard decision-table layout fix
-        shell: python
-        run: |
-          from pathlib import Path
-          import re
-
-          path = Path('index.html')
-          html = path.read_text(encoding='utf-8')
-          marker = '<h2>Prioritas &amp; Tindakan</h2>'
-          pos = html.find(marker)
-          if pos < 0:
-              marker = '<h2>Prioritas & Tindakan</h2>'
-              pos = html.find(marker)
-          if pos < 0:
-              raise SystemExit('Prioritas & Tindakan renderer not found')
-
-          table_start = html.find('<table', pos)
-          table_end = html.find('</table>', table_start)
-          if table_start < 0 or table_end < 0:
-              raise SystemExit('Decision table not found')
-
-          opening_end = html.find('>', table_start)
-          opening = html[table_start:opening_end + 1]
-          if 'decision-table' not in opening:
-              if 'class=' in opening:
-                  opening = opening.replace('class="', 'class="decision-table ', 1)
-              else:
-                  opening = opening[:-1] + ' class="decision-table">'
-              html = html[:table_start] + opening + html[opening_end + 1:]
-
-          css = '''
-          <style id="dashboard-decision-layout-hotfix">
-          .dashboard-panel .decision-table{width:100%;table-layout:fixed;border-collapse:collapse}
-          .dashboard-panel .decision-table th,.dashboard-panel .decision-table td{white-space:normal;overflow-wrap:break-word;word-break:normal;vertical-align:middle}
-          .dashboard-panel .decision-table th:nth-child(3),.dashboard-panel .decision-table td:nth-child(3){display:none!important}
-          .dashboard-panel .decision-table th:nth-child(1),.dashboard-panel .decision-table td:nth-child(1){width:38%}
-          .dashboard-panel .decision-table th:nth-child(2),.dashboard-panel .decision-table td:nth-child(2){width:18%}
-          .dashboard-panel .decision-table th:nth-child(4),.dashboard-panel .decision-table td:nth-child(4){width:22%}
-          .dashboard-panel .decision-table th:nth-child(5),.dashboard-panel .decision-table td:nth-child(5){width:22%}
-          .dashboard-panel .decision-table th{padding:8px 11px;font-size:9px}
-          .dashboard-panel .decision-table td{padding:10px 11px;font-size:12px;line-height:1.25}
-          </style>
-          '''
-          html = re.sub(r'<style id="dashboard-decision-layout-hotfix">.*?</style>', '', html, flags=re.S)
-          html = html.replace('</head>', css + '\n</head>', 1)
-          path.write_text(html, encoding='utf-8')
-
-      - name: Verify safe Dashboard decision-table layout
-        shell: python
-        run: |
-          from pathlib import Path
-          html = Path('index.html').read_text(encoding='utf-8')
-          required = [
-              'id="dashboard-decision-layout-hotfix"',
-              'decision-table',
-              'nth-child(3)',
-              'display:none!important',
-          ]
-          missing = [x for x in required if x not in html]
-          if missing:
-              raise SystemExit(f'Missing final dashboard CSS markers: {missing}')
-          print('Dashboard decision-table hotfix verified')
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload hotfixed site
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-
-      - name: Deploy hotfixed site
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - run: echo "Retired: Dashboard rendering is deployed only by pages.yml."
