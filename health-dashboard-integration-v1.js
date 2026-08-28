@@ -23,9 +23,9 @@
 
   function syncPeriodPreset(){
     const select=document.getElementById('periodPreset');
-    if(!select || !window.state?.period)return;
-    const from=window.state.period.from||'';
-    const to=window.state.period.to||'';
+    if(!select || typeof state==='undefined' || !state.period)return;
+    const from=state.period.from||'';
+    const to=state.period.to||'';
     const d=new Date();
     const pad=n=>String(n).padStart(2,'0');
     const fmt=x=>`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;
