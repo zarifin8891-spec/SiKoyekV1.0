@@ -1,60 +1,79 @@
-/* SiKoyek Dashboard Final Override V13 — equal-height lower dashboard panels. */
+/* SiKoyek Dashboard Final Override V14 — safe CSS-only layout override. */
 (function(){
 'use strict';
-const dashboard=()=>[...document.querySelectorAll('.content')].find(x=>(x.querySelector('.top h1')?.textContent||'').trim().toLowerCase()==='dashboard');
-function panels(){
- const d=dashboard();
- if(!d)return [];
- const staticHealth=d.querySelector('.dashboard-static-health');
- const staticDecision=d.querySelector('.dashboard-static-decision');
- if(staticHealth||staticDecision)return [staticHealth,staticDecision];
- const p=d.querySelector('.dashboard-panels');
- return p?[p.querySelector('#health-engine-v1-card')||p.children[0],p.querySelector('#decision-engine-v1-card')||p.children[1]]:[];
-}
-function style(){if(document.getElementById('dashboard-final-v13-style'))return;const s=document.createElement('style');s.id='dashboard-final-v13-style';s.textContent=`
+function addStyle(){
+ if(document.getElementById('dashboard-final-v14-style'))return;
+ const s=document.createElement('style');s.id='dashboard-final-v14-style';
+ s.textContent=`
+/* KPI: five financial/progress cards + three health cards */
+.dashboard-kpis{display:grid!important;grid-template-columns:repeat(5,minmax(0,1.25fr)) repeat(3,minmax(90px,.75fr))!important;gap:10px!important;align-items:stretch!important}
+.dashboard-kpi{min-width:0!important;height:96px!important;padding:14px!important;box-sizing:border-box!important}
+.dashboard-kpi-main{min-width:0!important;flex:1 1 auto!important}
+.dashboard-kpi .label{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:10px!important}
+.dashboard-kpi .value{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:20px!important;line-height:1.15!important}
+.dashboard-status{min-width:0!important;height:96px!important;box-sizing:border-box!important;padding:14px!important}
+.dashboard-status .label{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+
+/* Lower panels: equal-height cards, no DOM/cell deletion */
 .dashboard-panels{display:grid!important;grid-template-columns:minmax(0,40fr) minmax(0,60fr)!important;gap:14px!important;align-items:stretch!important}
-.dashboard-panel{min-width:0!important;min-height:0!important;height:100%!important;box-sizing:border-box!important}
-.dashboard-lower-v3-grid{display:grid!important;grid-template-columns:minmax(0,40fr) minmax(0,60fr)!important;gap:14px!important;align-items:stretch!important}
-.dashboard-static-health,.dashboard-static-decision{min-width:0!important;min-height:0!important;height:100%!important;box-sizing:border-box!important}
-.dashboard-static-health .tablecard,.dashboard-static-decision .tablecard,#health-engine-v1-card .tablecard,#decision-engine-v1-card .tablecard{min-height:0!important;max-height:none!important;overflow:hidden!important;box-sizing:border-box!important}
-.dashboard-static-health .scroll,.dashboard-static-decision .scroll,#health-engine-v1-card .scroll,#decision-engine-v1-card .scroll{height:auto!important;max-height:none!important;overflow:hidden!important}
-.dashboard-static-health .table,.dashboard-static-decision .table,#health-engine-v1-card .table,#decision-engine-v1-card .table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important}
-.dashboard-static-health .table th,.dashboard-static-health .table td,.dashboard-static-decision .table th,.dashboard-static-decision .table td,#health-engine-v1-card .table th,#health-engine-v1-card .table td,#decision-engine-v1-card .table th,#decision-engine-v1-card .table td{box-sizing:border-box!important;min-width:0!important;vertical-align:middle!important}
-.dashboard-static-health .table th{font-size:8.5px!important;line-height:1.1!important;padding:5px 9px!important}
-.dashboard-static-health .table td{padding:4px 9px!important;font-size:10.5px!important;line-height:1.16!important;white-space:normal!important}
-.dashboard-static-health .table th:nth-child(1),.dashboard-static-health .table td:nth-child(1){width:43%!important}
-.dashboard-static-health .table th:nth-child(2),.dashboard-static-health .table td:nth-child(2){width:16%!important}
-.dashboard-static-health .table th:nth-child(3),.dashboard-static-health .table td:nth-child(3){width:18%!important}
-.dashboard-static-health .table th:nth-child(4),.dashboard-static-health .table td:nth-child(4){width:23%!important}
-.dashboard-static-health .table td:first-child{font-weight:700!important}
-#health-engine-v1-card .table th{font-size:8.5px!important;line-height:1.1!important}
-#health-engine-v1-card .table td{padding:4px 9px!important;font-size:10.5px!important;line-height:1.16!important;white-space:normal!important}
-#health-engine-v1-card .table th:nth-child(1),#health-engine-v1-card .table td:nth-child(1){width:43%!important}
-#health-engine-v1-card .table th:nth-child(2),#health-engine-v1-card .table td:nth-child(2){width:16%!important}
-#health-engine-v1-card .table th:nth-child(3),#health-engine-v1-card .table td:nth-child(3){width:18%!important}
-#health-engine-v1-card .table th:nth-child(4),#health-engine-v1-card .table td:nth-child(4){width:23%!important}
-.dashboard-static-decision .table th,.dashboard-static-decision .table td{padding:4px 9px!important;font-size:10.5px!important;line-height:1.16!important;vertical-align:middle!important;box-sizing:border-box!important;white-space:normal!important}
-.dashboard-static-decision .table th{font-size:8.5px!important;line-height:1.1!important}
-.dashboard-static-decision .table th:nth-child(1),.dashboard-static-decision .table td:nth-child(1){width:38%!important}
-.dashboard-static-decision .table th:nth-child(2),.dashboard-static-decision .table td:nth-child(2){width:18%!important}
-.dashboard-static-decision .table th:nth-child(4),.dashboard-static-decision .table td:nth-child(4){width:20%!important}
-.dashboard-static-decision .table th:nth-child(5),.dashboard-static-decision .table td:nth-child(5){width:24%!important}
-#decision-engine-v1-card .table th:nth-child(1),#decision-engine-v1-card .table td:nth-child(1){width:38%!important}
-#decision-engine-v1-card .table th:nth-child(2),#decision-engine-v1-card .table td:nth-child(2){width:18%!important}
-#decision-engine-v1-card .table th:nth-child(4),#decision-engine-v1-card .table td:nth-child(4){width:20%!important}
-#decision-engine-v1-card .table th:nth-child(5),#decision-engine-v1-card .table td:nth-child(5){width:24%!important}
-.dashboard-static-health .table tbody tr:nth-child(odd),.dashboard-static-decision .table tbody tr:nth-child(odd),.dashboard-panel .table tbody tr:nth-child(odd){background:#fff!important}
-.dashboard-static-health .table tbody tr:nth-child(even),.dashboard-static-decision .table tbody tr:nth-child(even),.dashboard-panel .table tbody tr:nth-child(even){background:#eef4f9!important}
-.dashboard-static-health .table tbody td,.dashboard-static-decision .table tbody td,.dashboard-panel .table tbody td{border-bottom:1px solid #dfe7ef!important}
-.dashboard-static-health .table tbody tr:last-child td,.dashboard-static-decision .table tbody tr:last-child td,.dashboard-panel .table tbody tr:last-child td{border-bottom:0!important}
-@media(max-width:1100px){.dashboard-panels,.dashboard-lower-v3-grid{grid-template-columns:1fr!important}}
+.dashboard-panel{min-width:0!important;display:flex!important;flex-direction:column!important;align-self:stretch!important;height:auto!important;min-height:0!important}
+.dashboard-panel .sectiontitle{flex:0 0 auto!important}
+.dashboard-panel .tablecard{flex:1 1 auto!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:hidden!important}
+.dashboard-panel .scroll{height:100%!important;max-height:none!important;overflow:hidden!important}
+.dashboard-panel .table{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important}
+.dashboard-panel .table th,.dashboard-panel .table td{box-sizing:border-box!important;vertical-align:middle!important;min-width:0!important}
+
+/* Left panel */
+.dashboard-panel:first-child .table th{font-size:9px!important;line-height:1.1!important;padding:7px 9px!important}
+.dashboard-panel:first-child .table td{font-size:11px!important;line-height:1.18!important;padding:6px 9px!important;white-space:normal!important}
+.dashboard-panel:first-child .table th:nth-child(1),.dashboard-panel:first-child .table td:nth-child(1){width:41%!important;text-align:left!important}
+.dashboard-panel:first-child .table th:nth-child(2),.dashboard-panel:first-child .table td:nth-child(2){width:13%!important}
+.dashboard-panel:first-child .table th:nth-child(3),.dashboard-panel:first-child .table td:nth-child(3){width:14%!important}
+.dashboard-panel:first-child .table th:nth-child(4),.dashboard-panel:first-child .table td:nth-child(4){width:17%!important}
+.dashboard-panel:first-child .table th:nth-child(5),.dashboard-panel:first-child .table td:nth-child(5){width:15%!important}
+.dashboard-panel:first-child .table td:first-child .linkbtn{display:block!important;width:100%!important;text-align:left!important;white-space:normal!important;overflow-wrap:anywhere!important}
+
+/* Right decision panel: visually hide Status column, but preserve every source cell */
+.dashboard-panel:last-child .table th,.dashboard-panel:last-child .table td{font-size:11px!important;line-height:1.18!important;padding:6px 9px!important;white-space:normal!important;overflow-wrap:break-word!important}
+.dashboard-panel:last-child .table th:nth-child(3),.dashboard-panel:last-child .table td:nth-child(3){display:none!important}
+.dashboard-panel:last-child .table th:nth-child(1),.dashboard-panel:last-child .table td:nth-child(1){width:36%!important;text-align:left!important}
+.dashboard-panel:last-child .table th:nth-child(2),.dashboard-panel:last-child .table td:nth-child(2){width:16%!important}
+.dashboard-panel:last-child .table th:nth-child(4),.dashboard-panel:last-child .table td:nth-child(4){width:24%!important}
+.dashboard-panel:last-child .table th:nth-child(5),.dashboard-panel:last-child .table td:nth-child(5){width:24%!important}
+.dashboard-panel:last-child .table td:first-child .linkbtn{display:block!important;width:100%!important;text-align:left!important;white-space:normal!important;overflow-wrap:anywhere!important}
+.dashboard-panel .table tbody tr:nth-child(odd){background:#fff!important}
+.dashboard-panel .table tbody tr:nth-child(even){background:#eef4f9!important}
+.dashboard-panel .table tbody td{border-bottom:1px solid #dfe7ef!important}
+.dashboard-panel .table tbody tr:last-child td{border-bottom:0!important}
+
+@media(max-width:1250px){
+ .dashboard-kpis{grid-template-columns:repeat(5,minmax(0,1fr)) repeat(3,minmax(82px,.7fr))!important}
+ .dashboard-kpi,.dashboard-status{padding:11px 10px!important}
+ .dashboard-kpi .value{font-size:18px!important}
+}
+@media(max-width:1100px){
+ .dashboard-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ .dashboard-panels{grid-template-columns:1fr!important}
+ .dashboard-panel{display:flex!important}
+ .dashboard-panel .tablecard{flex:none!important}
+ .dashboard-panel .scroll{height:auto!important;overflow:hidden!important}
+}
+@media(max-width:780px){.dashboard-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}.dashboard-kpi,.dashboard-status{height:82px!important}.dashboard-panel .scroll{overflow-x:auto!important}}
 `;
-document.head.appendChild(s)}
-function normalizeHealth(hp){const t=hp?.querySelector('.table');if(!t)return;const cg=t.querySelector('colgroup');if(cg)cg.remove();const hr=t.querySelector('thead tr');if(hr){while(hr.children.length>5)hr.lastElementChild.remove();if(hr.children.length===6)hr.children[1].remove()}t.querySelectorAll('tbody tr').forEach(tr=>{if(tr.children.length>=6)tr.children[1].remove();while(tr.children.length>5)tr.lastElementChild.remove()})}
-function normalizeDecision(dp){const t=dp?.querySelector('.table');if(!t)return;const hr=t.querySelector('thead tr');if(hr){const cells=[...hr.children];if(cells.length>=5){const status=[...cells].findIndex(x=>(x.textContent||'').trim().toLowerCase()==='status');if(status>=0)cells[status].remove()}}t.querySelectorAll('tbody tr').forEach(tr=>{const cells=[...tr.children];const statusCell=cells.findIndex(x=>(x.textContent||'').trim().toLowerCase()==='sehat');if(cells.length>=5){if(statusCell>=0)cells[statusCell].remove();else if(cells.length===5)cells[2].remove()}while(tr.children.length>4)tr.lastElementChild.remove()})}
-function labels(hp,dp){if(hp){const h=hp.querySelector('.sectiontitle h2'),n=hp.querySelector('.sectiontitle .note');if(h)h.textContent='Kondisi Proyek';if(n)n.textContent='Progress vs Rasio Biaya & RAP Terpakai';const r=hp.querySelector('thead tr')?.children;if(r){if(r[0])r[0].textContent='Proyek';if(r[1])r[1].textContent='Progress';if(r[2])r[2].innerHTML='Rasio<br>Biaya';if(r[3])r[3].innerHTML='RAP<br>Terpakai';if(r[4])r[4].textContent='Status'}}if(dp){const h=dp.querySelector('.sectiontitle h2'),n=dp.querySelector('.sectiontitle .note');if(h)h.textContent='Prioritas & Tindakan';if(n)n.textContent='Rekomendasi berbasis Kondisi Proyek';const r=dp.querySelector('thead tr')?.children;if(r){if(r[0])r[0].textContent='Proyek';if(r[1])r[1].textContent='Prioritas';if(r[2])r[2].innerHTML='Masalah<br>Utama';if(r[3])r[3].textContent='Tindakan'}}}
-function syncRows(){const [hp,dp]=panels();if(!hp||!dp||window.innerWidth<=1100)return;normalizeHealth(hp);normalizeDecision(dp);const lt=hp.querySelector('.table'),rt=dp.querySelector('.table');if(!lt||!rt)return;const lr=[...lt.querySelectorAll('tbody tr')],rr=[...rt.querySelectorAll('tbody tr')];if(!lr.length||!rr.length)return;const heights=rr.map(r=>Math.ceil(r.getBoundingClientRect().height));lr.forEach((r,i)=>{r.style.removeProperty('height');if(i<heights.length)r.style.setProperty('height',heights[i]+'px','important')});requestAnimationFrame(()=>{const rightCard=dp.querySelector('.tablecard'),leftCard=hp.querySelector('.tablecard');if(rightCard&&leftCard){const target=Math.ceil(rightCard.getBoundingClientRect().height);leftCard.style.setProperty('height',target+'px','important');leftCard.style.setProperty('min-height',target+'px','important')}})}
-function fix(){const [hp,dp]=panels();if(!hp||!dp)return;style();normalizeHealth(hp);normalizeDecision(dp);labels(hp,dp);requestAnimationFrame(()=>{syncRows();setTimeout(syncRows,100)})}
-function boot(){fix();const obs=new MutationObserver(()=>{window.clearTimeout(window.__sikoyekFinalTimer);window.__sikoyekFinalTimer=setTimeout(fix,50)});obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});window.addEventListener('resize',()=>requestAnimationFrame(syncRows));setInterval(syncRows,1000)}
+ document.head.appendChild(s);
+}
+function ensureMasterData(){
+ const nav=document.querySelector('.sidebar .nav');
+ if(!nav||nav.querySelector('[data-master-data-nav]'))return;
+ const b=document.createElement('button');b.type='button';b.dataset.masterDataNav='1';b.textContent='Master Data';
+ b.onclick=async()=>{if(typeof window.openMasterData==='function'){window.openMasterData();return}const sc=document.createElement('script');sc.src='./master-data-v1.js?v=2';sc.onload=()=>window.openMasterData?.();document.body.appendChild(sc)};
+ nav.appendChild(b);
+}
+function boot(){
+ addStyle();
+ ensureMasterData();
+ const obs=new MutationObserver(()=>{addStyle();ensureMasterData()});
+ obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
