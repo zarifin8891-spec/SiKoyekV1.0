@@ -1,9 +1,9 @@
-/* SiKoyek Dashboard Final Override V14 — safe CSS-only layout override. */
+/* SiKoyek Dashboard Final Override V15 — safe CSS-only layout override. */
 (function(){
 'use strict';
 function addStyle(){
- if(document.getElementById('dashboard-final-v14-style'))return;
- const s=document.createElement('style');s.id='dashboard-final-v14-style';
+ if(document.getElementById('dashboard-final-v15-style'))return;
+ const s=document.createElement('style');s.id='dashboard-final-v15-style';
  s.textContent=`
 .dashboard-kpis{display:grid!important;grid-template-columns:repeat(5,minmax(0,1.25fr)) repeat(3,minmax(90px,.75fr))!important;gap:10px!important;align-items:stretch!important}
 .dashboard-kpi{min-width:0!important;height:96px!important;padding:14px!important;box-sizing:border-box!important}
@@ -39,19 +39,19 @@ function addStyle(){
 .dashboard-panel .table tbody td{border-bottom:1px solid #dfe7ef!important}
 .dashboard-panel .table tbody tr:last-child td{border-bottom:0!important}
 
-/* Analysis Visual: one compact desktop toolbar row. */
+/* Analysis Visual: compact single-line filter bar on desktop. */
 .dashboard-graphs-section .graphs-head{display:grid!important;grid-template-columns:minmax(230px,1fr) auto;align-items:center!important;gap:12px!important;margin:0 0 8px!important}
 .dashboard-graphs-section .graphs-head>div{min-width:0!important}
 .dashboard-graphs-section .graphs-head h2{font-size:17px!important;line-height:1.15!important;margin:0!important}
 .dashboard-graphs-section .graphs-sub{font-size:11px!important;color:var(--muted)!important}
-.dashboard-graphs-section .graph-controls{display:grid!important;grid-template-columns:190px 190px minmax(0,1fr) auto;align-items:center!important;gap:10px!important;margin:0 0 12px!important;padding:10px 12px!important;background:#fff!important;border:1px solid #e4eaf4!important;border-radius:14px!important}
-.dashboard-graphs-section .graph-control{min-width:0!important;display:flex!important;flex-direction:column!important;gap:4px!important}
-.dashboard-graphs-section .graph-control label{font-size:10px!important;font-weight:800!important;color:var(--muted)!important;text-transform:uppercase!important;letter-spacing:.04em!important;white-space:nowrap!important}
-.dashboard-graphs-section .graph-control select{width:100%!important;height:36px!important;border:1px solid #d7dfeb!important;border-radius:9px!important;background:#fff!important;color:#172033!important;padding:6px 10px!important;font-size:12px!important}
-.dashboard-graphs-section .graph-controls>.control-note{font-size:11px!important;line-height:1.2!important;white-space:nowrap!important}
+.dashboard-graphs-section .graph-controls{display:grid!important;grid-template-columns:280px 280px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;margin:0 0 12px!important;padding:10px 12px!important;background:#fff!important;border:1px solid #e4eaf4!important;border-radius:14px!important}
+.dashboard-graphs-section .graph-control{min-width:0!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:8px!important}
+.dashboard-graphs-section .graph-control label{flex:0 0 auto!important;font-size:10px!important;font-weight:800!important;color:var(--muted)!important;text-transform:uppercase!important;letter-spacing:.04em!important;white-space:nowrap!important}
+.dashboard-graphs-section .graph-control select{width:150px!important;flex:0 0 150px!important;height:36px!important;border:1px solid #d7dfeb!important;border-radius:9px!important;background:#fff!important;color:#172033!important;padding:6px 10px!important;font-size:12px!important}
+.dashboard-graphs-section .graph-controls>.control-note{font-size:11px!important;line-height:1.2!important;white-space:nowrap!important;justify-self:start!important}
 .dashboard-graphs-section .graphs-head+#graph-controls{margin-top:0!important}
 .dashboard-graphs-section .selected-wrap{display:none!important;min-width:0!important}
-.dashboard-graphs-section .selected-wrap.show{display:flex!important;grid-column:1/-1!important}
+.dashboard-graphs-section .selected-wrap.show{display:flex!important;grid-column:1/-1!important;flex-direction:column!important;align-items:stretch!important}
 .dashboard-graphs-section .project-picker{display:grid!important;grid-template-columns:repeat(2,minmax(230px,1fr))!important;gap:6px!important;padding:8px!important;max-height:150px!important;overflow:auto!important;border:1px solid #d7dfeb!important;border-radius:10px!important;background:#fff!important}
 .dashboard-graphs-section .project-option{display:flex!important;align-items:center!important;gap:8px!important;padding:7px 8px!important;border-radius:8px!important;font-size:12px!important;color:#273244!important;cursor:pointer!important}
 .dashboard-graphs-section .project-option input{width:15px!important;height:15px!important}
@@ -63,8 +63,9 @@ function addStyle(){
  .dashboard-kpis{grid-template-columns:repeat(5,minmax(0,1fr)) repeat(3,minmax(82px,.7fr))!important}
  .dashboard-kpi,.dashboard-status{padding:11px 10px!important}
  .dashboard-kpi .value{font-size:18px!important}
- .dashboard-graphs-section .graph-controls{grid-template-columns:175px 175px minmax(0,1fr)!important}
- .dashboard-graphs-section .graph-controls>.control-note{grid-column:1/-1}
+ .dashboard-graphs-section .graph-controls{grid-template-columns:260px 260px minmax(0,1fr)!important}
+ .dashboard-graphs-section .graph-controls>.control-note{grid-column:auto!important}
+ .dashboard-graphs-section .graph-control select{width:135px!important;flex-basis:135px!important}
 }
 @media(max-width:1100px){
  .dashboard-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
@@ -74,13 +75,15 @@ function addStyle(){
  .dashboard-panel .scroll{height:auto!important;overflow:hidden!important}
  .dashboard-graphs-section .graphs-head{grid-template-columns:1fr!important}
  .dashboard-graphs-section .graph-controls{grid-template-columns:1fr 1fr!important}
- .dashboard-graphs-section .graph-controls>.control-note{grid-column:1/-1}
+ .dashboard-graphs-section .graph-controls>.control-note{grid-column:1/-1!important}
 }
 @media(max-width:780px){
  .dashboard-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  .dashboard-kpi,.dashboard-status{height:82px!important}
  .dashboard-panel .scroll{overflow-x:auto!important}
  .dashboard-graphs-section .graph-controls{grid-template-columns:1fr!important}
+ .dashboard-graphs-section .graph-control{flex-direction:column!important;align-items:stretch!important}
+ .dashboard-graphs-section .graph-control select{width:100%!important;flex-basis:auto!important}
  .dashboard-graphs-section .selected-wrap.show{grid-column:auto!important}
 }
 `;
