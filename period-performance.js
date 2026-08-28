@@ -8,11 +8,11 @@
     const s=document.createElement('style');
     s.id=STYLE_ID;
     s.textContent=`
-      /* Kinerja Periode: compact 25/75 two-panel layout matching the closed Dashboard. */
+      /* Kinerja Periode: compact 20/80 two-panel layout. */
       .period-performance-section{margin-top:16px}
       .period-performance-section .pp-layout{
         display:grid;
-        grid-template-columns:minmax(0,25%) minmax(0,75%);
+        grid-template-columns:minmax(0,20%) minmax(0,80%);
         gap:14px;
         align-items:stretch;
       }
@@ -27,8 +27,8 @@
       }
 
       .period-performance-section .pp-panel-head{
-        min-height:42px;
-        padding:11px 14px 7px;
+        min-height:38px;
+        padding:9px 12px 6px;
         display:flex;
         align-items:flex-start;
         justify-content:space-between;
@@ -37,51 +37,51 @@
       }
       .period-performance-section .pp-panel-head h2{
         margin:0;
-        font-size:15px;
+        font-size:14px;
         line-height:1.2;
         font-weight:800;
       }
       .period-performance-section .pp-panel-head .pp-note{
         margin:0;
-        font-size:10px;
+        font-size:9px;
         line-height:1.2;
         color:var(--muted);
         text-align:right;
         white-space:nowrap;
       }
 
-      /* Four compact KPI cards stacked vertically in the 25% panel. */
+      /* Four compact KPI cards stacked vertically in the 20% panel. */
       .period-performance-section .pp-kpi-stack{
         display:grid;
         grid-template-rows:repeat(4,minmax(0,1fr));
-        gap:7px;
-        padding:7px 14px 14px;
+        gap:6px;
+        padding:6px 12px 12px;
         box-sizing:border-box;
       }
       .period-performance-section .pp-kpi{
         min-width:0;
-        min-height:50px;
-        height:50px;
-        padding:8px 10px;
+        min-height:46px;
+        height:46px;
+        padding:6px 8px;
         border:1px solid var(--border,#dce5ef);
-        border-radius:12px;
+        border-radius:11px;
         background:var(--card,#fff);
         display:flex;
         align-items:center;
-        gap:9px;
+        gap:8px;
         box-sizing:border-box;
         box-shadow:0 1px 3px rgba(15,35,60,.03);
       }
       .period-performance-section .pp-kpi-icon{
-        width:31px;
-        height:31px;
-        flex:0 0 31px;
+        width:28px;
+        height:28px;
+        flex:0 0 28px;
         border-radius:50%;
         display:grid;
         place-items:center;
         background:#eef5ff;
         color:#1465d8;
-        font-size:15px;
+        font-size:13px;
         font-weight:800;
       }
       .period-performance-section .pp-kpi:nth-child(1) .pp-kpi-icon{background:#e9f8f1;color:#0b9a65}
@@ -91,8 +91,8 @@
       .period-performance-section .pp-kpi-copy{min-width:0}
       .period-performance-section .pp-kpi .label{
         margin:0;
-        font-size:8.5px;
-        line-height:1.1;
+        font-size:8px;
+        line-height:1.05;
         font-weight:700;
         color:var(--muted);
         white-space:nowrap;
@@ -100,8 +100,8 @@
         text-overflow:ellipsis;
       }
       .period-performance-section .pp-kpi .value{
-        margin-top:3px;
-        font-size:16px;
+        margin-top:2px;
+        font-size:14px;
         line-height:1.05;
         font-weight:800;
         color:var(--text,#10213a);
@@ -110,14 +110,20 @@
         text-overflow:ellipsis;
       }
 
-      .period-performance-section .pp-table-panel .pp-panel-head{padding-bottom:8px}
+      .period-performance-section .pp-table-panel .pp-panel-head{padding-bottom:7px}
       .period-performance-section .pp-table-wrap{
-        margin:0 14px 14px;
+        margin:0 12px 12px;
         border:1px solid var(--border,#dce5ef);
-        border-radius:12px;
+        border-radius:11px;
         overflow:hidden;
       }
-      .period-performance-section .pp-table-wrap .scroll{overflow-x:hidden}
+      /* Show at most six body rows; additional projects scroll vertically. */
+      .period-performance-section .pp-table-wrap .scroll{
+        max-height:274px;
+        overflow-x:hidden;
+        overflow-y:auto;
+        scrollbar-width:thin;
+      }
       .period-performance-section .pp-table-wrap .table{
         width:100%;
         table-layout:fixed;
@@ -126,17 +132,21 @@
       .period-performance-section .pp-table-wrap .table th,
       .period-performance-section .pp-table-wrap .table td{
         box-sizing:border-box;
-        padding:10px 11px;
-        font-size:12px;
-        line-height:1.22;
+        padding:8px 10px;
+        font-size:11px;
+        line-height:1.15;
         vertical-align:middle;
       }
       .period-performance-section .pp-table-wrap .table th{
-        padding-top:9px;
-        padding-bottom:9px;
-        font-size:9px;
-        line-height:1.1;
+        padding-top:8px;
+        padding-bottom:8px;
+        font-size:8.5px;
+        line-height:1.05;
         white-space:nowrap;
+        position:sticky;
+        top:0;
+        z-index:1;
+        background:var(--card,#fff);
       }
       .period-performance-section .pp-table-wrap .table th:nth-child(1),
       .period-performance-section .pp-table-wrap .table td:nth-child(1){width:35%;text-align:left}
@@ -161,8 +171,8 @@
       @media(max-width:1100px){
         .period-performance-section .pp-layout{grid-template-columns:1fr}
         .period-performance-section .pp-kpi-stack{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:none}
-        .period-performance-section .pp-kpi{height:50px}
-        .period-performance-section .pp-table-wrap .scroll{overflow-x:auto}
+        .period-performance-section .pp-kpi{height:46px}
+        .period-performance-section .pp-table-wrap .scroll{overflow-x:auto;max-height:none}
         .period-performance-section .pp-table-wrap .table{min-width:760px}
       }
       @media(max-width:720px){
@@ -170,12 +180,16 @@
       }
       @media(max-width:520px){
         .period-performance-section .pp-kpi-stack{grid-template-columns:1fr}
-        .period-performance-section .pp-panel-head{padding-left:12px;padding-right:12px}
-        .period-performance-section .pp-kpi-stack{padding-left:12px;padding-right:12px}
-        .period-performance-section .pp-table-wrap{margin-left:12px;margin-right:12px}
+        .period-performance-section .pp-panel-head{padding-left:10px;padding-right:10px}
+        .period-performance-section .pp-kpi-stack{padding-left:10px;padding-right:10px}
+        .period-performance-section .pp-table-wrap{margin-left:10px;margin-right:10px}
       }
     `;
     document.head.appendChild(s);
+  }
+
+  function periodMoney(value){
+    return money(value).replace(/^Rp\s*/,'');
   }
 
   function inRange(date){
@@ -223,15 +237,15 @@
             <div class="pp-kpi-stack">
               <div class="pp-kpi">
                 <div class="pp-kpi-icon">⇩</div>
-                <div class="pp-kpi-copy"><div class="label">CASH IN PERIODE</div><div class="value">${money(totals.cashIn)}</div></div>
+                <div class="pp-kpi-copy"><div class="label">CASH IN PERIODE</div><div class="value">${periodMoney(totals.cashIn)}</div></div>
               </div>
               <div class="pp-kpi">
                 <div class="pp-kpi-icon">⇧</div>
-                <div class="pp-kpi-copy"><div class="label">CASH OUT PERIODE</div><div class="value">${money(totals.cashOut)}</div></div>
+                <div class="pp-kpi-copy"><div class="label">CASH OUT PERIODE</div><div class="value">${periodMoney(totals.cashOut)}</div></div>
               </div>
               <div class="pp-kpi">
                 <div class="pp-kpi-icon">↗</div>
-                <div class="pp-kpi-copy"><div class="label">NET CASHFLOW</div><div class="value">${money(totals.net)}</div></div>
+                <div class="pp-kpi-copy"><div class="label">NET CASHFLOW</div><div class="value">${periodMoney(totals.net)}</div></div>
               </div>
               <div class="pp-kpi">
                 <div class="pp-kpi-icon">▣</div>
