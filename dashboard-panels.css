@@ -1,8 +1,7 @@
-/* Canonical Dashboard lower-panel layout. The table structures are defined by
-   the health and decision renderers; this file only presents them. */
+/* Canonical Dashboard lower-panel layout. */
 .dashboard-panels {
   display: grid;
-  grid-template-columns: minmax(0, 40fr) minmax(0, 60fr);
+  grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
   gap: 14px;
   align-items: stretch;
 }
@@ -64,7 +63,7 @@
 .dashboard-panel .table tbody td { border-bottom: 1px solid #dfe7ef; }
 .dashboard-panel .table tbody tr:last-child td { border-bottom: 0; }
 
-/* Requested visual refinements: preserve the existing Dashboard structure. */
+/* Compact Dashboard header controls: match the username box height. */
 .dashboard-period .field label {
   color: #eef7fb !important;
   font-weight: 600;
@@ -72,34 +71,48 @@
 
 .dashboard-period input,
 .dashboard-period select {
-  height: 42px !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  box-sizing: border-box !important;
   background: rgba(255,255,255,.08) !important;
   border: 1px solid rgba(255,255,255,.22) !important;
   color: #fff !important;
   border-radius: 10px !important;
   box-shadow: none !important;
+  padding: 8px 12px !important;
+  font-size: 14px !important;
 }
 
 .dashboard-period input::placeholder { color: #d9edf2 !important; }
-.dashboard-period select option { color: #172033; background: #fff; }
+.dashboard-period select option { color: #172033 !important; background: #fff !important; }
 .dashboard-period input[type=date]::-webkit-calendar-picker-indicator {
   filter: brightness(0) invert(1);
   opacity: .9;
 }
 
 .dashboard-period .btn {
-  height: 42px !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  box-sizing: border-box !important;
   background: #fff !important;
   border-color: #fff !important;
   color: #172033 !important;
 }
 
-/* Give the left project's name a little more breathing room. */
+/* Requested 45:55 panel proportion. Keep the left project names and values
+   on one line now that the left panel has more room. */
 #dashboard-health-panel .table col:nth-child(1) { width: 45% !important; }
 #dashboard-health-panel .table col:nth-child(2) { width: 12% !important; }
 #dashboard-health-panel .table col:nth-child(3) { width: 13% !important; }
 #dashboard-health-panel .table col:nth-child(4) { width: 15% !important; }
 #dashboard-health-panel .table col:nth-child(5) { width: 15% !important; }
+
+#dashboard-health-panel .table th,
+#dashboard-health-panel .table td {
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
 
 #dashboard-decision-panel .table col:nth-child(1) { width: 36% !important; }
 #dashboard-decision-panel .table col:nth-child(2) { width: 15% !important; }
@@ -123,8 +136,7 @@
   font-weight: 800;
 }
 
-/* Do not stretch one panel as a whole to hide a mismatch. Individual rows are
-   synchronized by the renderer so row 1↔1, row 2↔2, etc. have equal height. */
+/* Individual rows are synchronized by the health renderer. */
 #dashboard-health-panel .table tbody tr,
 #dashboard-decision-panel .table tbody tr {
   height: auto;
