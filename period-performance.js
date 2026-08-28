@@ -117,12 +117,14 @@
         border-radius:11px;
         overflow:hidden;
       }
-      /* Show at most six body rows; additional projects scroll vertically. */
+      /* Show at most six data rows; additional projects scroll vertically. */
       .period-performance-section .pp-table-wrap .scroll{
-        max-height:274px;
+        height:260px;
+        max-height:260px;
         overflow-x:hidden;
         overflow-y:auto;
         scrollbar-width:thin;
+        scrollbar-gutter:stable;
       }
       .period-performance-section .pp-table-wrap .table{
         width:100%;
@@ -172,7 +174,7 @@
         .period-performance-section .pp-layout{grid-template-columns:1fr}
         .period-performance-section .pp-kpi-stack{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:none}
         .period-performance-section .pp-kpi{height:46px}
-        .period-performance-section .pp-table-wrap .scroll{overflow-x:auto;max-height:none}
+        .period-performance-section .pp-table-wrap .scroll{height:auto;max-height:none;overflow-x:auto}
         .period-performance-section .pp-table-wrap .table{min-width:760px}
       }
       @media(max-width:720px){
@@ -256,7 +258,7 @@
 
           <section class="pp-panel pp-table-panel">
             <div class="pp-panel-head">
-              <h2>Transaksi pada periode ${periodLabel()}</h2>
+              <h2>Transaksi pada periode : ${periodLabel()}</h2>
             </div>
             <div class="pp-table-wrap">
               <div class="scroll">
