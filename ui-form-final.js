@@ -5,7 +5,9 @@
   const fmtDate=d=>{if(!d)return '-';const [y,m,day]=String(d).slice(0,10).split('-');return day&&m&&y?`${day}-${['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][Number(m)-1]}-${y}`:'-'};
   let step=1;
   function css(){if(document.getElementById('ui-form-final-css'))return;const s=document.createElement('style');s.id='ui-form-final-css';s.textContent=`
-#modal .modalbox:has(.ui-final-project){width:min(1160px,calc(100vw - 28px))!important;max-width:1160px!important;max-height:calc(100vh - 24px)!important;overflow:hidden!important;padding:0!important;border-radius:20px!important}
+/* The generic modal wrapper creates its own header. The final project form owns the header, so remove the wrapper header only for this form. */
+#modal .modalbox:has(.ui-final-project){width:min(820px,calc(100vw - 28px))!important;max-width:820px!important;max-height:calc(100vh - 24px)!important;overflow:hidden!important;padding:0!important;border-radius:20px!important}
+#modal .modalbox:has(.ui-final-project)>.modalhead{display:none!important}
 #modal .ui-final-project{width:100%;height:auto;max-height:calc(100vh - 24px);overflow:hidden!important}
 #modal .ui-final-head{height:78px;padding:12px 22px;background:linear-gradient(115deg,#12375f 0%,#0c4a70 52%,#1f7180 100%);color:#fff;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden}
 #modal .ui-final-head:after{content:"";position:absolute;right:-70px;bottom:-90px;width:320px;height:170px;background:rgba(72,180,190,.18);border-radius:55% 0 0 0;transform:rotate(-8deg)}
@@ -17,7 +19,7 @@
 .ui-final-category-tools{display:flex;justify-content:space-between;align-items:center;gap:5px;margin-top:3px;color:#738197;font-size:8px}.ui-final-category-tools button{height:20px;padding:0 6px;border:1px solid #d4deea;border-radius:6px;background:#fff;color:#26364d;font-size:8px;font-weight:500}.ui-final-validation{min-height:0;color:#c73737;font-size:10px;margin:0}.ui-final-validation.show{padding:5px 8px;margin-bottom:6px;background:#fff0f0;border-radius:7px}
 .ui-final-confirm{display:grid;grid-template-columns:1fr 1fr;gap:7px}.ui-final-summary{height:42px;padding:7px 10px;border:1px solid #dfe7f0;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:10px;color:#65748a}.ui-final-summary strong{font-size:12px;color:#172033;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ui-final-actions{height:50px;margin-top:8px;padding:7px 18px;border-top:1px solid #e6ebf1;display:flex;justify-content:flex-end;align-items:center;gap:7px}.ui-final-actions button{height:34px;min-width:92px;padding:0 12px;border-radius:8px;font-size:11px;font-weight:500;border:1px solid #d3dce7;background:#fff;color:#26364d}.ui-final-actions .primary{background:#0b2e52;border-color:#0b2e52;color:#fff;min-width:116px}
-@media(max-width:900px){#modal .modalbox:has(.ui-final-project){width:calc(100vw - 18px)!important}#modal .ui-final-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.span2,.span3{grid-column:span 1}.span6{grid-column:1/-1}}
+@media(max-width:900px){#modal .modalbox:has(.ui-final-project){width:calc(100vw - 18px)!important;max-width:none!important}#modal .ui-final-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.span2,.span3{grid-column:span 1}.span6{grid-column:1/-1}}
 @media(max-width:560px){#modal .ui-final-head{height:70px;padding:10px 14px}.ui-final-head h3{font-size:20px!important}.ui-final-grid{grid-template-columns:1fr!important}.span2,.span3,.span6{grid-column:1/-1}.ui-final-confirm{grid-template-columns:1fr}.ui-final-actions{padding:7px 12px}.ui-final-actions button{min-width:0!important;flex:1}}
 `;document.head.appendChild(s)}
   function get(id){return document.getElementById(id)} function val(id){return get(id)?.value?.trim()||''}
