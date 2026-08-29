@@ -117,12 +117,22 @@
     });
   }
 
+  function loadProjectSummaryV2(){
+    if(document.getElementById('project-summary-v2-script')) return;
+    const script=document.createElement('script');
+    script.id='project-summary-v2-script';
+    script.src='./project-summary-v2.js?v=1';
+    script.defer=true;
+    document.body.appendChild(script);
+  }
+
   function observe(){
     normalizeCategoryMaster();
     normalizeCategoryTools();
     hideManualStatusFields();
     decorateStatusElements();
     decorateStatusTextNodes();
+    loadProjectSummaryV2();
   }
 
   const boot=()=>setTimeout(observe,80);
