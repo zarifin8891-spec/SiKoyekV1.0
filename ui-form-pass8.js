@@ -103,6 +103,17 @@
     const script=document.createElement('script');script.id='project-summary-v2-script';script.src='./project-summary-v2.js?v=1';script.defer=true;document.body.appendChild(script);
   }
 
+  /* Load the Projects list UI explicitly. index.html already loads Pass 8,
+     so this is the reliable entry point for the Projects-only visual layer. */
+  function loadProjectsUI(){
+    if(document.getElementById('projects-ui-v1-script')) return;
+    const script=document.createElement('script');
+    script.id='projects-ui-v1-script';
+    script.src='./projects-ui-v1.js?v=3';
+    script.defer=true;
+    document.body.appendChild(script);
+  }
+
   /* Actual Keuangan page is rendered by index.html. Compact only the three
      financial KPI cards when they are present; do not touch transaction data. */
   function compactFinanceKpis(){
@@ -113,7 +124,6 @@
       'CASH INFLOW':'KAS MASUK',
       'CASH OUTFLOW':'KAS KELUAR'
     };
-    const seen=[];
     document.querySelectorAll('body *').forEach(el=>{
       if(el.children.length>0) return;
       const raw=(el.textContent||'').trim();
@@ -152,7 +162,7 @@
   }
 
   function observe(){
-    normalizeCategoryMaster();normalizeCategoryTools();hideManualStatusFields();decorateStatusElements();decorateStatusTextNodes();loadProjectSummaryV2();compactFinanceKpis();
+    normalizeCategoryMaster();normalizeCategoryTools();hideManualStatusFields();decorateStatusElements();decorateStatusTextNodes();loadProjectSummaryV2();loadProjectsUI();compactFinanceKpis();
   }
   const boot=()=>setTimeout(observe,80);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
