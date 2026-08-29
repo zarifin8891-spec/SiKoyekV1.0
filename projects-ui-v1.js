@@ -1,5 +1,5 @@
 (function(){
-  const STYLE_ID='projects-ui-v1-style';
+  const STYLE_ID='projects-ui-v2-style';
   const PASS5_CSS_ID='projects-ui-pass5-css';
   const PASS5_JS_ID='projects-ui-pass5-js';
 
@@ -8,45 +8,70 @@
     const s=document.createElement('style');
     s.id=STYLE_ID;
     s.textContent=`
-      /* Projects page only. Dashboard layout is intentionally untouched. */
-      .projects-page-v1 .actions .btn,
-      .projects-page-v1 .actions .btn.primary{font-weight:400!important}
-      .projects-page-table.table{table-layout:fixed;width:100%}
-      .projects-page-table.table th,
-      .projects-page-table.table td{box-sizing:border-box;vertical-align:middle}
-      .projects-page-table.table thead th{
+      /* Project list only. Keep Dashboard and other modules untouched. */
+      .projects-page-v2 .actions .btn,
+      .projects-page-v2 .actions .btn.primary{font-weight:400!important}
+      .projects-page-table-v2.table{table-layout:fixed!important;width:100%!important}
+      .projects-page-table-v2.table th,
+      .projects-page-table-v2.table td{box-sizing:border-box!important;vertical-align:middle!important}
+      .projects-page-table-v2.table thead th{
         background:#f5f8fc!important;
         color:#6f7c91!important;
         border-bottom-color:#d7e0eb!important;
         font-weight:600!important;
+        white-space:nowrap!important;
       }
-      .projects-page-table.table th{padding:10px 11px!important}
-      .projects-page-table.table td{padding:8px 11px!important}
-      .projects-page-table.table th:nth-child(1),.projects-page-table.table td:nth-child(1){width:7%}
-      .projects-page-table.table th:nth-child(2),.projects-page-table.table td:nth-child(2){width:24%}
-      .projects-page-table.table th:nth-child(3),.projects-page-table.table td:nth-child(3){width:10%}
-      .projects-page-table.table th:nth-child(4),.projects-page-table.table td:nth-child(4){width:10%}
-      .projects-page-table.table th:nth-child(5),.projects-page-table.table td:nth-child(5){width:9%}
-      .projects-page-table.table th:nth-child(6),.projects-page-table.table td:nth-child(6){width:9%}
-      .projects-page-table.table th:nth-child(7),.projects-page-table.table td:nth-child(7){width:10%}
-      .projects-page-table.table th:nth-child(8),.projects-page-table.table td:nth-child(8){width:9%}
-      .projects-page-table.table th:nth-child(9),.projects-page-table.table td:nth-child(9){width:12%}
-      .projects-page-table.table th:nth-child(7){white-space:normal;line-height:1.05}
-      .projects-page-table.table td:nth-child(2){white-space:normal}
-      .projects-page-table.table .p5-actions-cell{min-width:0!important;width:12%}
-      .projects-page-table.table .p5-toolbar{display:flex;justify-content:center;gap:6px;flex-wrap:nowrap}
-      .projects-page-table.table .p5-action{width:58px;min-width:58px;height:34px;padding:6px 8px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;font-weight:400!important}
-      .projects-page-table.table .p5-action.primary,.projects-page-table.table .p5-action.danger{font-weight:400!important}
-      .projects-page-table.table .p5-lock-note{display:none!important}
-      .projects-page-table.table th:last-child{text-align:center}
-      .projects-page-table.table td:last-child{text-align:center}
+      .projects-page-table-v2.table th{padding:8px 10px!important;line-height:1.1!important}
+      .projects-page-table-v2.table td{padding:7px 10px!important;line-height:1.15!important}
+
+      /* 100% total: narrower financial columns, extra space returned to project name. */
+      .projects-page-table-v2.table th:nth-child(1),.projects-page-table-v2.table td:nth-child(1){width:7%!important}
+      .projects-page-table-v2.table th:nth-child(2),.projects-page-table-v2.table td:nth-child(2){width:31%!important}
+      .projects-page-table-v2.table th:nth-child(3),.projects-page-table-v2.table td:nth-child(3){width:10%!important}
+      .projects-page-table-v2.table th:nth-child(4),.projects-page-table-v2.table td:nth-child(4){width:10%!important}
+      .projects-page-table-v2.table th:nth-child(5),.projects-page-table-v2.table td:nth-child(5){width:9%!important}
+      .projects-page-table-v2.table th:nth-child(6),.projects-page-table-v2.table td:nth-child(6){width:8%!important}
+      .projects-page-table-v2.table th:nth-child(7),.projects-page-table-v2.table td:nth-child(7){width:9%!important}
+      .projects-page-table-v2.table th:nth-child(8),.projects-page-table-v2.table td:nth-child(8){width:8%!important}
+      .projects-page-table-v2.table th:nth-child(9),.projects-page-table-v2.table td:nth-child(9){width:8%!important}
+
+      .projects-page-table-v2.table th:nth-child(6),
+      .projects-page-table-v2.table th:nth-child(7){
+        white-space:normal!important;
+        line-height:1.05!important;
+        text-align:left!important;
+      }
+      .projects-page-table-v2.table td:nth-child(2){white-space:normal!important}
+      .projects-page-table-v2.table td:nth-child(6),
+      .projects-page-table-v2.table td:nth-child(7){white-space:nowrap!important}
+
+      .projects-page-table-v2.table .p5-actions-cell{width:8%!important;min-width:0!important}
+      .projects-page-table-v2.table .p5-toolbar{display:flex!important;justify-content:center!important;align-items:center!important;gap:6px!important;flex-wrap:nowrap!important}
+      .projects-page-table-v2.table .p5-action,
+      .projects-page-table-v2.table .p5-action.primary,
+      .projects-page-table-v2.table .p5-action.danger{
+        width:58px!important;
+        min-width:58px!important;
+        height:32px!important;
+        padding:4px 8px!important;
+        margin:0!important;
+        display:inline-flex!important;
+        align-items:center!important;
+        justify-content:center!important;
+        box-sizing:border-box!important;
+        font-size:13px!important;
+        line-height:1!important;
+        font-weight:400!important;
+      }
+      .projects-page-table-v2.table .p5-lock-note{display:none!important}
+      .projects-page-table-v2.table th:last-child,
+      .projects-page-table-v2.table td:last-child{text-align:center!important}
+
       @media(max-width:1100px){
-        .projects-page-table.table .scroll{overflow-x:auto}
-        .projects-page-table.table{min-width:1050px}
+        .projects-page-table-v2.table .scroll{overflow-x:auto!important}
+        .projects-page-table-v2.table{min-width:1050px!important}
       }
-      @media(max-width:780px){
-        .projects-page-table.table{min-width:980px}
-      }
+      @media(max-width:780px){.projects-page-table-v2.table{min-width:980px!important}}
     `;
     document.head.appendChild(s);
   }
@@ -71,48 +96,88 @@
   function normalizeProjectTitle(){
     if(typeof state==='undefined'||state.page!=='projects') return;
     const page=document.getElementById('page');
-    const h=page?.querySelector('.top h1');
-    if(h && (h.textContent||'').trim()==='Projects') h.textContent='Daftar Proyek';
+    if(!page)return;
+    page.querySelectorAll('.top h1').forEach(h=>{
+      if((h.textContent||'').trim()==='Projects') h.textContent='Daftar Proyek';
+    });
+  }
+
+  function cleanDuplicateActions(table){
+    const head=table.querySelector('thead tr');
+    if(!head)return;
+
+    const headers=[...head.children];
+    const aksiIndexes=headers.map((th,i)=>({i,text:(th.textContent||'').trim().replace(/\s+/g,' ').toLowerCase()})).filter(x=>x.text==='aksi').map(x=>x.i);
+    if(aksiIndexes.length>1){
+      /* Keep the first Aksi column and remove every duplicate to its right. */
+      for(let k=aksiIndexes.length-1;k>=1;k--){
+        const idx=aksiIndexes[k];
+        [...table.rows].forEach(row=>row.children[idx]?.remove());
+      }
+    }
+
+    const finalCount=head.children.length;
+    [...table.tBodies].forEach(tbody=>{
+      [...tbody.rows].forEach(row=>{
+        while(row.children.length>finalCount)row.lastElementChild?.remove();
+      });
+    });
   }
 
   function normalizeProjectTable(){
     if(typeof state==='undefined'||state.page!=='projects') return;
     const page=document.getElementById('page');
-    if(page) page.classList.add('projects-page-v1');
-    const tables=[...document.querySelectorAll('.tablecard table.table')];
+    if(!page)return;
+    page.classList.add('projects-page-v2');
+
+    const tables=[...page.querySelectorAll('.tablecard table.table')];
     const table=tables.find(t=>[...t.querySelectorAll('thead th')].some(th=>(th.textContent||'').trim()==='Kode'));
     if(!table)return;
-    table.classList.add('projects-page-table');
-    const head=table.querySelector('thead tr');if(!head)return;
+    table.classList.add('projects-page-table-v2');
+
+    const head=table.querySelector('thead tr');
+    if(!head)return;
 
     [...head.children].forEach(th=>{
       const text=(th.textContent||'').trim().replace(/\s+/g,' ');
-      if(text==='RAP Consumption') th.innerHTML='RAP<br>Consumption';
+      if(text==='Cost Ratio') th.innerHTML='Rasio<br>Biaya';
+      if(text==='RAP Consumption') th.innerHTML='RAP<br>Terpakai';
     });
 
-    const actionIndexes=[...head.children].map((th,i)=>({i,text:(th.textContent||'').trim().toLowerCase()})).filter(x=>x.text==='aksi').map(x=>x.i);
-    if(actionIndexes.length>1){
-      for(let k=actionIndexes.length-1;k>=1;k--){
-        const idx=actionIndexes[k];
-        [...table.rows].forEach(row=>row.children[idx]?.remove());
-      }
-    }
+    cleanDuplicateActions(table);
 
     table.querySelectorAll('.p5-lock-note').forEach(el=>el.remove());
     table.querySelectorAll('.p5-action').forEach(btn=>{
-      btn.style.width='58px';btn.style.minWidth='58px';btn.style.height='34px';
-      btn.style.display='inline-flex';btn.style.alignItems='center';btn.style.justifyContent='center';
+      btn.style.width='58px';
+      btn.style.minWidth='58px';
+      btn.style.height='32px';
+      btn.style.padding='4px 8px';
+      btn.style.display='inline-flex';
+      btn.style.alignItems='center';
+      btn.style.justifyContent='center';
       btn.style.fontWeight='400';
     });
     page.querySelectorAll('.actions .btn').forEach(btn=>btn.style.fontWeight='400');
   }
 
-  function observe(){normalizeNav();normalizeProjectTitle();normalizeProjectTable()}
+  function observe(){
+    normalizeNav();
+    normalizeProjectTitle();
+    normalizeProjectTable();
+  }
 
   addStyle();
   loadPass5Assets();
-  const boot=()=>setTimeout(observe,160);
+
+  const boot=()=>{
+    [120,350,700,1200,2000].forEach(ms=>setTimeout(observe,ms));
+    observe();
+  };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  const obs=new MutationObserver(()=>{clearTimeout(window.__projectsUiV1Timer);window.__projectsUiV1Timer=setTimeout(observe,100)});
+
+  const obs=new MutationObserver(()=>{
+    clearTimeout(window.__projectsUiV2Timer);
+    window.__projectsUiV2Timer=setTimeout(observe,80);
+  });
   obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
 })();
