@@ -125,3 +125,68 @@
   setTimeout(install,80);
   setInterval(install,1000);
 })();
+
+/* Project detail visual polish: align header controls with the approved 42px Dashboard controls and compact the four KPI cards below it. */
+(function(){
+  const STYLE_ID='sikoyek-project-detail-compact-v1';
+  function install(){
+    if(!document.body) return;
+    let style=document.getElementById(STYLE_ID);
+    if(!style){
+      style=document.createElement('style');
+      style.id=STYLE_ID;
+      document.head.appendChild(style);
+    }
+    style.textContent=`
+      /* Detail header: only target the project-detail header, not Projects/Dashboard headers. */
+      .top:has(.detailtitle) .actions .btn{
+        height:42px!important;
+        min-height:42px!important;
+        padding:0 15px!important;
+        font-size:15px!important;
+        line-height:1!important;
+        border-radius:10px!important;
+      }
+      .top:has(.detailtitle) .actions{align-items:center!important;gap:8px!important}
+
+      /* Detail KPI strip: use the same compact visual scale as the locked Dashboard KPI cards. */
+      .detailgrid{
+        gap:12px!important;
+      }
+      .detailgrid>.card{
+        min-height:96px!important;
+        height:96px!important;
+        padding:14px 16px!important;
+        border-radius:15px!important;
+        display:flex!important;
+        flex-direction:column!important;
+        justify-content:center!important;
+      }
+      .detailgrid>.card .label{
+        font-size:10px!important;
+        line-height:1.15!important;
+        letter-spacing:.07em!important;
+        font-weight:650!important;
+        margin:0!important;
+      }
+      .detailgrid>.card .value,
+      .detailgrid>.card .big{
+        font-size:20px!important;
+        line-height:1.15!important;
+        letter-spacing:-.02em!important;
+        font-weight:750!important;
+        margin-top:6px!important;
+      }
+      .detailgrid>.card .pill{
+        font-size:10px!important;
+        padding:5px 9px!important;
+      }
+      @media(max-width:780px){
+        .top:has(.detailtitle) .actions .btn{height:42px!important;min-height:42px!important}
+        .detailgrid>.card{height:96px!important;min-height:96px!important}
+      }
+    `;
+  }
+  install();
+  new MutationObserver(install).observe(document.body,{childList:true,subtree:true});
+})();
