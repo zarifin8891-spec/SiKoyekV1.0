@@ -14,7 +14,6 @@
       .projects-page-table.table{table-layout:fixed;width:100%}
       .projects-page-table.table th,
       .projects-page-table.table td{box-sizing:border-box;vertical-align:middle}
-      /* Table header intentionally stays neutral; the page header is the title/search/actions area above it. */
       .projects-page-table.table thead th{
         background:#f5f8fc!important;
         color:#6f7c91!important;
@@ -69,6 +68,13 @@
     });
   }
 
+  function normalizeProjectTitle(){
+    if(typeof state==='undefined'||state.page!=='projects') return;
+    const page=document.getElementById('page');
+    const h=page?.querySelector('.top h1');
+    if(h && (h.textContent||'').trim()==='Projects') h.textContent='Daftar Proyek';
+  }
+
   function normalizeProjectTable(){
     if(typeof state==='undefined'||state.page!=='projects') return;
     const page=document.getElementById('page');
@@ -101,7 +107,7 @@
     page.querySelectorAll('.actions .btn').forEach(btn=>btn.style.fontWeight='400');
   }
 
-  function observe(){normalizeNav();normalizeProjectTable()}
+  function observe(){normalizeNav();normalizeProjectTitle();normalizeProjectTable()}
 
   addStyle();
   loadPass5Assets();
