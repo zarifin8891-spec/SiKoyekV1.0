@@ -10,14 +10,15 @@
     s.textContent=`
       /* Projects page only. Dashboard layout is intentionally untouched. */
       .projects-page-v1 .actions .btn,
-      .projects-page-v1 .actions .btn.primary{font-weight:500!important}
+      .projects-page-v1 .actions .btn.primary{font-weight:400!important}
       .projects-page-table.table{table-layout:fixed;width:100%}
       .projects-page-table.table th,
       .projects-page-table.table td{box-sizing:border-box;vertical-align:middle}
+      /* Table header intentionally stays neutral; the page header is the title/search/actions area above it. */
       .projects-page-table.table thead th{
-        background:linear-gradient(115deg,#12375f 0%,#0c4a70 52%,#1f7180 100%)!important;
-        color:#fff!important;
-        border-bottom-color:#12375f!important;
+        background:#f5f8fc!important;
+        color:#6f7c91!important;
+        border-bottom-color:#d7e0eb!important;
         font-weight:600!important;
       }
       .projects-page-table.table th{padding:10px 11px!important}
@@ -35,8 +36,8 @@
       .projects-page-table.table td:nth-child(2){white-space:normal}
       .projects-page-table.table .p5-actions-cell{min-width:0!important;width:12%}
       .projects-page-table.table .p5-toolbar{display:flex;justify-content:center;gap:6px;flex-wrap:nowrap}
-      .projects-page-table.table .p5-action{width:58px;min-width:58px;height:34px;padding:6px 8px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;font-weight:500!important}
-      .projects-page-table.table .p5-action.primary,.projects-page-table.table .p5-action.danger{font-weight:500!important}
+      .projects-page-table.table .p5-action{width:58px;min-width:58px;height:34px;padding:6px 8px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;font-weight:400!important}
+      .projects-page-table.table .p5-action.primary,.projects-page-table.table .p5-action.danger{font-weight:400!important}
       .projects-page-table.table .p5-lock-note{display:none!important}
       .projects-page-table.table th:last-child{text-align:center}
       .projects-page-table.table td:last-child{text-align:center}
@@ -54,11 +55,11 @@
   function loadPass5Assets(){
     if(!document.getElementById(PASS5_CSS_ID)){
       const link=document.createElement('link');
-      link.id=PASS5_CSS_ID;link.rel='stylesheet';link.href='./ui-form-pass5.css?v=1';document.head.appendChild(link);
+      link.id=PASS5_CSS_ID;link.rel='stylesheet';link.href='./ui-form-pass5.css?v=2';document.head.appendChild(link);
     }
     if(!document.getElementById(PASS5_JS_ID)){
       const script=document.createElement('script');
-      script.id=PASS5_JS_ID;script.src='./ui-form-pass5.js?v=1';script.defer=true;document.body.appendChild(script);
+      script.id=PASS5_JS_ID;script.src='./ui-form-pass5.js?v=2';script.defer=true;document.body.appendChild(script);
     }
   }
 
@@ -95,9 +96,9 @@
     table.querySelectorAll('.p5-action').forEach(btn=>{
       btn.style.width='58px';btn.style.minWidth='58px';btn.style.height='34px';
       btn.style.display='inline-flex';btn.style.alignItems='center';btn.style.justifyContent='center';
-      btn.style.fontWeight='500';
+      btn.style.fontWeight='400';
     });
-    page.querySelectorAll('.actions .btn').forEach(btn=>btn.style.fontWeight='500');
+    page.querySelectorAll('.actions .btn').forEach(btn=>btn.style.fontWeight='400');
   }
 
   function observe(){normalizeNav();normalizeProjectTable()}
