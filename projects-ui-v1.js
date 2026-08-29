@@ -9,45 +9,43 @@
     s.id=STYLE_ID;
     s.textContent=`
       /* Projects page only. Dashboard layout is intentionally untouched. */
-      .projects-page-v1 .actions .btn{font-weight:500!important}
+      .projects-page-v1 .actions .btn,
       .projects-page-v1 .actions .btn.primary{font-weight:500!important}
-      .projects-page-table .table{table-layout:fixed;width:100%}
-      .projects-page-table .table th,
-      .projects-page-table .table td{box-sizing:border-box;vertical-align:middle}
-      /* Dashboard-like colored table header */
-      .projects-page-table .table thead th{
+      .projects-page-table.table{table-layout:fixed;width:100%}
+      .projects-page-table.table th,
+      .projects-page-table.table td{box-sizing:border-box;vertical-align:middle}
+      .projects-page-table.table thead th{
         background:linear-gradient(115deg,#12375f 0%,#0c4a70 52%,#1f7180 100%)!important;
         color:#fff!important;
         border-bottom-color:#12375f!important;
         font-weight:600!important;
       }
-      .projects-page-table .table th{padding:10px 11px!important}
-      /* Tighter project rows */
-      .projects-page-table .table td{padding:8px 11px!important}
-      .projects-page-table .table th:nth-child(1),.projects-page-table .table td:nth-child(1){width:7%}
-      .projects-page-table .table th:nth-child(2),.projects-page-table .table td:nth-child(2){width:24%}
-      .projects-page-table .table th:nth-child(3),.projects-page-table .table td:nth-child(3){width:10%}
-      .projects-page-table .table th:nth-child(4),.projects-page-table .table td:nth-child(4){width:10%}
-      .projects-page-table .table th:nth-child(5),.projects-page-table .table td:nth-child(5){width:9%}
-      .projects-page-table .table th:nth-child(6),.projects-page-table .table td:nth-child(6){width:9%}
-      .projects-page-table .table th:nth-child(7),.projects-page-table .table td:nth-child(7){width:10%}
-      .projects-page-table .table th:nth-child(8),.projects-page-table .table td:nth-child(8){width:9%}
-      .projects-page-table .table th:nth-child(9),.projects-page-table .table td:nth-child(9){width:12%}
-      .projects-page-table .table th:nth-child(7){white-space:normal;line-height:1.05}
-      .projects-page-table .table td:nth-child(2){white-space:normal}
-      .projects-page-table .p5-actions-cell{min-width:0!important;width:12%}
-      .projects-page-table .p5-toolbar{display:flex;justify-content:center;gap:6px;flex-wrap:nowrap}
-      .projects-page-table .p5-action{width:58px;min-width:58px;height:34px;padding:6px 8px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;font-weight:500!important}
-      .projects-page-table .p5-action.primary,.projects-page-table .p5-action.danger{font-weight:500!important}
-      .projects-page-table .p5-lock-note{display:none!important}
-      .projects-page-table .table th:last-child{text-align:center}
-      .projects-page-table .table td:last-child{text-align:center}
+      .projects-page-table.table th{padding:10px 11px!important}
+      .projects-page-table.table td{padding:8px 11px!important}
+      .projects-page-table.table th:nth-child(1),.projects-page-table.table td:nth-child(1){width:7%}
+      .projects-page-table.table th:nth-child(2),.projects-page-table.table td:nth-child(2){width:24%}
+      .projects-page-table.table th:nth-child(3),.projects-page-table.table td:nth-child(3){width:10%}
+      .projects-page-table.table th:nth-child(4),.projects-page-table.table td:nth-child(4){width:10%}
+      .projects-page-table.table th:nth-child(5),.projects-page-table.table td:nth-child(5){width:9%}
+      .projects-page-table.table th:nth-child(6),.projects-page-table.table td:nth-child(6){width:9%}
+      .projects-page-table.table th:nth-child(7),.projects-page-table.table td:nth-child(7){width:10%}
+      .projects-page-table.table th:nth-child(8),.projects-page-table.table td:nth-child(8){width:9%}
+      .projects-page-table.table th:nth-child(9),.projects-page-table.table td:nth-child(9){width:12%}
+      .projects-page-table.table th:nth-child(7){white-space:normal;line-height:1.05}
+      .projects-page-table.table td:nth-child(2){white-space:normal}
+      .projects-page-table.table .p5-actions-cell{min-width:0!important;width:12%}
+      .projects-page-table.table .p5-toolbar{display:flex;justify-content:center;gap:6px;flex-wrap:nowrap}
+      .projects-page-table.table .p5-action{width:58px;min-width:58px;height:34px;padding:6px 8px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;font-weight:500!important}
+      .projects-page-table.table .p5-action.primary,.projects-page-table.table .p5-action.danger{font-weight:500!important}
+      .projects-page-table.table .p5-lock-note{display:none!important}
+      .projects-page-table.table th:last-child{text-align:center}
+      .projects-page-table.table td:last-child{text-align:center}
       @media(max-width:1100px){
-        .projects-page-table .scroll{overflow-x:auto}
-        .projects-page-table .table{min-width:1050px}
+        .projects-page-table.table .scroll{overflow-x:auto}
+        .projects-page-table.table{min-width:1050px}
       }
       @media(max-width:780px){
-        .projects-page-table .table{min-width:980px}
+        .projects-page-table.table{min-width:980px}
       }
     `;
     document.head.appendChild(s);
@@ -85,7 +83,6 @@
       if(text==='RAP Consumption') th.innerHTML='RAP<br>Consumption';
     });
 
-    // ui-form-pass5 supplies the single canonical Aksi column. Remove accidental duplicates.
     const actionIndexes=[...head.children].map((th,i)=>({i,text:(th.textContent||'').trim().toLowerCase()})).filter(x=>x.text==='aksi').map(x=>x.i);
     if(actionIndexes.length>1){
       for(let k=actionIndexes.length-1;k>=1;k--){
@@ -100,11 +97,10 @@
       btn.style.display='inline-flex';btn.style.alignItems='center';btn.style.justifyContent='center';
       btn.style.fontWeight='500';
     });
+    page.querySelectorAll('.actions .btn').forEach(btn=>btn.style.fontWeight='500');
   }
 
-  function observe(){
-    normalizeNav();normalizeProjectTable();
-  }
+  function observe(){normalizeNav();normalizeProjectTable()}
 
   addStyle();
   loadPass5Assets();
