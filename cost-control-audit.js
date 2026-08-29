@@ -4,7 +4,7 @@
   const STYLE_ID='cost-control-v5-style',HOST_ID='cost-control-v5';
   const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
   const pct=n=>Number(n||0).toFixed(2)+'%';
-  const esc=v=>String(v??'').replace(/[&<>\\\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\\\"':'&quot;'}[m]));
+  const esc=v=>String(v??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
   const num=v=>{const n=Number(String(v??'').replace(/[^0-9.-]/g,''));return Number.isFinite(n)?n:0;};
   function progressOf(o){if(!o||typeof o!=='object')return null;for(const k of ['progress','progress_pct','progressPercent','current_progress','actual_progress','real_progress','realisasi_progress','persentase','percentage']){if(o[k]!==null&&o[k]!==undefined&&o[k]!==''){const n=num(o[k]);if(Number.isFinite(n))return n<=1?n*100:n;}}return null;}
   function weightOf(o){if(!o||typeof o!=='object')return null;for(const k of ['bobot','weight','weight_pct','weightPercent','persentase_bobot','percentage_weight']){if(o[k]!==null&&o[k]!==undefined&&o[k]!==''){const n=num(o[k]);if(Number.isFinite(n))return n<=1?n*100:n;}}return null;}
