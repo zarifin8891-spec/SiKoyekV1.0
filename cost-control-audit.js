@@ -45,11 +45,46 @@
     document.head.appendChild(s);
   }
 
-  function getProgress(detail){
-    const candidates=[detail.progress,detail.progress_pct,detail.progressPercent,detail.current_progress];
+  function readProgressValue(obj){
+    if(!obj || typeof obj!=='object')return null;
+    const candidates=[obj.progress,obj.progress_pct,obj.progressPercent,obj.current_progress,obj.actual_progress,obj.real_progress,obj.realisasi_progress,obj.persentase,obj.percentage];
     for(const x of candidates){
+      if(x===null || x===undefined || x==='')continue;
       const n=Number(x);
       if(Number.isFinite(n))return n<=1?n*100:n;
+    }
+    return null;
+  }
+
+  function readWeight(obj){
+    if(!obj || typeof obj!=='object')return null;
+    const candidates=[obj.bobot,obj.weight,obj.weight_pct,obj.weightPercent,obj.persentase_bobot,obj.percentage_weight];
+    for(const x of candidates){
+      if(x===null || x===undefined || x==='')continue;
+      const n=Number(String(x).replace('%',''));
+      if(Number.isFinite(n))return n<=1?n*100:n;
+    }
+    return null;
+  }
+
+  function getProgress(detail){
+    const direct=readProgressValue(detail);
+    if(direct!==null)return Math.max(0,Math.min(100,direct));
+
+    const collections=[detail.items,detail.work_items,detail.workItems,detail.pekerjaan,detail.items_pekerjaan,detail.itemPekerjaan];
+    for(const list of collections){
+      if(!Array.isArray(list) || !list.length)continue;
+      let weighted=0, totalWeight=0, hasWeighted=false;
+      for(const item of list){
+        const p=readProgressValue(item);
+        const w=readWeight(item);
+        if(p!==null && w!==null){
+          weighted += p*w;
+          totalWeight += w;
+          hasWeighted=true;
+        }
+      }
+      if(hasWeighted && totalWeight>0)return Math.max(0,Math.min(100,weighted/totalWeight));
     }
     return 0;
   }
@@ -80,12 +115,8 @@
       let root=host.querySelector('#'+HOST_ID);
       if(root){return;}
 
-      [...tabs.parentElement.children].forEach(el=>{
-        if(el!==tabs && !el.closest('.tabs'))el.style.display='none';
-      });
-
       const fin=detail.fin||[];
-      const cashOut=fin.filter(x=>x.transaction_type==='KELUAR').reduce((t,x)=>t+Number(x.amount||0),0);
+      const cashOut=fin.filter(x=>String(x.transaction_type||'').toUpperCase()==='KELUAR').reduce((t,x)=>t+Number(x.amount||0),0);
       const r=detail.rap||{};
       const cats=[
         ['material','Material'],['labor','Upah'],['equipment','Alat'],
@@ -93,7 +124,7 @@
       ];
       const rows=cats.map(([key,label])=>{
         const rap=getRap(r,key);
-        const real=fin.filter(x=>x.transaction_type==='KELUAR' && String(x.category||'').trim().toLowerCase()===label.toLowerCase()).reduce((s,x)=>s+Number(x.amount||0),0);
+        const real=fin.filter(x=>String(x.transaction_type||'').toUpperCase()==='KELUAR' && String(x.category||'').trim().toLowerCase()===label.toLowerCase()).reduce((s,x)=>s+Number(x.amount||0),0);
         const used=rap>0?(real/rap)*100:0;
         return {label,rap,real,remaining:rap-real,used};
       });
