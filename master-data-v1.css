@@ -18,3 +18,8 @@
 .md-card .md-row:first-child{margin-top:27px}
 .md-note{margin-top:10px}
 @media(max-width:780px){.md-row{padding:7px 11px;min-height:44px}.md-row>div:first-child{grid-template-columns:1fr}.md-card .md-row:first-child{margin-top:0}.md-row:first-child>div:first-child:before,.md-row:first-child>div:first-child:after,.md-row:first-child>.md-status:before,.md-row:first-child>.md-actions:before{display:none}.md-actions .btn{height:36px;min-width:70px}.md-card-head .btn{height:40px;padding:0 15px;font-size:14px}}
+/* Master Data header aligned to Dashboard header layout */
+.md-top{margin:0 0 14px;padding:16px 20px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:linear-gradient(135deg,#0d294a 0%,#123b62 58%,#17657a 100%);box-shadow:0 10px 26px rgba(10,38,68,.16);color:#fff;position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:flex-start;row-gap:8px}
+.md-top::after{content:"";position:absolute;width:320px;height:130px;right:-100px;bottom:-85px;border-radius:48%;background:rgba(255,255,255,.055);transform:rotate(-14deg);pointer-events:none}
+.md-top>div:first-child{position:relative;z-index:1}.md-kicker{color:#7dd3df}.md-top h1{color:#fff;font-size:24px;line-height:1.1;margin:0}.md-top p{color:rgba(255,255,255,.78);font-size:12px;margin:3px 0 0}.md-top>.btn{position:relative;z-index:1;margin-left:auto;background:#fff;color:#0d294a;border-color:#fff;box-shadow:none;font-weight:500!important;height:36px;padding:6px 13px;font-size:14px;white-space:nowrap}.md-top>.btn:hover{background:#eef4fa}
+@media(max-width:780px){.md-top{padding:15px}.md-top h1{font-size:22px}.md-top>.btn{margin-left:auto}.md-top{row-gap:8px}}
