@@ -1,0 +1,222 @@
+/* Pass 9: compact two-stage Tambah Proyek wizard.
+   Step 1 = Data Proyek (Identitas + Nilai & Periode combined)
+   Step 2 = Konfirmasi. */
+
+/* The old Step-1 polish hid the title. Restore a real header title. */
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.modalhead.step1-modalhead{
+  height:88px!important;
+  min-height:88px!important;
+  padding:14px 26px!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  border:0!important;
+  border-radius:24px 24px 0 0!important;
+  background:linear-gradient(135deg,#0d294a 0%,#123b62 58%,#17657a 100%)!important;
+  color:#fff!important;
+  position:relative!important;
+  top:auto!important;
+  box-shadow:0 8px 22px rgba(10,38,68,.14)!important;
+}
+
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.modalhead.step1-modalhead h3{
+  display:block!important;
+  visibility:visible!important;
+  color:#fff!important;
+  font-size:22px!important;
+  line-height:1.15!important;
+  font-weight:700!important;
+  letter-spacing:-.02em!important;
+  margin:4px 160px 0 0!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.modalhead.step1-modalhead button{
+  height:38px!important;
+  min-height:38px!important;
+  min-width:96px!important;
+  padding:0 16px!important;
+  margin:0!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#0d294a!important;
+  border:1px solid #fff!important;
+  font-size:13px!important;
+  font-weight:500!important;
+  box-shadow:none!important;
+}
+
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.modalhead.step1-modalhead::after{
+  content:"Isi data inti proyek sebelum masuk ke tahap konfirmasi."!important;
+  left:26px!important;
+  bottom:13px!important;
+  color:rgba(255,255,255,.82)!important;
+  font-size:11px!important;
+  line-height:1.25!important;
+  font-weight:400!important;
+}
+
+/* Two visible stages only. */
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-steps{
+  margin:12px 26px 0!important;
+  gap:8px!important;
+}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-steps .ui-step[data-target="2"]{
+  display:none!important;
+}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-steps .ui-step[data-target="1"],
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-steps .ui-step[data-target="3"]{
+  flex:1 1 0!important;
+}
+
+/* Compact the combined Data Proyek pane. */
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane[data-pane="1"]{
+  margin:10px 26px 0!important;
+  padding:0!important;
+}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane[data-pane="1"] .formgrid,
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane[data-pane="1"] .twocol{
+  gap:8px 12px!important;
+  margin:0!important;
+}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane[data-pane="1"] .field{
+  margin:0!important;
+}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane[data-pane="1"] .field label{
+  display:block!important;
+  margin:0 0 4px!important;
+  font-size:11px!important;
+  line-height:1.2!important;
+  font-weight:650!important;
+  color:#526078!important;
+}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane[data-pane="1"] input,
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane[data-pane="1"] select,
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane[data-pane="1"] textarea{
+  width:100%!important;
+  min-height:38px!important;
+  height:38px!important;
+  padding:7px 10px!important;
+  border-radius:9px!important;
+  font-size:13px!important;
+}
+
+/* Small divider inserted between Identitas and Nilai & Periode. */
+.si9-section-label{
+  display:flex!important;
+  align-items:center!important;
+  gap:9px!important;
+  margin:10px 0 7px!important;
+  color:#17385b!important;
+  font-size:11px!important;
+  line-height:1.2!important;
+  font-weight:750!important;
+  letter-spacing:.02em!important;
+}
+.si9-section-label::after{
+  content:"";
+  flex:1;
+  height:1px;
+  background:#e7edf4;
+}
+
+/* Category helper is intentionally compact. */
+.modalbox.p6-form .step1-category-tools{
+  min-height:30px!important;
+  margin-top:5px!important;
+  gap:8px!important;
+}
+.modalbox.p6-form .step1-category-tools span{font-size:10px!important}
+.modalbox.p6-form .step1-category-tools .btn{
+  min-height:30px!important;
+  height:30px!important;
+  padding:5px 9px!important;
+  border-radius:8px!important;
+  font-size:10px!important;
+}
+
+/* Help/validation blocks should not consume the whole form. */
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-help,
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-validation{
+  margin:8px 26px 0!important;
+  padding:8px 10px!important;
+  font-size:11px!important;
+  line-height:1.35!important;
+}
+
+/* Compact command bar. */
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formactions{
+  min-height:58px!important;
+  height:58px!important;
+  margin:10px 26px 0!important;
+  padding:9px 0 10px!important;
+  gap:8px!important;
+  border-top:1px solid #e8edf3!important;
+  background:#fff!important;
+  justify-content:flex-end!important;
+  align-items:center!important;
+}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formactions .btn{
+  width:auto!important;
+  min-width:104px!important;
+  height:36px!important;
+  min-height:36px!important;
+  padding:0 13px!important;
+  border-radius:9px!important;
+  font-size:12px!important;
+  line-height:36px!important;
+  font-weight:500!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formactions #uiNext,
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formactions #uiSaveProject{
+  min-width:124px!important;
+}
+
+/* Confirmation rows are compact too. */
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane[data-pane="3"]{
+  margin:10px 26px 0!important;
+}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane[data-pane="3"] .ui-confirm-row,
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane[data-pane="3"] .confirm-row{
+  min-height:44px!important;
+  padding:8px 12px!important;
+}
+
+@media(max-width:780px){
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.modalhead.step1-modalhead{
+    height:82px!important;
+    min-height:82px!important;
+    padding:12px 18px!important;
+  }
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.modalhead.step1-modalhead h3{
+    font-size:19px!important;
+    margin-right:100px!important;
+  }
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.modalhead.step1-modalhead::after{
+    left:18px!important;
+    bottom:11px!important;
+    font-size:10px!important;
+  }
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-steps,
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-help,
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane,
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formactions{
+    margin-left:16px!important;
+    margin-right:16px!important;
+  }
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane[data-pane="1"] .formgrid,
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane[data-pane="1"] .twocol{
+    grid-template-columns:1fr!important;
+  }
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formactions{
+    gap:6px!important;
+  }
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formactions .btn{
+    flex:1 1 0!important;
+    min-width:0!important;
+  }
+}
