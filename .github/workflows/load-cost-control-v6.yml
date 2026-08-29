@@ -1,0 +1,35 @@
+name: Load Cost Control v6
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/load-cost-control-v6.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add runtime fix script
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          tag='<script src="cost-control-fix-v6.js?v=1"></script>'
+          if tag not in s:
+              s=s.replace('</body>',tag+'</body>',1) if '</body>' in s else s+tag
+              p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Load Cost Control v6 runtime fix'
+          git push
