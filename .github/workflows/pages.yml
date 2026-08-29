@@ -48,6 +48,17 @@ jobs:
           if missing:
               raise SystemExit(f'Missing canonical Dashboard assets: {missing}')
           print('Canonical Dashboard artifact verified.')
+      - name: Inject final UI polish
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+          tag = '<script src="./ui-polish-hotfix-20260829.js?v=1"></script>'
+          if tag not in html:
+              html = html.replace('</body>', tag + '\n</body>')
+              path.write_text(html, encoding='utf-8')
+          print('Final UI polish injected.')
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
