@@ -97,6 +97,13 @@
         .dashboard-graphs-section .graph-canvas{visibility:visible}
         .dashboard-graphs-section .graph-canvas.is-empty{visibility:hidden}
 
+        /* Period transaction panel: exactly six project rows visible before scrolling. */
+        .period-performance-section .pp-table-wrap .scroll{
+          height:200px !important;
+          max-height:200px !important;
+          min-height:200px !important;
+        }
+
         @media(max-width:1200px){
           .dashboard-graphs-section .${TOOLBAR_CLASS}{
             grid-template-columns:minmax(260px,1fr) 180px 180px minmax(220px,1fr);
@@ -122,6 +129,10 @@
 
     const mode=section.querySelector('#graphMode');
     if(!mode) return false;
+
+    /* Remove the optional project-picker mode. The approved flow goes directly from header/filters to charts. */
+    mode.querySelector('option[value="selected"]')?.remove();
+    section.querySelector('#selectedWrap')?.remove();
 
     /* Build the toolbar once by moving the existing controls; data/chart logic stays untouched. */
     if(!section.querySelector('.'+TOOLBAR_CLASS)){
