@@ -5,29 +5,10 @@
   const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
   const pct=n=>Number(n||0).toFixed(2)+'%';
   const esc=v=>String(v??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[m]));
-  function num(v){const n=Number(String(v??'').replace(/[^0-9.-]/g,''));return Number.isFinite(n)?n:0;}
-  function progressOf(o){
-    if(!o||typeof o!=='object')return null;
-    for(const k of ['progress','progress_pct','progressPercent','current_progress','actual_progress','real_progress','realisasi_progress','persentase','percentage']){
-      if(o[k]!==null&&o[k]!==undefined&&o[k]!==''){const n=num(o[k]);if(Number.isFinite(n))return n<=1?n*100:n;}
-    }
-    return null;
-  }
-  function weightOf(o){
-    if(!o||typeof o!=='object')return null;
-    for(const k of ['bobot','weight','weight_pct','weightPercent','persentase_bobot','percentage_weight']){
-      if(o[k]!==null&&o[k]!==undefined&&o[k]!==''){const n=num(o[k]);if(Number.isFinite(n))return n<=1?n*100:n;}
-    }
-    return null;
-  }
-  function getProgress(d){
-    const direct=progressOf(d);if(direct!==null)return Math.max(0,Math.min(100,direct));
-    for(const k of ['items','work_items','workItems','pekerjaan','items_pekerjaan','itemPekerjaan']){
-      const a=d?.[k];if(!Array.isArray(a)||!a.length)continue;
-      let sum=0,wSum=0;for(const x of a){const p=progressOf(x),w=weightOf(x);if(p!==null&&w!==null){sum+=p*w;wSum+=w;}}
-      if(wSum)return Math.max(0,Math.min(100,sum/wSum));
-    }return 0;
-  }
+  const num=v=>{const n=Number(String(v??'').replace(/[^0-9.-]/g,''));return Number.isFinite(n)?n:0;};
+  function progressOf(o){if(!o||typeof o!=='object')return null;for(const k of ['progress','progress_pct','progressPercent','current_progress','actual_progress','real_progress','realisasi_progress','persentase','percentage']){if(o[k]!==null&&o[k]!==undefined&&o[k]!==''){const n=num(o[k]);if(Number.isFinite(n))return n<=1?n*100:n;}}return null;}
+  function weightOf(o){if(!o||typeof o!=='object')return null;for(const k of ['bobot','weight','weight_pct','weightPercent','persentase_bobot','percentage_weight']){if(o[k]!==null&&o[k]!==undefined&&o[k]!==''){const n=num(o[k]);if(Number.isFinite(n))return n<=1?n*100:n;}}return null;}
+  function getProgress(d){const direct=progressOf(d);if(direct!==null)return Math.max(0,Math.min(100,direct));for(const k of ['items','work_items','workItems','pekerjaan','items_pekerjaan','itemPekerjaan']){const a=d?.[k];if(!Array.isArray(a)||!a.length)continue;let sum=0,wSum=0;for(const x of a){const p=progressOf(x),w=weightOf(x);if(p!==null&&w!==null){sum+=p*w;wSum+=w;}}if(wSum)return Math.max(0,Math.min(100,sum/wSum));}return 0;}
   function rapVal(r,keys){for(const k of keys){const n=num(r?.[k]);if(Number.isFinite(n)&&n!==0)return n;}return 0;}
   function contractOf(d){return num(d?.contract??d?.contract_value??d?.contract_amount??d?.nilai_kontrak??d?.nilaiKontrak);}
   function addStyle(){if(document.getElementById(STYLE_ID))return;const s=document.createElement('style');s.id=STYLE_ID;s.textContent=`
@@ -46,22 +27,25 @@
     #${HOST_ID} table{width:100%;border-collapse:collapse;table-layout:fixed}
     #${HOST_ID} th,#${HOST_ID} td{padding:9px 12px;border-top:1px solid var(--line);font-size:12px;white-space:nowrap;text-align:left}
     #${HOST_ID} th{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;background:#fafbfd}
-    #${HOST_ID} th:nth-child(1),#${HOST_ID} td:nth-child(1){width:20%}
-    #${HOST_ID} th:nth-child(2),#${HOST_ID} td:nth-child(2),#${HOST_ID} th:nth-child(3),#${HOST_ID} td:nth-child(3),#${HOST_ID} th:nth-child(4),#${HOST_ID} td:nth-child(4){width:20%}
-    #${HOST_ID} th:nth-child(5),#${HOST_ID} td:nth-child(5){width:20%}
-    #${HOST_ID} td:nth-child(n+2){text-align:right}
+    #${HOST_ID} th,#${HOST_ID} td{width:20%} #${HOST_ID} td:nth-child(n+2){text-align:right}
     #${HOST_ID} .bar{height:5px;background:#edf1f6;border-radius:99px;overflow:hidden;margin-top:4px}
     #${HOST_ID} .bar i{display:block;height:100%;background:var(--blue);border-radius:99px}
     @media(max-width:1050px){#${HOST_ID} .ccv3-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
     @media(max-width:700px){#${HOST_ID} .ccv3-kpis{grid-template-columns:repeat(2,1fr)}#${HOST_ID} .ccv3-panel{overflow:auto}#${HOST_ID} table{min-width:760px}}
     @media(max-width:480px){#${HOST_ID} .ccv3-kpis{grid-template-columns:1fr}}
   `;document.head.appendChild(s);}
+  function hideLegacyAfterTabs(tabs,root){
+    const parent=tabs.parentElement;if(!parent)return;
+    let after=false;
+    [...parent.children].forEach(el=>{if(el===tabs){after=true;return;}if(after&&el!==root)el.style.display='none';});
+  }
   function render(){
     if(typeof state==='undefined'||state.page!=='detail'||state.detailTab!=='cost'||!state.selected)return;
     const host=document.getElementById('page'),d=state.detail;if(!host||!d||!d.fin)return;
     const tabs=host.querySelector('.tabs');if(!tabs)return;
     const buttons=[...tabs.querySelectorAll('button')];buttons.forEach(b=>{if(['Cost Control','Kontrol Biaya'].includes(b.textContent.trim()))b.textContent='Kontrol Biaya';});
     let root=host.querySelector('#'+HOST_ID);if(!root){root=document.createElement('div');root.id=HOST_ID;tabs.parentElement.appendChild(root);}
+    hideLegacyAfterTabs(tabs,root);
     const fin=d.fin||[],cashOut=fin.filter(x=>String(x.transaction_type||'').toUpperCase()==='KELUAR').reduce((s,x)=>s+num(x.amount),0),r=d.rap||{};
     const cats=[['material','Material'],['labor','Upah'],['equipment','Alat'],['operational','Operasional'],['subcontract','Subkon'],['other','Lain-Lain']];
     const rows=cats.map(([key,label])=>{const rap=rapVal(r,key==='labor'?['labor','upah']:key==='equipment'?['equipment','alat']:key==='subcontract'?['subcontract','subkon']:key==='other'?['other','lain_lain','lainlain']:[key]);const real=fin.filter(x=>String(x.transaction_type||'').toUpperCase()==='KELUAR'&&String(x.category||'').trim().toLowerCase()===label.toLowerCase()).reduce((s,x)=>s+num(x.amount),0);return{label,rap,real};});
@@ -81,6 +65,6 @@
   }
   addStyle();
   let lastHost=null;
-  setInterval(()=>{const h=document.getElementById('page');if(h!==lastHost){lastHost=h;render();}else if(typeof state!=='undefined'&&state.page==='detail'&&state.detailTab==='cost'&&!h?.querySelector('#'+HOST_ID))render();},1200);
+  setInterval(()=>{const h=document.getElementById('page');if(h!==lastHost){lastHost=h;render();}else if(typeof state!=='undefined'&&state.page==='detail'&&state.detailTab==='cost'&&!h?.querySelector('#'+HOST_ID))render();else if(typeof state!=='undefined'&&state.page==='detail'&&state.detailTab==='cost'){const t=h?.querySelector('.tabs'),r=h?.querySelector('#'+HOST_ID);if(t&&r)hideLegacyAfterTabs(t,r);}},1200);
   render();
 })();
