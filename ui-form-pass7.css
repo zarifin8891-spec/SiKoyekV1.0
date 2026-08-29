@@ -6,22 +6,12 @@
 .modalbox.p6-form>.p6-body{grid-column:2!important;grid-row:1!important;min-width:0!important;width:100%!important}
 
 /* Shared compact header, matching Tambah Proyek Baru. */
-.p6-body>.modalhead{
-  display:flex!important;align-items:center!important;justify-content:space-between!important;gap:18px!important;
-  min-height:76px!important;height:76px!important;padding:18px 26px!important;margin:0!important;box-sizing:border-box!important;
-  border-bottom:1px solid #e9eef4!important;background:#fff!important;position:sticky!important;top:0!important;z-index:8!important
-}
-.p6-body>.modalhead h3{
-  visibility:visible!important;display:block!important;height:auto!important;margin:0!important;overflow:visible!important;
-  color:var(--p6-text)!important;font-size:24px!important;line-height:1.2!important;font-weight:900!important;letter-spacing:-.02em!important
-}
+.p6-body>.modalhead{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:18px!important;min-height:76px!important;height:76px!important;padding:18px 26px!important;margin:0!important;box-sizing:border-box!important;border-bottom:1px solid #e9eef4!important;background:#fff!important;position:sticky!important;top:0!important;z-index:8!important}
+.p6-body>.modalhead h3{visibility:visible!important;display:block!important;height:auto!important;margin:0!important;overflow:visible!important;color:var(--p6-text)!important;font-size:24px!important;line-height:1.2!important;font-weight:900!important;letter-spacing:-.02em!important}
 .p6-body>.modalhead button{flex:0 0 auto!important;min-width:100px!important;height:54px!important;margin:0!important;border-radius:12px!important}
 
 /* Master Kategori uses the exact same real .p6-side/.p6-body structure as the project form. */
-.modalbox:has(#p6CatRows){
-  width:min(1040px,96vw)!important;max-height:92vh!important;padding:0!important;border-radius:24px!important;overflow:hidden!important;
-  display:grid!important;grid-template-columns:280px minmax(0,1fr)!important;background:#fff!important;box-shadow:0 28px 70px rgba(11,31,58,.22)!important
-}
+.modalbox:has(#p6CatRows){width:min(1040px,96vw)!important;max-height:92vh!important;padding:0!important;border-radius:24px!important;overflow:hidden!important;display:grid!important;grid-template-columns:280px minmax(0,1fr)!important;background:#fff!important;box-shadow:0 28px 70px rgba(11,31,58,.22)!important}
 .modalbox:has(#p6CatRows)::before{display:none!important;content:none!important}
 .modalbox:has(#p6CatRows)>.p6-category-side{grid-column:1!important;grid-row:1!important;width:280px!important;min-width:280px!important;min-height:100%!important}
 .modalbox:has(#p6CatRows)>.p6-body{grid-column:2!important;grid-row:1!important;min-width:0!important;width:100%!important;max-height:92vh!important;overflow:auto!important}
@@ -44,4 +34,30 @@
   .modalbox:has(#p6CatRows)>.p6-body>.formactions{margin-left:16px!important;margin-right:16px!important}
   .p6-body>.modalhead{min-height:68px!important;height:68px!important;padding:16px 18px!important}
   .p6-body>.modalhead h3{font-size:20px!important}
+}
+
+/* Project form v1: remove the modal sidebar and use the Dashboard header language. */
+.modalbox.p6-form:not(:has(#p6CatRows)){display:block!important;width:min(1180px,96vw)!important;max-height:92vh!important;padding:0!important;border-radius:24px!important;overflow:hidden!important;background:#fff!important}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-side{display:none!important;width:0!important;min-width:0!important;min-height:0!important}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body{display:block!important;width:100%!important;max-height:92vh!important;overflow:auto!important}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.modalhead{min-height:104px!important;height:104px!important;padding:18px 26px!important;border:0!important;border-radius:24px 24px 0 0!important;background:linear-gradient(135deg,#0d294a 0%,#123b62 58%,#17657a 100%)!important;color:#fff!important;position:relative!important;top:auto!important;box-shadow:0 10px 26px rgba(10,38,68,.16)!important}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.modalhead::after{content:"Isi data inti proyek secara rapi sebelum masuk ke tahap nilai, periode, dan konfirmasi.";position:absolute!important;left:26px!important;bottom:17px!important;color:rgba(255,255,255,.78)!important;font-size:12px!important;line-height:1.3!important;font-weight:400!important;pointer-events:none!important}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.modalhead h3{color:#fff!important;font-size:24px!important;line-height:1.1!important;font-weight:400!important;letter-spacing:-.02em!important;margin:0 120px 24px 0!important}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.modalhead button{height:44px!important;min-width:150px!important;padding:0 18px!important;border-radius:10px!important;background:#fff!important;color:#0d294a!important;border:1px solid #fff!important;font-weight:400!important;box-shadow:none!important}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.modalhead button:hover{background:#eef4fa!important}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-steps{margin:18px 26px 0!important}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-help{margin:14px 26px 0!important}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane,.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formgrid,.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.twocol{margin-left:26px!important;margin-right:26px!important}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formactions{margin:18px 26px 0!important;padding:14px 0 20px!important;display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:12px!important;border-top:1px solid #edf1f5!important;background:#fff!important;position:sticky!important;bottom:0!important;z-index:7!important}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formactions .btn{width:150px!important;min-width:150px!important;height:44px!important;padding:0 14px!important;border-radius:10px!important;font-weight:400!important;font-size:14px!important;line-height:44px!important;white-space:nowrap!important}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formactions .btn.primary,.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formactions .btn.ghost,.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formactions .btn.danger{font-weight:400!important}
+.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body .ui-step{font-weight:400!important}
+@media(max-width:780px){
+  .modalbox.p6-form:not(:has(#p6CatRows)){width:min(650px,96vw)!important}
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.modalhead{min-height:96px!important;height:96px!important;padding:16px 18px!important}
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.modalhead h3{font-size:20px!important;margin-right:100px!important;margin-bottom:24px!important}
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.modalhead::after{left:18px!important;bottom:13px!important;font-size:10px!important}
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-steps,.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-help,.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.ui-pane,.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formgrid,.modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.twocol{margin-left:16px!important;margin-right:16px!important}
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formactions{margin-left:16px!important;margin-right:16px!important;gap:8px!important;justify-content:stretch!important}
+  .modalbox.p6-form:not(:has(#p6CatRows))>.p6-body>.formactions .btn{flex:1 1 0!important;width:auto!important;min-width:0!important}
 }
