@@ -76,14 +76,14 @@
   function boot(){
     observer.observe(document.body,{childList:true,subtree:true});
     sync();
-    loadPass9();
+    loadPass10();
   }
 
-  function loadPass9(){
-    if(document.getElementById('ui-form-pass9-script'))return;
+  function loadPass10(){
+    if(document.getElementById('ui-form-pass10-script'))return;
     const script=document.createElement('script');
-    script.id='ui-form-pass9-script';
-    script.src='./ui-form-pass9.js?v=9.1';
+    script.id='ui-form-pass10-script';
+    script.src='./ui-form-pass10.js?v=10.0';
     script.defer=true;
     document.body.appendChild(script);
   }
