@@ -9,9 +9,21 @@
     s.id=STYLE_ID;
     s.textContent=`
       /* Projects page only. Dashboard layout is intentionally untouched. */
+      .projects-page-v1 .actions .btn{font-weight:500!important}
+      .projects-page-v1 .actions .btn.primary{font-weight:500!important}
       .projects-page-table .table{table-layout:fixed;width:100%}
       .projects-page-table .table th,
       .projects-page-table .table td{box-sizing:border-box;vertical-align:middle}
+      /* Dashboard-like colored table header */
+      .projects-page-table .table thead th{
+        background:linear-gradient(115deg,#12375f 0%,#0c4a70 52%,#1f7180 100%)!important;
+        color:#fff!important;
+        border-bottom-color:#12375f!important;
+        font-weight:600!important;
+      }
+      .projects-page-table .table th{padding:10px 11px!important}
+      /* Tighter project rows */
+      .projects-page-table .table td{padding:8px 11px!important}
       .projects-page-table .table th:nth-child(1),.projects-page-table .table td:nth-child(1){width:7%}
       .projects-page-table .table th:nth-child(2),.projects-page-table .table td:nth-child(2){width:24%}
       .projects-page-table .table th:nth-child(3),.projects-page-table .table td:nth-child(3){width:10%}
@@ -25,7 +37,8 @@
       .projects-page-table .table td:nth-child(2){white-space:normal}
       .projects-page-table .p5-actions-cell{min-width:0!important;width:12%}
       .projects-page-table .p5-toolbar{display:flex;justify-content:center;gap:6px;flex-wrap:nowrap}
-      .projects-page-table .p5-action{width:58px;min-width:58px;height:34px;padding:6px 8px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
+      .projects-page-table .p5-action{width:58px;min-width:58px;height:34px;padding:6px 8px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;font-weight:500!important}
+      .projects-page-table .p5-action.primary,.projects-page-table .p5-action.danger{font-weight:500!important}
       .projects-page-table .p5-lock-note{display:none!important}
       .projects-page-table .table th:last-child{text-align:center}
       .projects-page-table .table td:last-child{text-align:center}
@@ -59,13 +72,15 @@
 
   function normalizeProjectTable(){
     if(typeof state==='undefined'||state.page!=='projects') return;
+    const page=document.getElementById('page');
+    if(page) page.classList.add('projects-page-v1');
     const tables=[...document.querySelectorAll('.tablecard table.table')];
     const table=tables.find(t=>[...t.querySelectorAll('thead th')].some(th=>(th.textContent||'').trim()==='Kode'));
     if(!table)return;
     table.classList.add('projects-page-table');
     const head=table.querySelector('thead tr');if(!head)return;
 
-    [...head.children].forEach((th,i)=>{
+    [...head.children].forEach(th=>{
       const text=(th.textContent||'').trim().replace(/\s+/g,' ');
       if(text==='RAP Consumption') th.innerHTML='RAP<br>Consumption';
     });
@@ -83,6 +98,7 @@
     table.querySelectorAll('.p5-action').forEach(btn=>{
       btn.style.width='58px';btn.style.minWidth='58px';btn.style.height='34px';
       btn.style.display='inline-flex';btn.style.alignItems='center';btn.style.justifyContent='center';
+      btn.style.fontWeight='500';
     });
   }
 
