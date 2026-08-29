@@ -79,6 +79,17 @@
     </div></section>`;
   }
 
+  function compactProgressView(d){
+    const html=progressView(d);
+    const wrap=document.createElement('div');
+    wrap.innerHTML=html;
+    [...wrap.querySelectorAll('.card')].forEach(card=>{
+      const text=(card.textContent||'').replace(/\s+/g,' ').trim();
+      if(text.includes('Progress Saat Ini')||text.includes('Cara Kerja Progress')) card.remove();
+    });
+    return wrap.innerHTML;
+  }
+
   function renderDetailV2(el){
     if(!state.detail){el.innerHTML='<div class="empty">Memuat proyek...</div>';return}
     const d=state.detail,s=state.summary.find(x=>x.project_id===state.selected);
@@ -89,7 +100,7 @@
 
   function detailBodyV2(d,s){
     if(state.detailTab==='pekerjaan')return workitems(d);
-    if(state.detailTab==='progress')return progressView(d);
+    if(state.detailTab==='progress')return compactProgressView(d);
     if(state.detailTab==='keuangan')return financeView(d);
     return costView(d,s);
   }
