@@ -49,10 +49,8 @@ body{background:linear-gradient(180deg,#f7f9fc 0%,#f1f5fa 100%);color:var(--ui-t
 .field input:focus,.field select:focus,.field textarea:focus,.search:focus{outline:0;border-color:#8eace0;box-shadow:0 0 0 3px rgba(36,92,255,.10)}
 .pill{line-height:1}
 
-/* FIX 2 — Item Pekerjaan compactness.
-   The table is rendered as .tablecard > .scroll > .table, so the previous
-   tabs + div selector could never reach these cells. */
-.tablecard .table th,.tablecard .table td{padding-top:8px!important;padding-bottom:8px!important}
+/* FIX 3 — Item Pekerjaan: compact enough to show ~10–11 rows. */
+.tablecard .table th,.tablecard .table td{padding-top:5px!important;padding-bottom:5px!important}
 .tablecard .table th{font-weight:800!important}
 .sectiontitle .btn{font-weight:500!important}
 
