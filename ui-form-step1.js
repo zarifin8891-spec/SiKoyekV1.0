@@ -77,6 +77,7 @@
     observer.observe(document.body,{childList:true,subtree:true});
     sync();
     loadPass10();
+    loadFinalProjectForm();
   }
 
   function loadPass10(){
@@ -84,6 +85,15 @@
     const script=document.createElement('script');
     script.id='ui-form-pass10-script';
     script.src='./ui-form-pass10.js?v=10.0';
+    script.defer=true;
+    document.body.appendChild(script);
+  }
+
+  function loadFinalProjectForm(){
+    if(document.getElementById('ui-form-final-script'))return;
+    const script=document.createElement('script');
+    script.id='ui-form-final-script';
+    script.src='./ui-form-final.js?v=1';
     script.defer=true;
     document.body.appendChild(script);
   }
