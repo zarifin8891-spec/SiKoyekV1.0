@@ -2,6 +2,7 @@
 (function(){
   const STYLE_ID='ui-form-edit-match-style-v2';
   const CLASS='edit-project-match-v2';
+  let managersPromise=null;
 
   function addStyle(){
     if(document.getElementById(STYLE_ID)) return;
@@ -122,6 +123,57 @@
     return (field.querySelector('label')?.textContent||'').trim().toLowerCase().replace(/\s+/g,' ');
   }
 
+  function getManagers(){
+    if(managersPromise) return managersPromise;
+    if(typeof sb==='undefined'||!sb) return Promise.resolve([]);
+    managersPromise=sb.from('project_managers')
+      .select('id,name,code,is_active,sort_order')
+      .order('sort_order',{ascending:true})
+      .order('name',{ascending:true})
+      .then(({data,error})=>{
+        if(error) throw error;
+        return (data||[]).filter(x=>x.is_active!==false);
+      })
+      .catch(error=>{
+        managersPromise=null;
+        console.warn('Gagal memuat Project Manager:',error);
+        return [];
+      });
+    return managersPromise;
+  }
+
+  function enhanceManagerDropdown(box){
+    const field=[...box.querySelectorAll('.field')].find(f=>labelText(f)==='project manager'||labelText(f).includes('project manager'));
+    if(!field) return;
+    let el=field.querySelector('#p5_mgr, select');
+    if(!el) return;
+
+    const current=String(el.value||'').trim();
+    if(el.tagName!=='SELECT'){
+      const select=document.createElement('select');
+      select.id=el.id||'p5_mgr';
+      if(el.name)select.name=el.name;
+      select.className=el.className;
+      select.setAttribute('aria-label','Project Manager');
+      el.replaceWith(select);
+      el=select;
+    }
+
+    if(el.dataset.managerSyncing==='1'||el.dataset.managerSynced==='1') return;
+    el.dataset.managerSyncing='1';
+    getManagers().then(rows=>{
+      const wanted=current||String(el.value||'').trim();
+      el.innerHTML='<option value="">Pilih Project Manager...</option>'+
+        rows.map(x=>`<option value="${String(x.name??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;')}">${String(x.name??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;')} (${String(x.code??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;')})</option>`).join('');
+      if(wanted) el.value=wanted;
+      if(!el.value&&current) {
+        const fallback=document.createElement('option');
+        fallback.value=current;fallback.textContent=current;el.appendChild(fallback);el.value=current;
+      }
+      el.dataset.managerSynced='1';
+    }).finally(()=>{delete el.dataset.managerSyncing});
+  }
+
   function markFields(box){
     const grids=[...box.querySelectorAll('.formgrid,.twocol')];
     grids.forEach(grid=>{
@@ -163,6 +215,7 @@
       if(!isEditBox(box)) return;
       box.classList.add(CLASS);
       markFields(box);
+      enhanceManagerDropdown(box);
     });
   }
 
