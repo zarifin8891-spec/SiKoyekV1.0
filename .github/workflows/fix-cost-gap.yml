@@ -1,0 +1,37 @@
+name: Fix Cost Control Progress Gap
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-cost-gap.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch progress source
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('cost-control-audit.js')
+          s = p.read_text(encoding='utf-8')
+          old = "  function getProgress(d){const direct=progressOf(d);if(direct!==null)return Math.max(0,Math.min(100,direct));for(const k of ['items','work_items','workItems','pekerjaan','items_pekerjaan','itemPekerjaan']){const a=d?.[k];if(!Array.isArray(a)||!a.length)continue;let sum=0,wSum=0;for(const x of a){const p=progressOf(x),w=weightOf(x);if(p!==null&&w!==null){sum+=p*w;wSum+=w;}}if(wSum)return Math.max(0,Math.min(100,sum/wSum));}return 0;}"
+          new = "  function getProgress(d){const direct=progressOf(d);if(direct!==null&&direct>0)return Math.max(0,Math.min(100,direct));for(const k of ['items','work_items','workItems','pekerjaan','items_pekerjaan','itemPekerjaan']){const a=d?.[k];if(!Array.isArray(a)||!a.length)continue;let sum=0,wSum=0;for(const x of a){const p=progressOf(x),w=weightOf(x);if(p!==null&&w!==null){sum+=p*w;wSum+=w;}}if(wSum){const weighted=Math.max(0,Math.min(100,sum/wSum));if(weighted>0)return weighted;}}const page=document.getElementById('page');if(page){const cards=[...page.querySelectorAll('.detailgrid .card')];const card=cards.find(c=>String(c.querySelector('.label')?.textContent||'').trim().toUpperCase()==='PROGRESS');const value=card?.querySelector('.value,.big');const n=num(value?.textContent);if(Number.isFinite(n))return Math.max(0,Math.min(100,n));}return direct!==null?Math.max(0,Math.min(100,direct)):0;}"
+          if old not in s:
+              raise SystemExit('Expected getProgress function not found; no changes made.')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+      - name: Commit patch
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add cost-control-audit.js
+          git diff --cached --quiet && exit 0
+          git commit -m 'Fix Gap Progress vs Biaya source'
+          git push
