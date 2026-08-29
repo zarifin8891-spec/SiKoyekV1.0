@@ -24,16 +24,16 @@
       .projects-page-table-v2.table th{padding:8px 10px!important;line-height:1.1!important}
       .projects-page-table-v2.table td{padding:7px 10px!important;line-height:1.15!important}
 
-      /* 100% total: narrower financial columns, extra space returned to project name. */
+      /* 100% total: slightly narrower project-name column and a little more room for actions, eliminating horizontal overflow. */
       .projects-page-table-v2.table th:nth-child(1),.projects-page-table-v2.table td:nth-child(1){width:7%!important}
-      .projects-page-table-v2.table th:nth-child(2),.projects-page-table-v2.table td:nth-child(2){width:31%!important}
+      .projects-page-table-v2.table th:nth-child(2),.projects-page-table-v2.table td:nth-child(2){width:29%!important}
       .projects-page-table-v2.table th:nth-child(3),.projects-page-table-v2.table td:nth-child(3){width:10%!important}
       .projects-page-table-v2.table th:nth-child(4),.projects-page-table-v2.table td:nth-child(4){width:10%!important}
       .projects-page-table-v2.table th:nth-child(5),.projects-page-table-v2.table td:nth-child(5){width:9%!important}
       .projects-page-table-v2.table th:nth-child(6),.projects-page-table-v2.table td:nth-child(6){width:8%!important}
       .projects-page-table-v2.table th:nth-child(7),.projects-page-table-v2.table td:nth-child(7){width:9%!important}
       .projects-page-table-v2.table th:nth-child(8),.projects-page-table-v2.table td:nth-child(8){width:8%!important}
-      .projects-page-table-v2.table th:nth-child(9),.projects-page-table-v2.table td:nth-child(9){width:8%!important}
+      .projects-page-table-v2.table th:nth-child(9),.projects-page-table-v2.table td:nth-child(9){width:10%!important}
 
       .projects-page-table-v2.table th:nth-child(6),
       .projects-page-table-v2.table th:nth-child(7){
@@ -45,7 +45,7 @@
       .projects-page-table-v2.table td:nth-child(6),
       .projects-page-table-v2.table td:nth-child(7){white-space:nowrap!important}
 
-      .projects-page-table-v2.table .p5-actions-cell{width:8%!important;min-width:0!important}
+      .projects-page-table-v2.table .p5-actions-cell{width:10%!important;min-width:0!important}
       .projects-page-table-v2.table .p5-toolbar{display:flex!important;justify-content:center!important;align-items:center!important;gap:6px!important;flex-wrap:nowrap!important}
       .projects-page-table-v2.table .p5-action,
       .projects-page-table-v2.table .p5-action.primary,
@@ -142,6 +142,7 @@
       const text=(th.textContent||'').trim().replace(/\s+/g,' ');
       if(text==='Cost Ratio') th.innerHTML='Rasio<br>Biaya';
       if(text==='RAP Consumption') th.innerHTML='RAP<br>Terpakai';
+      if(text==='Health') th.textContent='Status';
     });
 
     cleanDuplicateActions(table);
