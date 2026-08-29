@@ -15,17 +15,71 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Patch progress source
+      - name: Patch cost control
         shell: python
         run: |
           from pathlib import Path
           p = Path('cost-control-audit.js')
           s = p.read_text(encoding='utf-8')
-          old = "  function getProgress(d){const direct=progressOf(d);if(direct!==null)return Math.max(0,Math.min(100,direct));for(const k of ['items','work_items','workItems','pekerjaan','items_pekerjaan','itemPekerjaan']){const a=d?.[k];if(!Array.isArray(a)||!a.length)continue;let sum=0,wSum=0;for(const x of a){const p=progressOf(x),w=weightOf(x);if(p!==null&&w!==null){sum+=p*w;wSum+=w;}}if(wSum)return Math.max(0,Math.min(100,sum/wSum));}return 0;}"
-          new = "  function getProgress(d){const direct=progressOf(d);if(direct!==null&&direct>0)return Math.max(0,Math.min(100,direct));for(const k of ['items','work_items','workItems','pekerjaan','items_pekerjaan','itemPekerjaan']){const a=d?.[k];if(!Array.isArray(a)||!a.length)continue;let sum=0,wSum=0;for(const x of a){const p=progressOf(x),w=weightOf(x);if(p!==null&&w!==null){sum+=p*w;wSum+=w;}}if(wSum){const weighted=Math.max(0,Math.min(100,sum/wSum));if(weighted>0)return weighted;}}const page=document.getElementById('page');if(page){const cards=[...page.querySelectorAll('.detailgrid .card')];const card=cards.find(c=>String(c.querySelector('.label')?.textContent||'').trim().toUpperCase()==='PROGRESS');const value=card?.querySelector('.value,.big');const n=num(value?.textContent);if(Number.isFinite(n))return Math.max(0,Math.min(100,n));}return direct!==null?Math.max(0,Math.min(100,direct)):0;}"
-          if old not in s:
-              raise SystemExit('Expected getProgress function not found; no changes made.')
-          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+
+          old_start = "  function getProgress(d){"
+          start = s.find(old_start)
+          if start < 0:
+              raise SystemExit('getProgress function not found; no changes made.')
+          end = s.find("\n  function rapVal", start)
+          if end < 0:
+              raise SystemExit('getProgress boundary not found; no changes made.')
+
+          new_get = '''  function getProgress(d){
+    const direct=progressOf(d);
+    if(direct!==null&&direct>0)return Math.max(0,Math.min(100,direct));
+    for(const k of ['items','work_items','workItems','pekerjaan','items_pekerjaan','itemPekerjaan']){
+      const a=d?.[k];
+      if(!Array.isArray(a)||!a.length)continue;
+      let sum=0,wSum=0;
+      for(const x of a){
+        const p=progressOf(x),w=weightOf(x);
+        if(p!==null&&w!==null){sum+=p*w;wSum+=w;}
+      }
+      if(wSum){
+        const weighted=Math.max(0,Math.min(100,sum/wSum));
+        if(weighted>0)return weighted;
+      }
+    }
+    const page=document.getElementById('page');
+    if(page){
+      const candidates=[...page.querySelectorAll('*')].filter(el=>String(el.textContent||'').trim().toUpperCase()==='PROGRESS');
+      for(const label of candidates){
+        let node=label;
+        for(let i=0;i<5&&node;i++,node=node.parentElement){
+          const text=String(node.textContent||'');
+          const matches=[...text.matchAll(/(\\d+(?:\\.\\d+)?)\\s*%/g)];
+          if(matches.length){
+            const n=Number(matches[matches.length-1][1]);
+            if(Number.isFinite(n))return Math.max(0,Math.min(100,n));
+          }
+        }
+      }
+      const cards=[...page.querySelectorAll('.detailgrid .card')];
+      for(const card of cards){
+        const label=String(card.querySelector('.label')?.textContent||'').trim().toUpperCase();
+        if(label==='PROGRESS'){
+          const n=num(card.textContent.match(/(\\d+(?:\\.\\d+)?)\\s*%/)?.[1]);
+          if(Number.isFinite(n))return Math.max(0,Math.min(100,n));
+        }
+      }
+    }
+    return direct!==null?Math.max(0,Math.min(100,direct)):0;
+  }'''
+          s = s[:start] + new_get + s[end:]
+
+          marker = "      #${HOST_ID} th{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;background:#fafbfd}"
+          if marker not in s:
+              raise SystemExit('table header CSS marker not found; no changes made.')
+          header_fix = marker + "\n      #${HOST_ID} th:nth-child(2),#${HOST_ID} th:nth-child(3),#${HOST_ID} th:nth-child(4),#${HOST_ID} th:nth-child(5){text-align:right;padding-right:8px}"
+          s = s.replace(marker, header_fix, 1)
+
+          p.write_text(s, encoding='utf-8')
       - name: Commit patch
         shell: bash
         run: |
@@ -33,5 +87,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add cost-control-audit.js
           git diff --cached --quiet && exit 0
-          git commit -m 'Fix Gap Progress vs Biaya source'
+          git commit -m 'Fix Cost Control progress and table header alignment'
           git push
