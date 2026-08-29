@@ -16,7 +16,7 @@
       if(!head)return;
       const labels=['Proyek','Kas Masuk','Kas Keluar','Arus Kas Bersih','Transaksi'];
       [...head.children].forEach((th,i)=>{
-        if(i<labels.length)th.textContent=labels[i];
+        if(i<labels.length && th.textContent!==labels[i])th.textContent=labels[i];
         th.style.setProperty('position','sticky','important');
         th.style.setProperty('top','0','important');
         th.style.setProperty('display','table-cell','important');
@@ -31,13 +31,14 @@
       const widths=['35%','18%','18%','20%','9%'];
       [...table.rows].forEach(row=>[...row.children].forEach((cell,i)=>{
         if(i<widths.length)cell.style.setProperty('width',widths[i],'important');
-        cell.style.setProperty('position','static','important');
+        if(cell.style.position!=='static')cell.style.setProperty('position','static','important');
       }));
     });
   }
   function apply(){fixProjectsTitle();fixMasterData();fixPeriodTable()}
   const boot=()=>{apply();setTimeout(apply,150);setTimeout(apply,600)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  new MutationObserver(()=>apply()).observe(document.body,{childList:true,subtree:true});
-  setInterval(apply,1200);
+  // Observe only page replacement; disconnect during apply to prevent mutation loops.
+  const observer=new MutationObserver(()=>{observer.disconnect();apply();observer.observe(document.body,{childList:true,subtree:true});});
+  if(document.body)observer.observe(document.body,{childList:true,subtree:true});
 })();
