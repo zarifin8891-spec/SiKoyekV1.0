@@ -76,6 +76,17 @@
   function boot(){
     observer.observe(document.body,{childList:true,subtree:true});
     sync();
+    loadPass9();
   }
+
+  function loadPass9(){
+    if(document.getElementById('ui-form-pass9-script'))return;
+    const script=document.createElement('script');
+    script.id='ui-form-pass9-script';
+    script.src='./ui-form-pass9.js?v=9.1';
+    script.defer=true;
+    document.body.appendChild(script);
+  }
+
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
