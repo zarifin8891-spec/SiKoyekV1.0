@@ -18,85 +18,37 @@
     try{
       const field=input.closest('.field');
       if(!field)return;
-
       let select=input;
       if(input.tagName!=='SELECT'){
-        select=document.createElement('select');
-        select.id='f_cat';
-        select.name='f_cat';
-        select.className=input.className;
-        select.value=input.value;
-        input.replaceWith(select);
+        select=document.createElement('select');select.id='f_cat';select.name='f_cat';select.className=input.className;select.value=input.value;input.replaceWith(select);
       }
       select.dataset.categorySyncing='1';
-
       const current=select.value;
       const data=await getCategories();
       const active=data.filter(x=>x.is_active!==false);
       select.innerHTML=active.map(x=>`<option value="${esc(x.name)}">${esc(x.name)}</option>`).join('');
-      if(active.some(x=>x.name===current))select.value=current;
-      else if(active[0])select.value=active[0].name;
-
-      field.querySelectorAll('.category-tools').forEach(row=>row.remove());
-      field.querySelectorAll('[data-p6-cat-master]').forEach(button=>button.closest('div')?.remove());
-      field.querySelectorAll('.step1-category-tools').forEach((row,i)=>{if(i>0)row.remove()});
-
-      let tools=field.querySelector('.step1-category-tools');
-      if(!tools){
-        tools=document.createElement('div');
-        tools.className='step1-category-tools';
-        tools.innerHTML='<span>Master kategori proyek</span><button type="button" class="btn ghost">⚙ Kelola Kategori</button>';
-        tools.querySelector('button').addEventListener('click',()=>{
-          if(typeof window.p6OpenCategoryMaster==='function')window.p6OpenCategoryMaster();
-          else if(typeof window.openCategoryMaster==='function')window.openCategoryMaster();
-        });
-        field.appendChild(tools);
-      }
+      if(active.some(x=>x.name===current))select.value=current; else if(active[0])select.value=active[0].name;
+      /* Category management stays in Master Data; do not add controls to project forms. */
+      field.querySelectorAll('.category-tools,[data-category-master],.step1-category-tools').forEach(row=>row.remove());
       select.dataset.categorySynced='1';
-    }finally{
-      const select=document.getElementById('f_cat');if(select){delete select.dataset.categorySyncing}
-    }
+    }finally{const select=document.getElementById('f_cat');if(select)delete select.dataset.categorySyncing}
   }
 
   function polishHeader(){
-    const box=document.querySelector('#modal .modalbox.p6-form');
-    if(!box)return;
-    const head=box.querySelector('.p6-body>.modalhead');
-    if(head)head.classList.add('step1-modalhead');
+    const box=document.querySelector('#modal .modalbox.p6-form');if(!box)return;
+    const head=box.querySelector('.p6-body>.modalhead');if(head)head.classList.add('step1-modalhead');
   }
-
   let scheduled=false;
-  function sync(){
-    if(scheduled)return;
-    scheduled=true;
-    setTimeout(async()=>{scheduled=false;polishHeader();await syncCategory()},80);
-  }
-
+  function sync(){if(scheduled)return;scheduled=true;setTimeout(async()=>{scheduled=false;polishHeader();await syncCategory()},80)}
   const observer=new MutationObserver(()=>sync());
+
+  function loadScript(id,src){if(document.getElementById(id))return;const script=document.createElement('script');script.id=id;script.src=src;script.defer=true;document.body.appendChild(script)}
   function boot(){
-    observer.observe(document.body,{childList:true,subtree:true});
-    sync();
-    loadPass10();
-    loadFinalProjectForm();
+    observer.observe(document.body,{childList:true,subtree:true});sync();
+    loadScript('ui-form-pass10-script','./ui-form-pass10.js?v=10.0');
+    loadScript('ui-form-final-script','./ui-form-final.js?v=1');
+    /* Final Edit renderer runs after the legacy edit matcher and rebuilds the field order from scratch. */
+    loadScript('ui-form-edit-final-v5-script','./ui-form-edit-final-v5.js?v=5.0');
   }
-
-  function loadPass10(){
-    if(document.getElementById('ui-form-pass10-script'))return;
-    const script=document.createElement('script');
-    script.id='ui-form-pass10-script';
-    script.src='./ui-form-pass10.js?v=10.0';
-    script.defer=true;
-    document.body.appendChild(script);
-  }
-
-  function loadFinalProjectForm(){
-    if(document.getElementById('ui-form-final-script'))return;
-    const script=document.createElement('script');
-    script.id='ui-form-final-script';
-    script.src='./ui-form-final.js?v=1';
-    script.defer=true;
-    document.body.appendChild(script);
-  }
-
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
