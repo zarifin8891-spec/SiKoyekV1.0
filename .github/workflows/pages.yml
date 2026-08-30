@@ -45,6 +45,61 @@ jobs:
           if missing:
               raise SystemExit(f'Missing canonical Dashboard assets: {missing}')
           print('Canonical Dashboard artifact verified.')
+      - name: Inject compact Master Data modal runtime
+        shell: python
+        run: |
+          from pathlib import Path
+          runtime = r'''(function(){
+            const STYLE_ID='sikoyek-master-compact-runtime-v2';
+            const BOX='md-master-compact-runtime';
+            const names=/kategori proyek|project manager|kategori keuangan|metode pembayaran/i;
+            const titles=/^(tambah|edit|hapus)\\b/i;
+            function style(){
+              if(document.getElementById(STYLE_ID))return;
+              const s=document.createElement('style');s.id=STYLE_ID;
+              s.textContent=`
+                #modal .modalbox.${BOX}{width:460px!important;min-width:460px!important;max-width:460px!important;height:auto!important;min-height:0!important;max-height:calc(100vh - 28px)!important;padding:0!important;margin:0!important;overflow:hidden!important;border-radius:16px!important;box-sizing:border-box!important}
+                #modal .modalbox.${BOX} .modalhead{height:62px!important;min-height:62px!important;margin:0!important;padding:10px 16px!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:space-between!important;border-radius:16px 16px 0 0!important}
+                #modal .modalbox.${BOX} .modalhead h3{margin:0!important;font-size:17px!important;line-height:1.15!important;font-weight:750!important}
+                #modal .modalbox.${BOX} .modalhead button{height:32px!important;min-height:32px!important;min-width:72px!important;padding:0 12px!important;border-radius:8px!important;font-size:11px!important}
+                #modal .modalbox.${BOX} .field{width:calc(100% - 32px)!important;min-width:0!important;margin:0 16px 7px!important;box-sizing:border-box!important}
+                #modal .modalbox.${BOX} .field label{display:block!important;margin:0 0 3px!important;font-size:10px!important;line-height:1.15!important;font-weight:650!important}
+                #modal .modalbox.${BOX} .field input,#modal .modalbox.${BOX} .field select,#modal .modalbox.${BOX} .field textarea{width:100%!important;height:34px!important;min-height:34px!important;padding:5px 9px!important;border:1px solid #cbd8e6!important;border-radius:7px!important;font-size:12px!important;line-height:1.2!important;box-sizing:border-box!important;box-shadow:none!important}
+                #modal .modalbox.${BOX} .formgrid{width:calc(100% - 32px)!important;margin:10px 16px 0!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px 9px!important;box-sizing:border-box!important}
+                #modal .modalbox.${BOX} .formgrid .field{width:auto!important;margin:0!important}
+                #modal .modalbox.${BOX} .formactions{width:calc(100% - 32px)!important;height:46px!important;min-height:46px!important;margin:5px 16px 0!important;padding:7px 0!important;border-top:1px solid #e8edf3!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:6px!important;box-sizing:border-box!important}
+                #modal .modalbox.${BOX} .formactions .btn{height:32px!important;min-height:32px!important;min-width:82px!important;padding:0 11px!important;border-radius:7px!important;font-size:11px!important;line-height:1!important;font-weight:500!important}
+                #modal .modalbox.${BOX} p{margin:12px 16px 4px!important;font-size:12px!important;line-height:1.4!important}
+                #modal .modalbox.${BOX} p.note{margin:0 16px 7px!important;font-size:10px!important}
+                #modal .modalbox.${BOX} .field>div[style*="justify-content:space-between"]{padding:7px 8px!important;border-radius:7px!important;gap:8px!important}
+                #modal .modalbox.${BOX} .field>div[style*="justify-content:space-between"] .btn{height:28px!important;min-height:28px!important;font-size:10px!important;padding:0 9px!important}
+                @media(max-width:520px){#modal .modalbox.${BOX}{width:calc(100vw - 24px)!important;min-width:0!important;max-width:none!important}#modal .modalbox.${BOX} .formgrid{grid-template-columns:1fr!important}}
+              `;document.head.appendChild(s);
+            }
+            function apply(){
+              style();
+              document.querySelectorAll('#modal .modalbox').forEach(box=>{
+                const title=(box.querySelector('.modalhead h3')?.textContent||'').trim();
+                if(titles.test(title)&&names.test(title)){
+                  box.classList.add(BOX);
+                  ['width','min-width','max-width'].forEach(k=>box.style.setProperty(k,'460px','important'));
+                  box.style.setProperty('height','auto','important');
+                  box.style.setProperty('min-height','0','important');
+                  box.style.setProperty('padding','0','important');
+                  box.style.setProperty('overflow','hidden','important');
+                }
+              });
+            }
+            function boot(){apply();new MutationObserver(()=>{clearTimeout(window.__mdCompactTimer);window.__mdCompactTimer=setTimeout(apply,15)}).observe(document.body,{childList:true,subtree:true});}
+            if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+          })();'''
+          Path('master-data-compact-runtime-v2.js').write_text(runtime, encoding='utf-8')
+          html = Path('index.html').read_text(encoding='utf-8')
+          tag = '<script src="./master-data-compact-runtime-v2.js?v=2" defer></script>'
+          if tag not in html:
+              html = html.replace('</body>', tag + '</body>')
+              Path('index.html').write_text(html, encoding='utf-8')
+          print('Master Data compact runtime injected.')
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
