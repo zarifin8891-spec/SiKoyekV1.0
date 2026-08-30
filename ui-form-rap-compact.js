@@ -1,21 +1,41 @@
 /* SiKoyek V1.0 — compact Isi RAP form. */
 (function(){
   const STYLE_ID='ui-rap-compact-style';
+  function normalize(){
+    const box=document.querySelector('#modal .modalbox:has(#rap_material)');
+    if(!box)return;
+    box.style.width='560px';
+    box.style.maxWidth='calc(100vw - 32px)';
+    box.style.padding='0';
+    box.style.boxSizing='border-box';
+    box.style.overflow='hidden';
+    box.querySelectorAll('.note').forEach(el=>el.remove());
+    box.querySelectorAll(':scope > *').forEach(el=>{
+      el.style.boxSizing='border-box';
+      el.style.maxWidth='none';
+    });
+  }
   function addStyle(){
     if(document.getElementById(STYLE_ID)) return;
     const s=document.createElement('style');
     s.id=STYLE_ID;
     s.textContent=`
-      /* RAP modal: remove the outer white frame and keep the header flush to the shell. */
       #modal .modalbox:has(#rap_material){
         width:min(560px,calc(100vw - 32px))!important;
         max-width:560px!important;
         max-height:calc(100vh - 32px)!important;
         padding:0!important;
+        margin:0!important;
+        box-sizing:border-box!important;
         border-radius:18px!important;
         overflow:hidden!important;
       }
+      #modal .modalbox:has(#rap_material)>*{
+        box-sizing:border-box!important;
+        max-width:none!important;
+      }
       #modal .modalbox:has(#rap_material)>.modalhead{
+        width:100%!important;
         margin:0!important;
         padding:18px!important;
         min-height:72px!important;
@@ -40,8 +60,8 @@
         font-size:13px!important;
         font-weight:500!important;
       }
-      /* Give the body content its own compact inner gutter, without creating an outer frame. */
       #modal .modalbox:has(#rap_material)>.ui-help{
+        width:auto!important;
         margin:18px 18px 0!important;
       }
       #modal .modalbox:has(#rap_material) .formgrid{
@@ -81,9 +101,10 @@
         box-shadow:none!important;
         outline:none!important;
       }
-      /* The old explanatory note is intentionally removed from the RAP form. */
-      #modal .modalbox:has(#rap_material)>.note{display:none!important}
+      #modal .modalbox:has(#rap_material)>.note,
+      #modal .modalbox:has(#rap_material) .note{display:none!important}
       #modal .modalbox:has(#rap_material)>.formactions{
+        width:auto!important;
         height:54px!important;
         min-height:54px!important;
         margin:12px 18px 0!important;
@@ -124,5 +145,11 @@
     `;
     document.head.appendChild(s);
   }
-  addStyle();
+  function boot(){
+    addStyle();
+    normalize();
+    const observer=new MutationObserver(normalize);
+    observer.observe(document.body,{childList:true,subtree:true});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
