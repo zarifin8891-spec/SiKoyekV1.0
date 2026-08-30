@@ -110,6 +110,27 @@ jobs:
               html = html.replace('</body>', tag + '</body>')
               Path('index.html').write_text(html, encoding='utf-8')
           print('Master Data compact runtime v5 injected.')
+      - name: Final dashboard table compact layout
+        shell: python
+        run: |
+          from pathlib import Path
+          html = Path('index.html').read_text(encoding='utf-8')
+          style = r'''<style id="sikoyek-final-dashboard-table-v1">
+          /* Final SiKoyek V1.0 dashboard table revision:
+             remove the artificial empty block below the panels,
+             tighten row height, and use subtle zebra striping. */
+          .dashboard-panel .tablecard{min-height:0!important;height:auto!important}
+          .dashboard-panel .table{height:auto!important}
+          .dashboard-panel .table th,
+          .dashboard-panel .table td{padding:7px 10px!important;line-height:1.25!important}
+          .dashboard-panel .table tbody tr:nth-child(odd) td{background:#fff!important}
+          .dashboard-panel .table tbody tr:nth-child(even) td{background:#f5f8fc!important}
+          .dashboard-panel .table tbody tr:last-child td{border-bottom:0!important}
+          </style>'''
+          if 'sikoyek-final-dashboard-table-v1' not in html:
+              html = html.replace('</head>', style + '</head>')
+              Path('index.html').write_text(html, encoding='utf-8')
+          print('Final dashboard table layout injected.')
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
