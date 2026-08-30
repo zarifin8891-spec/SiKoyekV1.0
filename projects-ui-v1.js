@@ -17,8 +17,8 @@
         border-bottom-color:#d7e0eb!important;font-weight:600!important;
         white-space:nowrap!important;
       }
-      .projects-page-table-v2.table th{padding:8px 10px!important;line-height:1.1!important}
-      .projects-page-table-v2.table td{padding:7px 10px!important;line-height:1.15!important}
+      .projects-page-table-v2.table th{padding:7px 10px!important;line-height:1.05!important}
+      .projects-page-table-v2.table td{padding:5px 10px!important;line-height:1.1!important}
 
       .projects-page-table-v2.table th:nth-child(1),.projects-page-table-v2.table td:nth-child(1){width:7%!important}
       .projects-page-table-v2.table th:nth-child(2),.projects-page-table-v2.table td:nth-child(2){width:27%!important}
@@ -31,20 +31,20 @@
       .projects-page-table-v2.table th:nth-child(9),.projects-page-table-v2.table td:nth-child(9){width:10%!important}
 
       .projects-page-table-v2.table th:nth-child(6),
-      .projects-page-table-v2.table th:nth-child(7){white-space:normal!important;line-height:1.05!important;text-align:left!important}
+      .projects-page-table-v2.table th:nth-child(7){white-space:normal!important;line-height:1.02!important;text-align:left!important}
       .projects-page-table-v2.table td:nth-child(2){white-space:normal!important}
       .projects-page-table-v2.table td:nth-child(6),
       .projects-page-table-v2.table td:nth-child(7){white-space:nowrap!important}
 
       .projects-page-table-v2.table .p5-actions-cell{width:10%!important;min-width:0!important}
-      .projects-page-table-v2.table .p5-toolbar{display:flex!important;justify-content:center!important;align-items:center!important;gap:6px!important;flex-wrap:nowrap!important}
+      .projects-page-table-v2.table .p5-toolbar{display:flex!important;justify-content:center!important;align-items:center!important;gap:4px!important;flex-wrap:nowrap!important}
       .projects-page-table-v2.table .p5-action,
       .projects-page-table-v2.table .p5-action.primary,
       .projects-page-table-v2.table .p5-action.danger{
-        width:58px!important;min-width:58px!important;height:32px!important;
-        padding:4px 8px!important;margin:0!important;display:inline-flex!important;
+        width:56px!important;min-width:56px!important;height:26px!important;
+        padding:2px 7px!important;margin:0!important;display:inline-flex!important;
         align-items:center!important;justify-content:center!important;box-sizing:border-box!important;
-        font-size:13px!important;line-height:1!important;font-weight:400!important;
+        font-size:12px!important;line-height:1!important;font-weight:400!important;
       }
       .projects-page-table-v2.table .p5-lock-note{display:none!important}
       .projects-page-table-v2.table th:last-child,.projects-page-table-v2.table td:last-child{text-align:center!important}
@@ -119,10 +119,10 @@
     cleanDuplicateActions(table);
     table.querySelectorAll('.p5-lock-note').forEach(el=>el.remove());
     table.querySelectorAll('.p5-action').forEach(btn=>{
-      btn.style.width='58px';
-      btn.style.minWidth='58px';
-      btn.style.height='32px';
-      btn.style.padding='4px 8px';
+      btn.style.width='56px';
+      btn.style.minWidth='56px';
+      btn.style.height='26px';
+      btn.style.padding='2px 7px';
       btn.style.display='inline-flex';
       btn.style.alignItems='center';
       btn.style.justifyContent='center';
