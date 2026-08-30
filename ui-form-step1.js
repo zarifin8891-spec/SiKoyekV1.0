@@ -18,7 +18,7 @@
       if(input.tagName!=='SELECT'){select=document.createElement('select');select.id='f_cat';select.name='f_cat';select.className=input.className;select.value=input.value;input.replaceWith(select)}
       select.dataset.categorySyncing='1';
       const current=select.value;const data=await getCategories();const active=data.filter(x=>x.is_active!==false);
-      select.innerHTML=active.map(x=>`<option value="${esc(x.name)}">${esc(x.name)}</option>`).join('');
+      select.innerHTML=active.map(x=>`<option value=\"${esc(x.name)}\">${esc(x.name)}</option>`).join('');
       if(active.some(x=>x.name===current))select.value=current;else if(active[0])select.value=active[0].name;
       field.querySelectorAll('.category-tools,[data-category-master],.step1-category-tools').forEach(row=>row.remove());
       select.dataset.categorySynced='1';
@@ -35,6 +35,7 @@
     /* Edit Proyek uses one authoritative renderer. */
     loadScript('ui-form-edit-final-v5-script','./ui-form-edit-final-v5.js?v=7.0');
     loadScript('ui-form-layout-final-script','./ui-form-layout-final.js?v=3');
+    loadScript('ui-form-rap-compact-script','./ui-form-rap-compact.js?v=1');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
