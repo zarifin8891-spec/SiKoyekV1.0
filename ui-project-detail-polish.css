@@ -1,0 +1,9 @@
+/* Compact project detail header and KPI tuning. Scoped to detail-page elements only. */
+.detailtitle ~ .actions .btn{height:42px!important;min-height:42px!important;padding:0 16px!important;border-radius:10px!important;font-size:15px!important;font-weight:500!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important}
+.detailgrid .kpi{height:88px!important;min-height:88px!important;padding:12px 20px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;box-sizing:border-box!important}
+.detailgrid .kpi .label{font-size:11px!important;line-height:1.15!important;font-weight:600!important;margin:0!important}
+.detailgrid .kpi .value{font-size:20px!important;line-height:1.15!important;font-weight:700!important;margin-top:6px!important;white-space:nowrap!important}
+.detailgrid .kpi .pill{font-size:11px!important;padding:5px 9px!important}
+.detailgrid .kpi .bar{margin-top:7px!important;height:7px!important}
+.detailgrid .kpi .bar+i{height:100%!important}
+@media(max-width:780px){.detailtitle ~ .actions{width:100%!important}.detailtitle ~ .actions .btn{height:40px!important;min-height:40px!important;font-size:14px!important;padding:0 13px!important}.detailgrid .kpi{height:82px!important;min-height:82px!important;padding:11px 16px!important}}
