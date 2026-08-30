@@ -1,84 +1,7 @@
-/* SiKoyek V1.0 — Authoritative Edit Proyek renderer. */
+/* SiKoyek V1.0 — Edit Proyek uses the exact same visual shell and field geometry as Tambah Proyek. */
 (function(){
-  const STYLE_ID='sikoyek-edit-authoritative-style';
   let managerPromise=null;
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
-  const labelText=field=>(field?.querySelector('label')?.textContent||'').trim().toLowerCase().replace(/\s+/g,' ');
-  const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
-
-  function addStyle(){
-    if(document.getElementById(STYLE_ID))return;
-    const s=document.createElement('style');
-    s.id=STYLE_ID;
-    s.textContent=`
-      /* Authoritative Edit shell: reuse the approved Add Proyek geometry. */
-      #modal .modalbox.sikoyek-edit-authoritative{
-        width:min(820px,calc(100vw - 28px))!important;
-        max-width:820px!important;
-        max-height:calc(100vh - 24px)!important;
-        height:auto!important;
-        min-height:0!important;
-        overflow:hidden!important;
-        padding:0!important;
-        border-radius:20px!important;
-      }
-      #modal .modalbox.sikoyek-edit-authoritative>.modalhead{display:none!important}
-      #modal .modalbox.sikoyek-edit-authoritative>.p6-body{
-        width:100%!important;
-        margin:0!important;
-        padding:0!important;
-        overflow:hidden!important;
-        box-sizing:border-box!important;
-      }
-      #modal .sikoyek-edit-authoritative-root{width:100%!important;overflow:hidden!important}
-      #modal .sikoyek-edit-authoritative-root .ui-final-head{
-        height:78px!important;
-        padding:12px 22px!important;
-      }
-      #modal .sikoyek-edit-authoritative-root .ui-final-grid{
-        margin-top:8px!important;
-      }
-      #modal .sikoyek-edit-authoritative-root .ui-final-field input,
-      #modal .sikoyek-edit-authoritative-root .ui-final-field select{
-        box-sizing:border-box!important;
-      }
-      #modal .sikoyek-edit-authoritative-root .ui-final-actions{
-        margin-top:7px!important;
-      }
-      #modal .sikoyek-edit-authoritative-root .ui-final-actions button{
-        font-weight:500!important;
-      }
-      @media(max-width:900px){
-        #modal .modalbox.sikoyek-edit-authoritative{
-          width:calc(100vw - 18px)!important;
-          max-width:none!important;
-        }
-      }
-      @media(max-width:560px){
-        #modal .modalbox.sikoyek-edit-authoritative{
-          width:calc(100vw - 16px)!important;
-          max-height:calc(100vh - 10px)!important;
-          border-radius:16px!important;
-        }
-      }
-    `;
-    document.head.appendChild(s);
-  }
-
-  async function getManagers(){
-    if(managerPromise)return managerPromise;
-    if(typeof sb==='undefined'||!sb)return Promise.resolve([]);
-    managerPromise=sb.from('project_managers')
-      .select('id,name,code,is_active,sort_order')
-      .order('sort_order',{ascending:true})
-      .order('name',{ascending:true})
-      .then(({data,error})=>{
-        if(error)throw error;
-        return (data||[]).filter(x=>x.is_active!==false);
-      })
-      .catch(()=>{managerPromise=null;return[]});
-    return managerPromise;
-  }
 
   async function getProjectInfo(id){
     const [{data:project,error:e1},{count:progressCount,error:e2},{count:txCount,error:e3}]=await Promise.all([
@@ -107,13 +30,19 @@
     return current?[{name:current,is_active:true,sort_order:1}]:[{name:'Renovasi',is_active:true,sort_order:1}];
   }
 
-  function genericHeader(box){
-    const head=box?.querySelector(':scope>.modalhead');
-    if(head)head.remove();
+  async function getManagers(){
+    if(managerPromise)return managerPromise;
+    if(typeof sb==='undefined'||!sb)return [];
+    managerPromise=sb.from('project_managers')
+      .select('id,name,code,is_active,sort_order')
+      .order('sort_order',{ascending:true})
+      .order('name',{ascending:true})
+      .then(({data,error})=>{if(error)throw error;return(data||[]).filter(x=>x.is_active!==false)})
+      .catch(()=>{managerPromise=null;return[]});
+    return managerPromise;
   }
 
   async function openEdit(id){
-    addStyle();
     const info=await getProjectInfo(id);
     if(!info)return;
     if(info.started){toast('Proyek sudah dimulai. Edit data proyek dasar dikunci.');return}
@@ -123,7 +52,9 @@
     const categoryOptions=cats.map(x=>`<option value="${esc(x.name)}" ${x.name===p.category?'selected':''}>${esc(x.name)}</option>`).join('');
     const managerOptions='<option value="">Pilih Project Manager...</option>'+managers.map(x=>`<option value="${esc(x.name)}" ${x.name===p.project_manager?'selected':''}>${esc(x.name)} (${esc(x.code)})</option>`).join('');
 
-    modal('',`<div id="sikoyekEditProject" class="sikoyek-edit-authoritative-root">
+    /* IMPORTANT: use the exact same class names and DOM order as Tambah Proyek.
+       Do not add Edit-specific layout classes; the authoritative Add CSS must render both identically. */
+    modal('',`<div id="uiFinalProject" class="ui-final-project">
       <div class="ui-final-head">
         <div class="ui-final-head-main"><h3>Edit Data Proyek</h3><p>Isi data inti proyek sebelum masuk ke tahap konfirmasi.</p></div>
         <button class="ui-final-close" type="button" onclick="closeModal()">Tutup</button>
@@ -153,10 +84,6 @@
       </div>
     </div>`);
 
-    const box=document.querySelector('#modal .modalbox');
-    if(!box)return;
-    box.classList.add('sikoyek-edit-authoritative');
-    genericHeader(box);
     document.getElementById('p5EditSave')?.addEventListener('click',()=>window.p5SaveProjectEdit(id));
   }
 
@@ -191,7 +118,5 @@
     toast('Data proyek berhasil diperbarui');
   };
 
-  /* Kept intentionally empty: ui-form-final.js historically loads this file.
-     The real edit renderer above is now authoritative, so no DOM mutation layer is needed. */
   window.__sikoyekEditAuthoritative=true;
 })();
