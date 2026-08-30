@@ -24,3 +24,27 @@
 .md-top::after{content:"";position:absolute;width:320px;height:130px;right:-100px;bottom:-85px;border-radius:48%;background:rgba(255,255,255,.055);transform:rotate(-14deg);pointer-events:none}
 .md-top>div:first-child{position:relative;z-index:1}.md-kicker{color:#7dd3df}.md-top h1{color:#fff;font-size:24px;line-height:1.1;margin:0}.md-top p{color:rgba(255,255,255,.78);font-size:12px;margin:3px 0 0}.md-top>.btn{position:relative;z-index:1;margin-left:auto;background:#fff;color:#0d294a;border-color:#fff;box-shadow:none;font-weight:500!important;height:36px;padding:6px 13px;font-size:14px;white-space:nowrap}.md-top>.btn:hover{background:#eef4fa}
 @media(max-width:780px){.md-top{padding:15px}.md-top h1{font-size:22px}.md-top>.btn{margin-left:auto}.md-top{row-gap:8px}}
+/* Master Data modal final geometry override v5 */
+#modal .modalbox.md-master-compact-modal .modalhead,
+#modal .modalbox.md-master-compact-runtime .modalhead{
+  width:calc(100% + 18px)!important;
+  max-width:none!important;
+  margin-right:-18px!important;
+  margin-bottom:18px!important;
+  box-sizing:border-box!important;
+}
+#modal .modalbox.md-master-compact-modal .p6-body,
+#modal .modalbox.md-master-compact-runtime .p6-body{
+  padding-right:0!important;
+  width:100%!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+}
+#modal .modalbox.md-master-compact-modal .field:first-of-type,
+#modal .modalbox.md-master-compact-runtime .field:first-of-type{
+  margin-top:0!important;
+}
+#modal .modalbox.md-master-compact-modal .modalhead + .field,
+#modal .modalbox.md-master-compact-runtime .modalhead + .field{
+  margin-top:0!important;
+}
