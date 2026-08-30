@@ -34,7 +34,7 @@
     loadScript('ui-form-final-script','./ui-form-final.js?v=2');
     /* Edit Proyek uses one authoritative renderer. */
     loadScript('ui-form-edit-final-v5-script','./ui-form-edit-final-v5.js?v=7.0');
-    loadScript('ui-form-layout-final-script','./ui-form-layout-final.js?v=3');
+    loadScript('ui-form-layout-final-script','./ui-form-layout-final.js?v=4');
     loadScript('ui-form-rap-compact-script','./ui-form-rap-compact.js?v=1');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
