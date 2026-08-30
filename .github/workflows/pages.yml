@@ -53,7 +53,7 @@ jobs:
             const STYLE_ID='sikoyek-master-compact-runtime-v2';
             const BOX='md-master-compact-runtime';
             const names=/kategori proyek|project manager|kategori keuangan|metode pembayaran/i;
-            const titles=/^(tambah|edit|hapus)\\b/i;
+            const titles=/^(tambah|edit|hapus)\b/i;
             function style(){
               if(document.getElementById(STYLE_ID))return;
               const s=document.createElement('style');s.id=STYLE_ID;
