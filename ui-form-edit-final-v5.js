@@ -1,83 +1,197 @@
-/* Edit Proyek final geometry: rebuild field order from scratch and remove Status field. */
+/* SiKoyek V1.0 — Authoritative Edit Proyek renderer. */
 (function(){
-  const STYLE_ID='ui-form-edit-final-v5-style';
-  const CLASS='edit-project-final-v5';
+  const STYLE_ID='sikoyek-edit-authoritative-style';
   let managerPromise=null;
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
-  const text=field=>(field?.querySelector('label')?.textContent||'').trim().toLowerCase().replace(/\s+/g,' ');
+  const labelText=field=>(field?.querySelector('label')?.textContent||'').trim().toLowerCase().replace(/\s+/g,' ');
+  const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
 
   function addStyle(){
     if(document.getElementById(STYLE_ID))return;
-    const s=document.createElement('style');s.id=STYLE_ID;s.textContent=`
-#modal .modalbox.${CLASS}{width:min(820px,calc(100vw - 28px))!important;max-width:820px!important;max-height:calc(100vh - 24px)!important;overflow:hidden!important;padding:0!important;border-radius:20px!important}
-#modal .modalbox.${CLASS}>.p6-body{width:100%!important;margin:0!important;padding:0!important;overflow:hidden!important;box-sizing:border-box!important}
-#modal .modalbox.${CLASS} .p5-edit-banner{width:calc(100% - 36px)!important;margin:0 18px!important;box-sizing:border-box!important}
-#modal .modalbox.${CLASS} .p5-edit-layout-grid{width:calc(100% - 36px)!important;max-width:none!important;margin:14px 18px 0!important;padding:10px!important;display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;grid-auto-flow:row!important;gap:6px 8px!important;border:1px solid #dfe7f0!important;border-radius:13px!important;background:#fbfcfe!important;box-sizing:border-box!important}
-#modal .modalbox.${CLASS} .p5-edit-layout-grid>.field{min-width:0!important;margin:0!important;grid-column:span 2!important;grid-row:auto!important;box-sizing:border-box!important}
-#modal .modalbox.${CLASS} .p5-edit-layout-grid>.field.p5-name-full{grid-column:1/-1!important}
-#modal .modalbox.${CLASS} .p5-edit-layout-grid .field label{display:block!important;margin:0 0 3px!important;color:#3d4d66!important;font-size:9px!important;line-height:1.15!important;font-weight:600!important}
-#modal .modalbox.${CLASS} .p5-edit-layout-grid input,#modal .modalbox.${CLASS} .p5-edit-layout-grid select,#modal .modalbox.${CLASS} .p5-edit-layout-grid textarea{width:100%!important;min-width:0!important;height:33px!important;min-height:33px!important;padding:5px 8px!important;border:1px solid #cbd9e8!important;border-radius:7px!important;background:#fff!important;color:#172033!important;font-size:11px!important;line-height:1!important;outline:none!important;box-sizing:border-box!important}
-#modal .modalbox.${CLASS} .p5-edit-layout-grid input[type="number"]{font-size:12px!important;font-weight:500!important;text-align:right!important}
-#modal .modalbox.${CLASS}>.p6-body>.formactions{width:calc(100% - 36px)!important;height:48px!important;min-height:48px!important;margin:7px 18px 0!important;padding:6px 0!important;border-top:1px solid #e6ebf1!important;display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:7px!important;box-sizing:border-box!important}
-#modal .modalbox.${CLASS}>.p6-body>.formactions .btn{height:34px!important;min-height:34px!important;min-width:88px!important;padding:0 14px!important;margin:0!important;border-radius:8px!important;font-size:13px!important;font-weight:500!important;line-height:1!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;white-space:nowrap!important}
-#modal .modalbox.${CLASS}>.p6-body>.formactions .btn.primary{min-width:112px!important}
-@media(max-width:900px){#modal .modalbox.${CLASS}{width:calc(100vw - 18px)!important;max-width:none!important}#modal .modalbox.${CLASS} .p5-edit-layout-grid{width:calc(100% - 24px)!important;margin-left:12px!important;margin-right:12px!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}#modal .modalbox.${CLASS} .p5-edit-layout-grid>.field{grid-column:span 1!important}#modal .modalbox.${CLASS} .p5-edit-layout-grid>.field.p5-name-full{grid-column:1/-1!important}#modal .modalbox.${CLASS} .p5-edit-banner{width:calc(100% - 24px)!important;margin-left:12px!important;margin-right:12px!important}#modal .modalbox.${CLASS}>.p6-body>.formactions{width:calc(100% - 24px)!important;margin-left:12px!important;margin-right:12px!important}}
-@media(max-width:560px){#modal .modalbox.${CLASS}{width:calc(100vw - 16px)!important;max-height:calc(100vh - 10px)!important;border-radius:16px!important}#modal .modalbox.${CLASS} .p5-edit-layout-grid{grid-template-columns:1fr!important;width:calc(100% - 24px)!important;margin-left:12px!important;margin-right:12px!important}#modal .modalbox.${CLASS} .p5-edit-layout-grid>.field,#modal .modalbox.${CLASS} .p5-edit-layout-grid>.field.p5-name-full{grid-column:1/-1!important}#modal .modalbox.${CLASS} .p5-edit-banner{width:calc(100% - 24px)!important;margin-left:12px!important;margin-right:12px!important}#modal .modalbox.${CLASS}>.p6-body>.formactions{width:calc(100% - 24px)!important;margin-left:12px!important;margin-right:12px!important;padding:6px 0!important}#modal .modalbox.${CLASS}>.p6-body>.formactions .btn{min-width:0!important;flex:1}}
-`;
+    const s=document.createElement('style');
+    s.id=STYLE_ID;
+    s.textContent=`
+      /* Authoritative Edit shell: reuse the approved Add Proyek geometry. */
+      #modal .modalbox.sikoyek-edit-authoritative{
+        width:min(820px,calc(100vw - 28px))!important;
+        max-width:820px!important;
+        max-height:calc(100vh - 24px)!important;
+        height:auto!important;
+        min-height:0!important;
+        overflow:hidden!important;
+        padding:0!important;
+        border-radius:20px!important;
+      }
+      #modal .modalbox.sikoyek-edit-authoritative>.modalhead{display:none!important}
+      #modal .modalbox.sikoyek-edit-authoritative>.p6-body{
+        width:100%!important;
+        margin:0!important;
+        padding:0!important;
+        overflow:hidden!important;
+        box-sizing:border-box!important;
+      }
+      #modal .sikoyek-edit-authoritative-root{width:100%!important;overflow:hidden!important}
+      #modal .sikoyek-edit-authoritative-root .ui-final-head{
+        height:78px!important;
+        padding:12px 22px!important;
+      }
+      #modal .sikoyek-edit-authoritative-root .ui-final-grid{
+        margin-top:8px!important;
+      }
+      #modal .sikoyek-edit-authoritative-root .ui-final-field input,
+      #modal .sikoyek-edit-authoritative-root .ui-final-field select{
+        box-sizing:border-box!important;
+      }
+      #modal .sikoyek-edit-authoritative-root .ui-final-actions{
+        margin-top:7px!important;
+      }
+      #modal .sikoyek-edit-authoritative-root .ui-final-actions button{
+        font-weight:500!important;
+      }
+      @media(max-width:900px){
+        #modal .modalbox.sikoyek-edit-authoritative{
+          width:calc(100vw - 18px)!important;
+          max-width:none!important;
+        }
+      }
+      @media(max-width:560px){
+        #modal .modalbox.sikoyek-edit-authoritative{
+          width:calc(100vw - 16px)!important;
+          max-height:calc(100vh - 10px)!important;
+          border-radius:16px!important;
+        }
+      }
+    `;
     document.head.appendChild(s);
   }
-  function getManagers(){
+
+  async function getManagers(){
     if(managerPromise)return managerPromise;
     if(typeof sb==='undefined'||!sb)return Promise.resolve([]);
-    managerPromise=sb.from('project_managers').select('id,name,code,is_active,sort_order').order('sort_order',{ascending:true}).order('name',{ascending:true}).then(({data,error})=>{if(error)throw error;return(data||[]).filter(x=>x.is_active!==false)}).catch(()=>{managerPromise=null;return[]});
+    managerPromise=sb.from('project_managers')
+      .select('id,name,code,is_active,sort_order')
+      .order('sort_order',{ascending:true})
+      .order('name',{ascending:true})
+      .then(({data,error})=>{
+        if(error)throw error;
+        return (data||[]).filter(x=>x.is_active!==false);
+      })
+      .catch(()=>{managerPromise=null;return[]});
     return managerPromise;
   }
-  function syncManager(box){
-    const field=[...box.querySelectorAll('.field')].find(f=>text(f).includes('project manager'));if(!field)return;
-    let el=field.querySelector('#p5_mgr');if(!el)return;
-    const current=String(el.value||'').trim();
-    if(el.tagName!=='SELECT'){const select=document.createElement('select');select.id=el.id||'p5_mgr';select.name=el.name||'';select.className=el.className||'';el.replaceWith(select);el=select}
-    if(el.dataset.v5sync==='1')return;el.dataset.v5sync='1';
-    getManagers().then(rows=>{const wanted=current||String(el.value||'').trim();el.innerHTML='<option value="">Pilih Project Manager...</option>'+rows.map(x=>`<option value="${esc(x.name)}">${esc(x.name)} (${esc(x.code)})</option>`).join('');if(wanted)el.value=wanted;if(!el.value&&current){const o=document.createElement('option');o.value=current;o.textContent=current;el.appendChild(o);el.value=current}});
+
+  async function getProjectInfo(id){
+    const [{data:project,error:e1},{count:progressCount,error:e2},{count:txCount,error:e3}]=await Promise.all([
+      sb.from('projects').select('*').eq('id',id).single(),
+      sb.from('progress_records').select('id',{count:'exact',head:true}).eq('project_id',id),
+      sb.from('financial_transactions').select('id',{count:'exact',head:true}).eq('project_id',id)
+    ]);
+    if(e1||e2||e3){toast('Tidak bisa memeriksa status proyek');return null}
+    const started=String(project?.status||'').toUpperCase()!=='RENCANA'
+      ||Number(project?.project_progress||0)>0
+      ||Number(progressCount||0)>0
+      ||Number(txCount||0)>0;
+    return {project,started};
   }
-  function rebuild(box){
-    const source=box.querySelector('.p5-edit-layout-grid')||box.querySelector('.p5-edit-grid,.formgrid,.twocol');
-    if(!source)return;
-    const fields=[...source.querySelectorAll('.field')];if(!fields.length)return;
-    const find=fn=>fields.find(f=>fn(text(f)));
-    const ordered=[
-      find(t=>t.includes('kode proyek')),
-      find(t=>t.includes('tanggal proyek')),
-      find(t=>t.includes('pemilik')),
-      find(t=>t.includes('nama proyek')),
-      find(t=>t==='kategori'),
-      find(t=>t==='lokasi'),
-      find(t=>t.includes('project manager')),
-      find(t=>t.includes('nilai kontrak')||t.includes('nilai proyek')),
-      find(t=>t.includes('tanggal mulai')),
-      find(t=>t.includes('target selesai')||t.includes('estimasi selesai'))
-    ].filter(Boolean);
-    if(!ordered.length)return;
-    const grid=source.classList.contains('p5-edit-layout-grid')?source:document.createElement('div');
-    if(!source.classList.contains('p5-edit-layout-grid'))source.parentNode.replaceChild(grid,source);
-    grid.className='p5-edit-layout-grid';grid.dataset.v5='1';
-    /* Re-append in exact approved Add order. Status and any other field are excluded entirely. */
-    ordered.forEach(field=>{field.classList.remove('p5-name-full','p5-hidden-status');if(text(field).includes('nama proyek'))field.classList.add('p5-name-full');grid.appendChild(field)});
-    fields.filter(f=>!ordered.includes(f)).forEach(f=>f.remove());
-    syncManager(box);
+
+  async function getCategories(current){
+    try{
+      const {data,error}=await sb.from('project_categories')
+        .select('name,is_active,sort_order')
+        .order('sort_order',{ascending:true})
+        .order('name',{ascending:true});
+      if(error)throw error;
+      const rows=(data||[]).filter(x=>x.is_active!==false);
+      if(rows.length)return rows;
+    }catch(_){ }
+    return current?[{name:current,is_active:true,sort_order:1}]:[{name:'Renovasi',is_active:true,sort_order:1}];
   }
-  function mark(){
+
+  function genericHeader(box){
+    const head=box?.querySelector(':scope>.modalhead');
+    if(head)head.remove();
+  }
+
+  async function openEdit(id){
     addStyle();
-    document.querySelectorAll('#modal .modalbox').forEach(box=>{
-      if(!(box.innerText||'').toLowerCase().includes('edit data proyek'))return;
-      box.classList.remove('edit-project-match-v2','edit-project-match-v3','edit-project-match-v4');
-      box.classList.add(CLASS);
-      rebuild(box);
-      /* Absolute cleanup: no Status field or label remains in Edit. */
-      [...box.querySelectorAll('.field')].forEach(f=>{if(text(f)==='status'||text(f).startsWith('status '))f.remove()});
-    });
+    const info=await getProjectInfo(id);
+    if(!info)return;
+    if(info.started){toast('Proyek sudah dimulai. Edit data proyek dasar dikunci.');return}
+
+    const p=info.project||{};
+    const [cats,managers]=await Promise.all([getCategories(p.category||''),getManagers()]);
+    const categoryOptions=cats.map(x=>`<option value="${esc(x.name)}" ${x.name===p.category?'selected':''}>${esc(x.name)}</option>`).join('');
+    const managerOptions='<option value="">Pilih Project Manager...</option>'+managers.map(x=>`<option value="${esc(x.name)}" ${x.name===p.project_manager?'selected':''}>${esc(x.name)} (${esc(x.code)})</option>`).join('');
+
+    modal('',`<div id="sikoyekEditProject" class="sikoyek-edit-authoritative-root">
+      <div class="ui-final-head">
+        <div class="ui-final-head-main"><h3>Edit Data Proyek</h3><p>Isi data inti proyek sebelum masuk ke tahap konfirmasi.</p></div>
+        <button class="ui-final-close" type="button" onclick="closeModal()">Tutup</button>
+      </div>
+      <div class="ui-final-content">
+        <div class="ui-final-help">Data proyek masih berada pada status awal, sehingga perubahan dasar diperbolehkan.</div>
+        <div class="ui-final-grid">
+          <div class="ui-final-field span2"><label>Kode Proyek *</label><input id="p5_code" value="${esc(p.project_code||'')}" autocomplete="off"></div>
+          <div class="ui-final-field span2"><label>Tanggal Proyek</label><input id="p5_date" type="date" value="${esc(p.project_date||'')}"></div>
+          <div class="ui-final-field span2"><label>Pemilik / Klien</label><input id="p5_owner" value="${esc(p.owner_name||'')}" placeholder="Nama pemilik / perusahaan"></div>
+          <div class="ui-final-field span6"><label>Nama Proyek *</label><input id="p5_name" value="${esc(p.project_name||'')}" placeholder="Contoh: Renovasi Rumah Budi"></div>
+          <div class="ui-final-row3">
+            <div class="ui-final-field"><label>Kategori</label><select id="p5_cat">${categoryOptions}</select></div>
+            <div class="ui-final-field"><label>Lokasi</label><input id="p5_loc" value="${esc(p.location||'')}" placeholder="Lokasi proyek"></div>
+            <div class="ui-final-field"><label>Project Manager</label><select id="p5_mgr">${managerOptions}</select></div>
+          </div>
+          <div class="ui-final-row3">
+            <div class="ui-final-field"><label>Nilai Proyek</label><input id="p5_contract" type="number" min="0" step="1000" value="${Number(p.contract_value||0)}"></div>
+            <div class="ui-final-field"><label>Tanggal Mulai</label><input id="p5_start" type="date" value="${esc(p.start_date||'')}"></div>
+            <div class="ui-final-field"><label>Estimasi Selesai</label><input id="p5_end" type="date" value="${esc(p.end_date||'')}"></div>
+          </div>
+        </div>
+      </div>
+      <div class="ui-final-actions">
+        <button type="button" onclick="closeModal()">Batal</button>
+        <button id="p5EditSave" class="primary" type="button">Simpan Perubahan</button>
+      </div>
+    </div>`);
+
+    const box=document.querySelector('#modal .modalbox');
+    if(!box)return;
+    box.classList.add('sikoyek-edit-authoritative');
+    genericHeader(box);
+    document.getElementById('p5EditSave')?.addEventListener('click',()=>window.p5SaveProjectEdit(id));
   }
-  let timer=0;const schedule=()=>{clearTimeout(timer);timer=setTimeout(mark,50)};
-  const boot=()=>{mark();new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true})};
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+
+  window.p5EditProject=openEdit;
+
+  window.p5SaveProjectEdit=async function(id){
+    const code=document.getElementById('p5_code')?.value.trim()||'';
+    const name=document.getElementById('p5_name')?.value.trim()||'';
+    const start=document.getElementById('p5_start')?.value||'';
+    const end=document.getElementById('p5_end')?.value||'';
+    if(!code||!name){toast('Kode dan nama proyek wajib diisi');return}
+    if(start&&end&&end<start){toast('Estimasi selesai tidak boleh lebih awal dari tanggal mulai');return}
+    const row={
+      project_code:code,
+      project_date:document.getElementById('p5_date')?.value||null,
+      project_name:name,
+      owner_name:document.getElementById('p5_owner')?.value.trim()||null,
+      category:document.getElementById('p5_cat')?.value||null,
+      location:document.getElementById('p5_loc')?.value.trim()||null,
+      contract_value:Number(document.getElementById('p5_contract')?.value||0),
+      project_manager:document.getElementById('p5_mgr')?.value||null,
+      start_date:start||null,
+      end_date:end||null
+    };
+    if(row.contract_value<0){toast('Nilai proyek tidak boleh negatif');return}
+    const {error}=await sb.from('projects').update(row).eq('id',id);
+    if(error){toast(error.code==='23505'?'Kode proyek sudah digunakan.':error.message);return}
+    closeModal();
+    if(typeof loadSummary==='function')await loadSummary();
+    if(typeof renderPage==='function')renderPage();
+    else if(typeof renderApp==='function')renderApp();
+    toast('Data proyek berhasil diperbarui');
+  };
+
+  /* Kept intentionally empty: ui-form-final.js historically loads this file.
+     The real edit renderer above is now authoritative, so no DOM mutation layer is needed. */
+  window.__sikoyekEditAuthoritative=true;
 })();
