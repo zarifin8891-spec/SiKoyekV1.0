@@ -6,20 +6,23 @@
     const s=document.createElement('style');
     s.id=STYLE_ID;
     s.textContent=`
+      /* RAP modal: remove the outer white frame and keep the header flush to the shell. */
       #modal .modalbox:has(#rap_material){
         width:min(560px,calc(100vw - 32px))!important;
         max-width:560px!important;
         max-height:calc(100vh - 32px)!important;
-        padding:18px!important;
+        padding:0!important;
         border-radius:18px!important;
         overflow:hidden!important;
       }
       #modal .modalbox:has(#rap_material)>.modalhead{
-        margin:0 0 14px!important;
-        min-height:38px!important;
+        margin:0!important;
+        padding:18px!important;
+        min-height:72px!important;
         display:flex!important;
         align-items:center!important;
         justify-content:space-between!important;
+        border-radius:18px 18px 0 0!important;
       }
       #modal .modalbox:has(#rap_material)>.modalhead h3{
         margin:0!important;
@@ -37,12 +40,16 @@
         font-size:13px!important;
         font-weight:500!important;
       }
+      /* Give the body content its own compact inner gutter, without creating an outer frame. */
+      #modal .modalbox:has(#rap_material)>.ui-help{
+        margin:18px 18px 0!important;
+      }
       #modal .modalbox:has(#rap_material) .formgrid{
         display:grid!important;
         grid-template-columns:repeat(3,minmax(0,1fr))!important;
         gap:10px!important;
-        width:100%!important;
-        margin:0!important;
+        width:auto!important;
+        margin:0 18px!important;
       }
       #modal .modalbox:has(#rap_material) .field{
         min-width:0!important;
@@ -74,17 +81,13 @@
         box-shadow:none!important;
         outline:none!important;
       }
-      #modal .modalbox:has(#rap_material) .note{
-        margin:9px 0 0!important;
-        font-size:10px!important;
-        line-height:1.3!important;
-        color:#6f7c91!important;
-      }
+      /* The old explanatory note is intentionally removed from the RAP form. */
+      #modal .modalbox:has(#rap_material)>.note{display:none!important}
       #modal .modalbox:has(#rap_material)>.formactions{
-        height:42px!important;
-        min-height:42px!important;
-        margin:12px 0 0!important;
-        padding:6px 0 0!important;
+        height:54px!important;
+        min-height:54px!important;
+        margin:12px 18px 0!important;
+        padding:8px 0 10px!important;
         border-top:1px solid #e6ebf1!important;
         display:flex!important;
         align-items:center!important;
