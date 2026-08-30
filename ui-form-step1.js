@@ -21,7 +21,7 @@
     load('ui-form-transaction-compact-script','./ui-form-transaction-compact.js?v=3');
     load('ui-operational-crud-final-script','./ui-operational-crud-final.js?v=1');
     load('ui-project-detail-polish-script','./ui-project-detail-polish.js?v=2');
-    load('ui-overview-timeline-script','./ui-overview-timeline.js?v=1');
+    load('ui-overview-timeline-script','./ui-overview-timeline.js?v=2');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
