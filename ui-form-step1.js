@@ -37,6 +37,7 @@
     loadScript('ui-form-rap-compact-script','./ui-form-rap-compact.js?v=1');
     loadScript('ui-form-progress-compact-script','./ui-form-progress-compact.js?v=1');
     loadScript('ui-form-progress-final-script','./ui-form-progress-final.js?v=1');
+    loadScript('ui-form-transaction-compact-script','./ui-form-transaction-compact.js?v=1');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
