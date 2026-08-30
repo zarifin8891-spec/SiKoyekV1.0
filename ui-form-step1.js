@@ -31,9 +31,9 @@
   function boot(){
     observer.observe(document.body,{childList:true,subtree:true});sync();
     loadScript('ui-form-pass10-script','./ui-form-pass10.js?v=10.0');
-    loadScript('ui-form-final-script','./ui-form-final.js?v=1');
-    /* Edit Proyek uses one authoritative renderer. Other edit matchers are compatibility shims only. */
-    loadScript('ui-form-edit-final-v5-script','./ui-form-edit-final-v5.js?v=6.0');
+    loadScript('ui-form-final-script','./ui-form-final.js?v=2');
+    /* Edit Proyek uses one authoritative renderer. */
+    loadScript('ui-form-edit-final-v5-script','./ui-form-edit-final-v5.js?v=7.0');
     loadScript('ui-form-layout-final-script','./ui-form-layout-final.js?v=3');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
