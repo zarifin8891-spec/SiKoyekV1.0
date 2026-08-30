@@ -37,32 +37,41 @@
       #modal .modalbox:has(#rap_material)>.modalhead{
         width:100%!important;
         margin:0!important;
-        padding:18px!important;
+        padding:18px 18px 16px!important;
         min-height:72px!important;
         display:flex!important;
         align-items:center!important;
         justify-content:space-between!important;
+        border:0!important;
         border-radius:18px 18px 0 0!important;
+        background:linear-gradient(135deg,#12365a 0%,#176c80 100%)!important;
+        color:#fff!important;
       }
       #modal .modalbox:has(#rap_material)>.modalhead h3{
         margin:0!important;
         font-size:20px!important;
         line-height:1.1!important;
+        font-weight:800!important;
+        color:#fff!important;
       }
       #modal .modalbox:has(#rap_material)>.modalhead .btn{
         height:34px!important;
         min-height:34px!important;
         min-width:78px!important;
-        padding:0 12px!important;
+        padding:0 14px!important;
         display:inline-flex!important;
         align-items:center!important;
         justify-content:center!important;
         font-size:13px!important;
-        font-weight:500!important;
+        font-weight:600!important;
+        color:#19314a!important;
+        background:#fff!important;
+        border:0!important;
+        border-radius:10px!important;
       }
       #modal .modalbox:has(#rap_material)>.ui-help{
         width:auto!important;
-        margin:18px 18px 0!important;
+        margin:16px 18px 0!important;
       }
       #modal .modalbox:has(#rap_material) .formgrid{
         display:grid!important;
