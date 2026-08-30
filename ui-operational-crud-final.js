@@ -4,11 +4,14 @@
   function addStyle(){
     if(document.getElementById(STYLE_ID))return;
     const s=document.createElement('style');s.id=STYLE_ID;s.textContent=`
-      .op-actions{display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
-      .op-actions .op-btn{height:30px;min-width:62px;padding:0 10px;border:1px solid #d6dee8;border-radius:7px;background:#fff;color:#26364d;font-size:11px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-sizing:border-box}
+      .op-actions{display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}
+      .op-actions .op-btn{height:26px;min-width:58px;padding:0 8px;border:1px solid #d6dee8;border-radius:6px;background:#fff;color:#26364d;font-size:10px;font-weight:500;line-height:1;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-sizing:border-box}
       .op-actions .op-btn.delete{color:#b42318;border-color:#efc5c2}
       .op-actions .op-btn:hover{filter:brightness(.98)}
       .op-actions-th,.op-action-cell{text-align:center!important}
+      table.table[data-op-crud-final="1"] tbody td{padding-top:4px!important;padding-bottom:4px!important;line-height:1.2!important;vertical-align:middle!important}
+      table.table[data-op-crud-final="1"] tbody tr{height:34px!important}
+      table.table[data-op-crud-final="1"] .op-action-cell{padding-left:6px!important;padding-right:6px!important}
       #modal .modalbox.op-crud-box{width:min(620px,calc(100vw - 28px))!important;max-width:620px!important;max-height:calc(100vh - 24px)!important;overflow:hidden!important;padding:0!important;border-radius:18px!important;box-sizing:border-box!important}
       .op-crud-box .modalhead{height:68px!important;margin:0!important;padding:12px 20px!important;background:linear-gradient(115deg,#12375f 0%,#0c4a70 52%,#1f7180 100%)!important;color:#fff!important;display:flex!important;align-items:center!important;justify-content:space-between!important;box-sizing:border-box}
       .op-crud-box .modalhead h3{margin:0!important;color:#fff!important;font-size:20px!important;font-weight:650!important}
