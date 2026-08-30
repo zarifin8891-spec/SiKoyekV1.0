@@ -1,7 +1,6 @@
 (function(){
   const STYLE_ID='projects-ui-v2-style';
   const PASS5_CSS_ID='projects-ui-pass5-css';
-  const PASS5_JS_ID='projects-ui-pass5-js';
 
   function addStyle(){
     if(document.getElementById(STYLE_ID)) return;
@@ -21,7 +20,6 @@
       .projects-page-table-v2.table th{padding:8px 10px!important;line-height:1.1!important}
       .projects-page-table-v2.table td{padding:7px 10px!important;line-height:1.15!important}
 
-      /* Keep total at 100%. Name slightly narrower; Status gets the recovered width. */
       .projects-page-table-v2.table th:nth-child(1),.projects-page-table-v2.table td:nth-child(1){width:7%!important}
       .projects-page-table-v2.table th:nth-child(2),.projects-page-table-v2.table td:nth-child(2){width:27%!important}
       .projects-page-table-v2.table th:nth-child(3),.projects-page-table-v2.table td:nth-child(3){width:10%!important}
@@ -62,27 +60,44 @@
 
   function loadPass5Assets(){
     if(!document.getElementById(PASS5_CSS_ID)){
-      const link=document.createElement('link');link.id=PASS5_CSS_ID;link.rel='stylesheet';link.href='./ui-form-pass5.css?v=2';document.head.appendChild(link);
-    }
-    if(!document.getElementById(PASS5_JS_ID)){
-      const script=document.createElement('script');script.id=PASS5_JS_ID;script.src='./ui-form-pass5.js?v=2';script.defer=true;document.body.appendChild(script);
+      const link=document.createElement('link');
+      link.id=PASS5_CSS_ID;
+      link.rel='stylesheet';
+      link.href='./ui-form-pass5.css?v=2';
+      document.head.appendChild(link);
     }
   }
 
-  function normalizeNav(){document.querySelectorAll('.nav button').forEach(btn=>{if((btn.textContent||'').trim()==='Projects')btn.textContent='Daftar Proyek'})}
+  function normalizeNav(){
+    document.querySelectorAll('.nav button').forEach(btn=>{
+      if((btn.textContent||'').trim()==='Projects')btn.textContent='Daftar Proyek'
+    })
+  }
+
   function normalizeProjectTitle(){
     if(typeof state==='undefined'||state.page!=='projects')return;
     const page=document.getElementById('page');if(!page)return;
-    page.querySelectorAll('.top h1').forEach(h=>{if((h.textContent||'').trim()==='Projects')h.textContent='Daftar Proyek'})
+    page.querySelectorAll('.top h1').forEach(h=>{
+      if((h.textContent||'').trim()==='Projects')h.textContent='Daftar Proyek'
+    })
   }
 
   function cleanDuplicateActions(table){
     const head=table.querySelector('thead tr');if(!head)return;
     const headers=[...head.children];
-    const aksiIndexes=headers.map((th,i)=>({i,text:(th.textContent||'').trim().replace(/\s+/g,' ').toLowerCase()})).filter(x=>x.text==='aksi').map(x=>x.i);
-    if(aksiIndexes.length>1){for(let k=aksiIndexes.length-1;k>=1;k--){const idx=aksiIndexes[k];[...table.rows].forEach(row=>row.children[idx]?.remove())}}
+    const aksiIndexes=headers
+      .map((th,i)=>({i,text:(th.textContent||'').trim().replace(/\s+/g,' ').toLowerCase()}))
+      .filter(x=>x.text==='aksi').map(x=>x.i);
+    if(aksiIndexes.length>1){
+      for(let k=aksiIndexes.length-1;k>=1;k--){
+        const idx=aksiIndexes[k];
+        [...table.rows].forEach(row=>row.children[idx]?.remove())
+      }
+    }
     const finalCount=head.children.length;
-    [...table.tBodies].forEach(tbody=>[...tbody.rows].forEach(row=>{while(row.children.length>finalCount)row.lastElementChild?.remove()}));
+    [...table.tBodies].forEach(tbody=>[...tbody.rows].forEach(row=>{
+      while(row.children.length>finalCount)row.lastElementChild?.remove()
+    }));
   }
 
   function normalizeProjectTable(){
@@ -90,7 +105,8 @@
     const page=document.getElementById('page');if(!page)return;
     page.classList.add('projects-page-v2');
     const tables=[...page.querySelectorAll('.tablecard table.table')];
-    const table=tables.find(t=>[...t.querySelectorAll('thead th')].some(th=>(th.textContent||'').trim()==='Kode'));
+    const table=tables.find(t=>[...t.querySelectorAll('thead th')]
+      .some(th=>(th.textContent||'').trim()==='Kode'));
     if(!table)return;
     table.classList.add('projects-page-table-v2');
     const head=table.querySelector('thead tr');if(!head)return;
@@ -103,16 +119,34 @@
     cleanDuplicateActions(table);
     table.querySelectorAll('.p5-lock-note').forEach(el=>el.remove());
     table.querySelectorAll('.p5-action').forEach(btn=>{
-      btn.style.width='58px';btn.style.minWidth='58px';btn.style.height='32px';btn.style.padding='4px 8px';
-      btn.style.display='inline-flex';btn.style.alignItems='center';btn.style.justifyContent='center';btn.style.fontWeight='400';
+      btn.style.width='58px';
+      btn.style.minWidth='58px';
+      btn.style.height='32px';
+      btn.style.padding='4px 8px';
+      btn.style.display='inline-flex';
+      btn.style.alignItems='center';
+      btn.style.justifyContent='center';
+      btn.style.fontWeight='400';
     });
     page.querySelectorAll('.actions .btn').forEach(btn=>btn.style.fontWeight='400');
   }
 
-  function observe(){normalizeNav();normalizeProjectTitle();normalizeProjectTable()}
-  addStyle();loadPass5Assets();
-  const boot=()=>{[120,350,700,1200,2000].forEach(ms=>setTimeout(observe,ms));observe()};
+  function observe(){
+    normalizeNav();
+    normalizeProjectTitle();
+    normalizeProjectTable();
+  }
+
+  addStyle();
+  loadPass5Assets();
+  const boot=()=>{
+    [120,350,700,1200,2000].forEach(ms=>setTimeout(observe,ms));
+    observe();
+  };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  const obs=new MutationObserver(()=>{clearTimeout(window.__projectsUiV2Timer);window.__projectsUiV2Timer=setTimeout(observe,80)});
+  const obs=new MutationObserver(()=>{
+    clearTimeout(window.__projectsUiV2Timer);
+    window.__projectsUiV2Timer=setTimeout(observe,80);
+  });
   obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
 })();
