@@ -36,6 +36,6 @@
   function observe(){navButton();cleanProjectCategoryControl();if(document.querySelector('#page .md-page')&&!q('md-master-ready')){const marker=document.createElement('span');marker.id='md-master-ready';marker.hidden=true;document.querySelector('#page .md-page').appendChild(marker);refresh()}syncSelect('f_mgr','project_managers','Pilih Project Manager...').catch(()=>{});syncSelect('tx_cat','transaction_categories','Pilih kategori...').catch(()=>{});syncSelect('tx_method','payment_methods','Pilih metode...').catch(()=>{})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',observe);else observe();
   new MutationObserver(()=>{clearTimeout(window.__mdTimer);window.__mdTimer=setTimeout(observe,120)}).observe(document.body,{childList:true,subtree:true});
-  // Load the compact Master Data Edit/Hapus modal override after all existing UI passes.
-  if(!document.getElementById('sikoyek-master-edit-compact-script')){const s=document.createElement('script');s.id='sikoyek-master-edit-compact-script';s.src='./ui-master-edit-compact-v1.js?v=1';s.defer=true;document.body.appendChild(s)}
+  // Load the compact Master Data CRUD modal override after all existing UI passes.
+  if(!document.getElementById('sikoyek-master-edit-compact-script')){const s=document.createElement('script');s.id='sikoyek-master-edit-compact-script';s.src='./ui-master-edit-compact-v1.js?v=2';s.defer=true;document.body.appendChild(s)}
 })();
