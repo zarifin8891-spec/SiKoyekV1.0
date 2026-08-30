@@ -245,6 +245,24 @@
         border-color:#0b2e52!important;
         color:#fff!important;
       }
+
+      /* Item Pekerjaan final alignment: every content row must consume the same modal width. */
+      #modal .modalbox.p6-form:has(#wi_name)>.p6-body>.ui-help,
+      #modal .modalbox.p6-form:has(#wi_name)>.p6-body>.field,
+      #modal .modalbox.p6-form:has(#wi_name)>.p6-body>.formgrid,
+      #modal .modalbox.p6-form:has(#wi_name)>.p6-body>.ui-total,
+      #modal .modalbox.p6-form:has(#wi_name)>.p6-body>.formactions{
+        width:calc(100% - 44px)!important;
+        margin-left:22px!important;
+        margin-right:22px!important;
+        max-width:none!important;
+        box-sizing:border-box!important;
+      }
+      #modal .modalbox.p6-form:has(#wi_name)>.p6-body>.formgrid .field{
+        width:100%!important;
+        min-width:0!important;
+        max-width:none!important;
+      }
       @media(max-width:730px){
         #modal .modalbox.p6-form:has(#wi_name){
           width:calc(100vw - 20px)!important;
@@ -260,7 +278,7 @@
         #modal .modalbox.p6-form:has(#wi_name)>.p6-body>.field,
         #modal .modalbox.p6-form:has(#wi_name)>.p6-body>.formgrid,
         #modal .modalbox.p6-form:has(#wi_name)>.p6-body>.ui-total,
-        #modal .modalbox.p6-form:has(#wi_name)>.p6-body>.formactions{margin-left:14px!important;margin-right:14px!important}
+        #modal .modalbox.p6-form:has(#wi_name)>.p6-body>.formactions{margin-left:14px!important;margin-right:14px!important;width:calc(100% - 28px)!important}
         #modal .modalbox.p6-form:has(#wi_name)>.p6-body>.formgrid{grid-template-columns:1fr!important}
       }
     `;
