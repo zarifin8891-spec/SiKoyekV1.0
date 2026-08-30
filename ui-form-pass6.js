@@ -7,7 +7,9 @@
   function formify(){const box=document.querySelector('#modal .modalbox');if(!box||box.dataset.p6==='1'||box.dataset.p6Master==='1')return;
     const head=box.querySelector('.modalhead');const h3=head?.querySelector('h3');if(!h3)return;
     const title=h3.textContent.trim();
-    if(title.toLowerCase().includes('master kategori')){box.dataset.p6Master='1';return;}
+    const lowerTitle=title.toLowerCase();
+    if(lowerTitle.includes('rap proyek')||lowerTitle.includes('kontrol anggaran'))return;
+    if(lowerTitle.includes('master kategori')){box.dataset.p6Master='1';return;}
     const [mark,big,desc,hint]=titleInfo(title);
     const side=document.createElement('aside');side.className='p6-side';side.innerHTML=`<div class="p6-mark">${esc(mark)}</div><div class="p6-title">${esc(big)}</div><div class="p6-desc">${esc(desc)}</div><div class="p6-hint">${esc(hint)}</div>`;
     const body=document.createElement('div');body.className='p6-body';
