@@ -8,7 +8,66 @@
   const num=v=>{const n=Number(String(v??'').replace(/[^0-9.-]/g,''));return Number.isFinite(n)?n:0;};
   function progressOf(o){if(!o||typeof o!=='object')return null;for(const k of ['progress','progress_pct','progressPercent','current_progress','actual_progress','real_progress','realisasi_progress','persentase','percentage']){if(o[k]!==null&&o[k]!==undefined&&o[k]!==''){const n=num(o[k]);if(Number.isFinite(n))return n<=1?n*100:n;}}return null;}
   function weightOf(o){if(!o||typeof o!=='object')return null;for(const k of ['bobot','weight','weight_pct','weightPercent','persentase_bobot','percentage_weight']){if(o[k]!==null&&o[k]!==undefined&&o[k]!==''){const n=num(o[k]);if(Number.isFinite(n))return n<=1?n*100:n;}}return null;}
-  function getProgress(d){const direct=progressOf(d);if(direct!==null)return Math.max(0,Math.min(100,direct));for(const k of ['items','work_items','workItems','pekerjaan','items_pekerjaan','itemPekerjaan']){const a=d?.[k];if(!Array.isArray(a)||!a.length)continue;let sum=0,wSum=0;for(const x of a){const p=progressOf(x),w=weightOf(x);if(p!==null&&w!==null){sum+=p*w;wSum+=w;}}if(wSum)return Math.max(0,Math.min(100,sum/wSum));}const page=document.getElementById('page');if(page){const cards=[...page.querySelectorAll('.detailgrid .card')];const card=cards.find(c=>String(c.querySelector('.label')?.textContent||'').trim().toUpperCase()==='PROGRESS');const value=card?.querySelector('.value,.big');const n=num(value?.textContent);if(Number.isFinite(n))return Math.max(0,Math.min(100,n));}return direct!==null?Math.max(0,Math.min(100,direct)):0;}
+  function getProgress(d){
+    const direct=progressOf(d);
+    if(direct!==null&&direct>0)return Math.max(0,Math.min(100,direct));
+    const items=Array.isArray(d?.items)?d.items:[];
+    const records=Array.isArray(d?.progress)?d.progress:[];
+    if(records.length&&items.length){
+      const weights=new Map(items.map(x=>[String(x.id),weightOf(x)]));
+      const latest=new Map();
+      for(const r of records){
+        const key=String(r.work_item_id??r.item_id??r.workItemId??'');
+        if(!key)continue;
+        const stamp=String(r.progress_date??r.date??r.created_at??r.updated_at??'');
+        const prev=latest.get(key);
+        if(!prev||stamp>=prev._stamp)latest.set(key,{...r,_stamp:stamp});
+      }
+      let sum=0,wSum=0;
+      for(const [key,r] of latest){
+        const p=progressOf(r),w=weights.get(key);
+        if(p!==null&&w!==null&&w>0){sum+=p*w;wSum+=w;}
+      }
+      if(wSum)return Math.max(0,Math.min(100,sum/wSum));
+    }
+    for(const k of ['items','work_items','workItems','pekerjaan','items_pekerjaan','itemPekerjaan']){
+      const a=d?.[k];
+      if(!Array.isArray(a)||!a.length)continue;
+      let sum=0,wSum=0;
+      for(const x of a){
+        const p=progressOf(x),w=weightOf(x);
+        if(p!==null&&w!==null){sum+=p*w;wSum+=w;}
+      }
+      if(wSum){
+        const weighted=Math.max(0,Math.min(100,sum/wSum));
+        if(weighted>0)return weighted;
+      }
+    }
+    const page=document.getElementById('page');
+    if(page){
+      const candidates=[...page.querySelectorAll('*')].filter(el=>String(el.textContent||'').trim().toUpperCase()==='PROGRESS');
+      for(const label of candidates){
+        let node=label;
+        for(let i=0;i<5&&node;i++,node=node.parentElement){
+          const text=String(node.textContent||'');
+          const matches=[...text.matchAll(/(\d+(?:\.\d+)?)\s*%/g)];
+          if(matches.length){
+            const n=Number(matches[matches.length-1][1]);
+            if(Number.isFinite(n))return Math.max(0,Math.min(100,n));
+          }
+        }
+      }
+      const cards=[...page.querySelectorAll('.detailgrid .card')];
+      for(const card of cards){
+        const label=String(card.querySelector('.label')?.textContent||'').trim().toUpperCase();
+        if(label==='PROGRESS'){
+          const n=num(card.textContent.match(/(\d+(?:\.\d+)?)\s*%/)?.[1]);
+          if(Number.isFinite(n))return Math.max(0,Math.min(100,n));
+        }
+      }
+    }
+    return direct!==null?Math.max(0,Math.min(100,direct)):0;
+  }
   function rapVal(r,keys){for(const k of keys){const n=num(r?.[k]);if(Number.isFinite(n)&&n!==0)return n;}return 0;}
   function firstNumber(objs,keys){for(const o of objs){if(!o||typeof o!=='object')continue;for(const k of keys){if(o[k]!==null&&o[k]!==undefined&&o[k]!==''){const n=num(o[k]);if(n!==0)return n;}}}return 0;}
   function contractOf(d){const keys=['contract','contract_value','contract_amount','nilai_kontrak','nilaiKontrak','nilai_contract','nilaiKontrakProyek','project_value','projectValue','harga_kontrak','hargaKontrak','total_contract','totalContract'];const sources=[d,d?.project,d?.selected,d?.data,d?.header,d?.summary];const direct=firstNumber(sources,keys);if(direct)return direct;if(Array.isArray(d?.projects)){const n=firstNumber(d.projects,keys);if(n)return n;}return 0;}
