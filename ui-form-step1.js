@@ -5,11 +5,10 @@
     const input=document.getElementById('f_cat');if(!input||input.dataset.categorySynced==='1')return;
     const field=input.closest('.field');if(!field)return;
     let select=input;if(input.tagName!=='SELECT'){select=document.createElement('select');select.id='f_cat';select.name='f_cat';input.replaceWith(select)}
-    try{const {data,error}=await sb.from('project_categories').select('name,is_active,sort_order').order('sort_order').order('name');const rows=!error&&Array.isArray(data)&&data.length?data:fallback.map((name,i)=>({name,is_active:true,sort_order:i+1}));const active=rows.filter(x=>x.is_active!==false);const current=select.value;select.innerHTML=active.map(x=>`<option value=\"${esc(x.name)}\">${esc(x.name)}</option>`).join('');if(active.some(x=>x.name===current))select.value=current;field.querySelectorAll('.category-tools,[data-category-master],.step1-category-tools').forEach(row=>row.remove());select.dataset.categorySynced='1'}catch(_){ }
+    try{const {data,error}=await sb.from('project_categories').select('name,is_active,sort_order').order('sort_order').order('name');const rows=!error&&Array.isArray(data)&&data.length?data:fallback.map((name,i)=>({name,is_active:true,sort_order:i+1}));const active=rows.filter(x=>x.is_active!==false);const current=select.value;select.innerHTML=active.map(x=>`<option value="${esc(x.name)}">${esc(x.name)}</option>`).join('');if(active.some(x=>x.name===current))select.value=current;field.querySelectorAll('.category-tools,[data-category-master],.step1-category-tools').forEach(row=>row.remove());select.dataset.categorySynced='1'}catch(_){ }
   }
   function polishHeader(){const box=document.querySelector('#modal .modalbox.p6-form');if(!box)return;const head=box.querySelector('.p6-body>.modalhead');if(head)head.classList.add('step1-modalhead')}
   function load(id,src){if(document.getElementById(id))return;const s=document.createElement('script');s.id=id;s.src=src;s.defer=true;document.body.appendChild(s)}
-  function loadCss(id,href){if(document.getElementById(id))return;const l=document.createElement('link');l.id=id;l.rel='stylesheet';l.href=href;document.head.appendChild(l)}
   function boot(){
     const obs=new MutationObserver(()=>{polishHeader();syncCategory()});obs.observe(document.body,{childList:true,subtree:true});polishHeader();syncCategory();
     load('ui-form-pass10-script','./ui-form-pass10.js?v=10.0');
@@ -21,7 +20,8 @@
     load('ui-form-progress-final-script','./ui-form-progress-final.js?v=1');
     load('ui-form-transaction-compact-script','./ui-form-transaction-compact.js?v=3');
     load('ui-operational-crud-final-script','./ui-operational-crud-final.js?v=1');
-    loadCss('ui-project-detail-polish-css','./ui-project-detail-polish.css?v=2');
+    load('ui-project-detail-polish-script','./ui-project-detail-polish.js?v=2');
+    load('ui-overview-timeline-script','./ui-overview-timeline.js?v=1');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
