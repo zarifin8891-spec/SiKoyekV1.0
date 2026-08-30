@@ -1,0 +1,84 @@
+/* Overview compact pass: prepare the Overview area for a future Timeline block.
+   Timeline itself remains hidden/disabled until explicitly enabled. */
+.project-summary-v2{
+  margin-top:10px!important;
+}
+.project-summary-v2 .summary-heading{
+  margin:0 0 8px!important;
+}
+.project-summary-v2 .summary-heading h2{
+  font-size:17px!important;
+}
+.project-summary-v2 .summary-panels{
+  gap:10px!important;
+}
+.project-summary-v2 .summary-panel{
+  padding:12px!important;
+  border-radius:12px!important;
+}
+.project-summary-v2 .summary-panel-head{
+  margin-bottom:9px!important;
+}
+.project-summary-v2 .summary-panel-head h3{
+  font-size:15px!important;
+}
+.project-summary-v2 .info-grid{
+  gap:9px 16px!important;
+}
+.project-summary-v2 .info-item .note{
+  margin-bottom:2px!important;
+  font-size:11px!important;
+}
+.project-summary-v2 .info-item strong{
+  font-size:14px!important;
+}
+.project-summary-v2 .summary-divider{
+  margin:10px 0 9px!important;
+}
+.project-summary-v2 .subheading{
+  margin-bottom:7px!important;
+  font-size:11px!important;
+}
+.project-summary-v2 .cost-grid{
+  gap:8px!important;
+}
+.project-summary-v2 .cost-item{
+  padding:8px 9px!important;
+  border-radius:9px!important;
+}
+.project-summary-v2 .cost-item .note{
+  margin-bottom:2px!important;
+  font-size:10px!important;
+}
+.project-summary-v2 .cost-item strong{
+  font-size:14px!important;
+}
+.project-summary-v2 .rap-grid{
+  gap:8px!important;
+}
+.project-summary-v2 .rap-item{
+  padding:9px 10px!important;
+  border-radius:9px!important;
+}
+.project-summary-v2 .rap-item .label{
+  font-size:9px!important;
+}
+.project-summary-v2 .rap-item .value{
+  font-size:14px!important;
+  margin-top:4px!important;
+}
+.project-summary-v2 .rap-total{
+  margin-top:8px!important;
+  padding:9px 10px!important;
+  border-radius:9px!important;
+}
+.project-summary-v2 .rap-total .label{
+  font-size:10px!important;
+}
+.project-summary-v2 .rap-total .value{
+  font-size:16px!important;
+}
+/* Safety: the future Timeline block must not render during this pass. */
+.overview-timeline-v2{
+  display:none!important;
+}
