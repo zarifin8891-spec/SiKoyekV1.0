@@ -36,6 +36,7 @@
     loadScript('ui-form-edit-final-v5-script','./ui-form-edit-final-v5.js?v=7.0');
     loadScript('ui-form-layout-final-script','./ui-form-layout-final.js?v=4');
     loadScript('ui-form-rap-compact-script','./ui-form-rap-compact.js?v=1');
+    loadScript('ui-form-progress-compact-script','./ui-form-progress-compact.js?v=1');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
