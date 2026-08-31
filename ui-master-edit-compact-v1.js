@@ -23,16 +23,14 @@
       #modal .modalbox.${BOX_CLASS} p.note{margin:0 20px 8px!important;font-size:11px!important}
       #modal .modalbox.${BOX_CLASS} .field>div[style*="justify-content:space-between"]{padding:8px 10px!important;border-radius:8px!important;gap:9px!important}
       #modal .modalbox.${BOX_CLASS} .field>div[style*="justify-content:space-between"] .btn{height:32px!important;min-height:32px!important;min-width:96px!important;font-size:11px!important}
-      /* Urutan selalu berada di field paling atas. */
+      /* Urutan always first. */
       #modal .modalbox.${BOX_CLASS} .field[data-master-field="urutan"]{order:-10!important}
       #modal .modalbox.${BOX_CLASS} .formgrid .field[data-master-field="urutan"]{order:-10!important}
       @media(max-width:620px){#modal .modalbox.${BOX_CLASS}{width:calc(100vw - 28px)!important;min-width:0!important;max-width:none!important;border-radius:16px!important}#modal .modalbox.${BOX_CLASS} .modalhead{border-radius:16px 16px 0 0!important;padding-left:24px!important}}
       @media(max-width:520px){#modal .modalbox.${BOX_CLASS} .modalhead{height:82px!important;min-height:82px!important;padding:15px 16px 15px 20px!important}#modal .modalbox.${BOX_CLASS} .modalhead h3{font-size:21px!important}#modal .modalbox.${BOX_CLASS} .formgrid{grid-template-columns:1fr!important}}
     `;document.head.appendChild(s);
   }
-  function markUrutan(box){
-    box.querySelectorAll('.field').forEach(f=>{const label=(f.querySelector('label')?.textContent||'').trim().toLowerCase();if(label==='urutan')f.setAttribute('data-master-field','urutan')});
-  }
+  function markUrutan(box){box.querySelectorAll('.field').forEach(f=>{const label=(f.querySelector('label')?.textContent||'').trim().toLowerCase();if(label==='urutan')f.setAttribute('data-master-field','urutan')})}
   function isMasterCrud(box){const title=(box?.querySelector('.modalhead h3')?.textContent||'').trim().toLowerCase();return /^(edit|hapus|tambah)\b/.test(title)&&/kategori proyek|project manager|kategori keuangan|metode pembayaran/.test(title)}
   function decorate(){const box=document.querySelector('#modal .modalbox');if(!isMasterCrud(box))return;addStyle();markUrutan(box);box.classList.add(BOX_CLASS);box.style.setProperty('width','576px','important');box.style.setProperty('min-width','576px','important');box.style.setProperty('max-width','576px','important');box.style.setProperty('height','auto','important');box.style.setProperty('padding','0','important');box.style.setProperty('overflow','hidden','important')}
   function boot(){addStyle();decorate();new MutationObserver(()=>{clearTimeout(window.__sikoyekMasterCompactTimer);window.__sikoyekMasterCompactTimer=setTimeout(decorate,20)}).observe(document.body,{childList:true,subtree:true})}
