@@ -45,13 +45,13 @@ jobs:
           if missing:
               raise SystemExit(f'Missing canonical Dashboard assets: {missing}')
           print('Canonical Dashboard artifact verified.')
-      - name: Inject final Master Data modal runtime v7
+      - name: Inject final Master Data modal runtime v8
         shell: python
         run: |
           from pathlib import Path
           runtime = r'''(function(){
-            const STYLE_ID='sikoyek-master-compact-runtime-v7';
-            const BOX='md-master-compact-runtime-v7';
+            const STYLE_ID='sikoyek-master-compact-runtime-v8';
+            const BOX='md-master-compact-runtime-v8';
             const names=/kategori proyek|project manager|kategori keuangan|metode pembayaran/i;
             const titles=/^(tambah|edit|hapus)\b/i;
             function style(){
@@ -79,11 +79,14 @@ jobs:
               `;document.head.appendChild(s);
             }
             function moveUrutan(box){
-              const fields=Array.from(box.querySelectorAll(':scope > .field, .p6-body > .field, .p5-body > .field'));
-              const urutan=fields.find(f=>/^urutan\s*$/i.test((f.querySelector('label')?.textContent||'').trim()));
+              const candidates=Array.from(box.querySelectorAll('.field'));
+              const urutan=candidates.find(f=>/^urutan\s*$/i.test((f.querySelector('label')?.textContent||'').trim()));
               if(!urutan)return;
-              const container=urutan.parentElement;
-              if(container)container.insertBefore(urutan,container.firstElementChild);
+              const parent=urutan.parentElement;
+              if(!parent || parent===box || parent.classList.contains('modalhead') || parent.classList.contains('formactions'))return;
+              const siblings=Array.from(parent.children).filter(el=>el.classList?.contains('field'));
+              if(siblings.length<2)return;
+              parent.insertBefore(urutan,siblings[0]);
             }
             function apply(){
               style();
@@ -101,13 +104,13 @@ jobs:
             function boot(){apply();new MutationObserver(()=>{clearTimeout(window.__mdCompactFinalTimer);window.__mdCompactFinalTimer=setTimeout(apply,10)}).observe(document.body,{childList:true,subtree:true});}
             if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
           })();'''
-          Path('master-data-compact-runtime-v7.js').write_text(runtime, encoding='utf-8')
+          Path('master-data-compact-runtime-v8.js').write_text(runtime, encoding='utf-8')
           html=Path('index.html').read_text(encoding='utf-8')
-          tag='<script src="./master-data-compact-runtime-v7.js?v=7" defer></script>'
+          tag='<script src="./master-data-compact-runtime-v8.js?v=8" defer></script>'
           if tag not in html:
               html=html.replace('</body>',tag+'</body>')
               Path('index.html').write_text(html,encoding='utf-8')
-          print('Final Master Data modal runtime v7 injected.')
+          print('Final Master Data modal runtime v8 injected.')
       - name: Final dashboard table compact layout
         shell: python
         run: |
