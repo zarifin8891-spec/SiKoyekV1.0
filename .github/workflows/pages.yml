@@ -45,13 +45,13 @@ jobs:
           if missing:
               raise SystemExit(f'Missing canonical Dashboard assets: {missing}')
           print('Canonical Dashboard artifact verified.')
-      - name: Inject final Master Data modal runtime v6
+      - name: Inject final Master Data modal runtime v7
         shell: python
         run: |
           from pathlib import Path
           runtime = r'''(function(){
-            const STYLE_ID='sikoyek-master-compact-runtime-v6';
-            const BOX='md-master-compact-runtime-v6';
+            const STYLE_ID='sikoyek-master-compact-runtime-v7';
+            const BOX='md-master-compact-runtime-v7';
             const names=/kategori proyek|project manager|kategori keuangan|metode pembayaran/i;
             const titles=/^(tambah|edit|hapus)\b/i;
             function style(){
@@ -60,7 +60,8 @@ jobs:
               s.textContent=`
                 #modal .modalbox.${BOX}{width:576px!important;min-width:576px!important;max-width:576px!important;height:auto!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;box-sizing:border-box!important;border:0!important;outline:0!important;box-shadow:none!important;border-radius:18px!important;background:#fff!important}
                 #modal .modalbox.${BOX}>*{box-sizing:border-box!important;max-width:none!important}
-                #modal .modalbox.${BOX} .modalhead{width:calc(100% + 40px)!important;max-width:none!important;height:82px!important;min-height:82px!important;margin:0 0 24px -20px!important;padding:16px 20px!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:space-between!important;border:0!important;outline:0!important;box-shadow:none!important;border-radius:18px 18px 0 0!important;background-clip:padding-box!important}
+                #modal .modalbox.${BOX} .modalhead{width:calc(100% + 40px)!important;max-width:none!important;height:82px!important;min-height:82px!important;margin:0 0 24px -20px!important;padding:16px 20px 16px 28px!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:space-between!important;border:0!important;outline:0!important;box-shadow:none!important;border-radius:18px 18px 0 0!important;background-clip:padding-box!important}
+                #modal .modalbox.${BOX} .modalhead:before,#modal .modalbox.${BOX} .modalhead:after{display:none!important;content:none!important}
                 #modal .modalbox.${BOX} .modalhead h3{margin:0!important;padding:0!important;font-size:22px!important;line-height:1.15!important;font-weight:750!important}
                 #modal .modalbox.${BOX} .modalhead button{height:42px!important;min-height:42px!important;min-width:100px!important;padding:0 14px!important;border-radius:9px!important;font-size:12px!important}
                 #modal .modalbox.${BOX} .field{width:calc(100% - 40px)!important;max-width:none!important;min-width:0!important;margin:0 20px 9px!important;padding:0!important;box-sizing:border-box!important}
@@ -73,9 +74,16 @@ jobs:
                 #modal .modalbox.${BOX} p{margin:0 20px 12px!important;padding:0!important;font-size:13px!important;line-height:1.4!important}
                 #modal .modalbox.${BOX} p.note{margin:0 20px 8px!important;font-size:11px!important}
                 #modal .modalbox.${BOX} .field>div[style*="justify-content:space-between"]{padding:8px 10px!important;border-radius:8px!important}
-                @media(max-width:620px){#modal .modalbox.${BOX}{width:calc(100vw - 28px)!important;min-width:0!important;max-width:none!important;border-radius:16px!important}#modal .modalbox.${BOX} .modalhead{width:calc(100% + 32px)!important;margin-left:-16px!important;border-radius:16px 16px 0 0!important}#modal .modalbox.${BOX} .field,#modal .modalbox.${BOX} .formgrid,#modal .modalbox.${BOX} .formactions{width:calc(100% - 32px)!important;margin-left:16px!important;margin-right:16px!important}}
+                @media(max-width:620px){#modal .modalbox.${BOX}{width:calc(100vw - 28px)!important;min-width:0!important;max-width:none!important;border-radius:16px!important}#modal .modalbox.${BOX} .modalhead{width:calc(100% + 32px)!important;margin-left:-16px!important;padding-left:24px!important;border-radius:16px 16px 0 0!important}#modal .modalbox.${BOX} .field,#modal .modalbox.${BOX} .formgrid,#modal .modalbox.${BOX} .formactions{width:calc(100% - 32px)!important;margin-left:16px!important;margin-right:16px!important}}
                 @media(max-width:520px){#modal .modalbox.${BOX} .formgrid{grid-template-columns:1fr!important}#modal .modalbox.${BOX} .modalhead h3{font-size:20px!important}}
               `;document.head.appendChild(s);
+            }
+            function moveUrutan(box){
+              const fields=Array.from(box.querySelectorAll(':scope > .field, .p6-body > .field, .p5-body > .field'));
+              const urutan=fields.find(f=>/^urutan\s*$/i.test((f.querySelector('label')?.textContent||'').trim()));
+              if(!urutan)return;
+              const container=urutan.parentElement;
+              if(container)container.insertBefore(urutan,container.firstElementChild);
             }
             function apply(){
               style();
@@ -85,21 +93,21 @@ jobs:
                 box.classList.add(BOX);
                 box.style.cssText += ';width:576px!important;min-width:576px!important;max-width:576px!important;height:auto!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;border:0!important;outline:0!important;box-shadow:none!important;box-sizing:border-box!important;';
                 const head=box.querySelector('.modalhead');
-                if(head){head.style.cssText += ';width:calc(100% + 40px)!important;max-width:none!important;height:82px!important;min-height:82px!important;margin:0 0 24px -20px!important;padding:16px 20px!important;border:0!important;outline:0!important;box-shadow:none!important;box-sizing:border-box!important;';}
-                box.querySelectorAll('.field').forEach(el=>{el.style.setProperty('box-sizing','border-box','important');el.style.setProperty('margin-bottom','9px','important');});
+                if(head){head.style.cssText += ';width:calc(100% + 40px)!important;max-width:none!important;height:82px!important;min-height:82px!important;margin:0 0 24px -20px!important;padding:16px 20px 16px 28px!important;border:0!important;outline:0!important;box-shadow:none!important;box-sizing:border-box!important;';}
+                moveUrutan(box);
                 box.querySelectorAll('input,select,textarea').forEach(el=>{el.style.setProperty('box-sizing','border-box','important');el.style.setProperty('height','40px','important');el.style.setProperty('min-height','40px','important');});
               });
             }
             function boot(){apply();new MutationObserver(()=>{clearTimeout(window.__mdCompactFinalTimer);window.__mdCompactFinalTimer=setTimeout(apply,10)}).observe(document.body,{childList:true,subtree:true});}
             if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
           })();'''
-          Path('master-data-compact-runtime-v6.js').write_text(runtime, encoding='utf-8')
+          Path('master-data-compact-runtime-v7.js').write_text(runtime, encoding='utf-8')
           html=Path('index.html').read_text(encoding='utf-8')
-          tag='<script src="./master-data-compact-runtime-v6.js?v=6" defer></script>'
+          tag='<script src="./master-data-compact-runtime-v7.js?v=7" defer></script>'
           if tag not in html:
               html=html.replace('</body>',tag+'</body>')
               Path('index.html').write_text(html,encoding='utf-8')
-          print('Final Master Data modal runtime v6 injected.')
+          print('Final Master Data modal runtime v7 injected.')
       - name: Final dashboard table compact layout
         shell: python
         run: |
