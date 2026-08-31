@@ -120,6 +120,9 @@ jobs:
           (function(){
             const STYLE='sikoyek-project-manager-modal-v1-style';
             function normalize(v){return (v||'').replace(/\*/g,'').replace(/\s+/g,' ').trim().toLowerCase();}
+            function field(box,name){
+              return Array.from(box.querySelectorAll('.field')).find(f=>normalize(f.querySelector('label')?.textContent||'')===name);
+            }
             function apply(){
               let s=document.getElementById(STYLE);
               if(!s){s=document.createElement('style');s.id=STYLE;document.head.appendChild(s);}
@@ -136,11 +139,19 @@ jobs:
                 #modal .sikoyek-pm-final .formactions{width:calc(100% - 40px)!important;margin:10px 20px 0!important;height:58px!important;min-height:58px!important;padding:8px 0!important;border-top:1px solid #e8edf3!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;box-sizing:border-box!important}
                 #modal .sikoyek-pm-final .formactions .btn{height:36px!important;min-height:36px!important;min-width:92px!important;padding:0 12px!important;border-radius:8px!important;font-size:12px!important;font-weight:400!important}
                 @media(max-width:620px){#modal .sikoyek-pm-final{width:calc(100vw - 28px)!important;min-width:0!important;max-width:none!important}.sikoyek-pm-final .formgrid{grid-template-columns:1fr!important}}
+                #modal .sikoyek-pm-final .formgrid .pm-urutan{grid-column:1!important;grid-row:1!important}
+                #modal .sikoyek-pm-final .formgrid .pm-kode{grid-column:2!important;grid-row:1!important}
+                #modal .sikoyek-pm-final .formgrid .pm-nama{grid-column:1!important;grid-row:2!important}
+                #modal .sikoyek-pm-final .formgrid .pm-telepon{grid-column:2!important;grid-row:2!important}
+                #modal .sikoyek-pm-final .formgrid .pm-email{grid-column:1!important;grid-row:3!important}
               `;
               document.querySelectorAll('#modal .modalbox').forEach(box=>{
                 const title=normalize(box.querySelector('.modalhead h3')?.textContent);
                 if(!/^(tambah|edit|hapus)\b/.test(title)||!title.includes('project manager'))return;
                 box.classList.add('sikoyek-pm-final');
+                const map=[['urutan','pm-urutan'],['kode','pm-kode'],['nama','pm-nama'],['no. telepon','pm-telepon'],['no telepon','pm-telepon'],['telepon','pm-telepon'],['email','pm-email']];
+                box.querySelectorAll('.formgrid .field').forEach(f=>f.classList.remove('pm-urutan','pm-kode','pm-nama','pm-telepon','pm-email'));
+                map.forEach(([label,cls])=>{const f=field(box,label);if(f)f.classList.add(cls);});
               });
             }
             if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();
