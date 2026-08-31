@@ -45,80 +45,67 @@ jobs:
           if missing:
               raise SystemExit(f'Missing canonical Dashboard assets: {missing}')
           print('Canonical Dashboard artifact verified.')
-      - name: Inject compact Master Data modal runtime
+      - name: Inject final Master Data modal runtime v6
         shell: python
         run: |
           from pathlib import Path
           runtime = r'''(function(){
-            const STYLE_ID='sikoyek-master-compact-runtime-v5';
-            const BOX='md-master-compact-runtime';
+            const STYLE_ID='sikoyek-master-compact-runtime-v6';
+            const BOX='md-master-compact-runtime-v6';
             const names=/kategori proyek|project manager|kategori keuangan|metode pembayaran/i;
             const titles=/^(tambah|edit|hapus)\b/i;
             function style(){
               if(document.getElementById(STYLE_ID))return;
               const s=document.createElement('style');s.id=STYLE_ID;
               s.textContent=`
-                #modal .modalbox.${BOX}{width:576px!important;min-width:576px!important;max-width:576px!important;height:auto!important;min-height:0!important;max-height:calc(100vh - 24px)!important;padding:0!important;margin:0!important;overflow:hidden!important;border:0!important;outline:0!important;box-shadow:none!important;border-radius:18px!important;box-sizing:border-box!important;background:#fff!important;background-clip:padding-box!important}
-                #modal .modalbox.${BOX}>*{max-width:100%!important;box-sizing:border-box!important}
-                #modal .modalbox.${BOX} .modalhead{display:flex!important;width:100%!important;max-width:100%!important;height:95px!important;min-height:95px!important;margin:0 0 12px 0!important;padding:18px 20px!important;box-sizing:border-box!important;align-items:center!important;justify-content:space-between!important;border:0!important;outline:0!important;box-shadow:none!important;border-radius:18px 18px 0 0!important;background-clip:padding-box!important}
-                #modal .modalbox.${BOX} .modalhead:before,#modal .modalbox.${BOX} .modalhead:after{display:none!important;content:none!important;border:0!important}
-                #modal .modalbox.${BOX} .modalhead h3{margin:0!important;padding:0!important;font-size:25px!important;line-height:1.1!important;font-weight:750!important}
-                #modal .modalbox.${BOX} .modalhead button{height:48px!important;min-height:48px!important;min-width:112px!important;padding:0 18px!important;border-radius:11px!important;font-size:14px!important}
-                #modal .modalbox.${BOX} .field{width:calc(100% - 40px)!important;max-width:calc(100% - 40px)!important;min-width:0!important;margin:0 20px 8px!important;box-sizing:border-box!important}
-                #modal .modalbox.${BOX} .field:first-child{margin-top:0!important}
-                #modal .modalbox.${BOX} .field label{display:block!important;margin:0 0 4px!important;padding:0!important;font-size:12px!important;line-height:1.15!important;font-weight:650!important}
-                #modal .modalbox.${BOX} .field input,#modal .modalbox.${BOX} .field select,#modal .modalbox.${BOX} .field textarea{width:100%!important;max-width:100%!important;height:42px!important;min-height:42px!important;padding:7px 11px!important;border:1px solid #cbd8e6!important;border-radius:9px!important;font-size:14px!important;line-height:1.2!important;box-sizing:border-box!important;box-shadow:none!important}
-                #modal .modalbox.${BOX} .field textarea{height:60px!important;min-height:60px!important;resize:none!important}
-                #modal .modalbox.${BOX} .formgrid{width:calc(100% - 40px)!important;max-width:calc(100% - 40px)!important;margin:0 20px!important;padding:0!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:9px 11px!important;box-sizing:border-box!important}
+                #modal .modalbox.${BOX}{width:576px!important;min-width:576px!important;max-width:576px!important;height:auto!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;box-sizing:border-box!important;border:0!important;outline:0!important;box-shadow:none!important;border-radius:18px!important;background:#fff!important}
+                #modal .modalbox.${BOX}>*{box-sizing:border-box!important;max-width:none!important}
+                #modal .modalbox.${BOX} .modalhead{width:calc(100% + 40px)!important;max-width:none!important;height:82px!important;min-height:82px!important;margin:0 0 24px -20px!important;padding:16px 20px!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:space-between!important;border:0!important;outline:0!important;box-shadow:none!important;border-radius:18px 18px 0 0!important;background-clip:padding-box!important}
+                #modal .modalbox.${BOX} .modalhead h3{margin:0!important;padding:0!important;font-size:22px!important;line-height:1.15!important;font-weight:750!important}
+                #modal .modalbox.${BOX} .modalhead button{height:42px!important;min-height:42px!important;min-width:100px!important;padding:0 14px!important;border-radius:9px!important;font-size:12px!important}
+                #modal .modalbox.${BOX} .field{width:calc(100% - 40px)!important;max-width:none!important;min-width:0!important;margin:0 20px 9px!important;padding:0!important;box-sizing:border-box!important}
+                #modal .modalbox.${BOX} .formgrid{width:calc(100% - 40px)!important;max-width:none!important;margin:0 20px!important;padding:0!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:9px 11px!important;box-sizing:border-box!important}
                 #modal .modalbox.${BOX} .formgrid .field{width:auto!important;max-width:none!important;margin:0!important}
-                #modal .modalbox.${BOX} .formactions{width:calc(100% - 40px)!important;max-width:calc(100% - 40px)!important;height:64px!important;min-height:64px!important;margin:9px 20px 0!important;padding:10px 0!important;border:0!important;outline:0!important;box-shadow:none!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:9px!important;box-sizing:border-box!important;background:#fff!important}
-                #modal .modalbox.${BOX} .formactions:before,#modal .modalbox.${BOX} .formactions:after{display:none!important;content:none!important;border:0!important}
-                #modal .modalbox.${BOX} .formactions .btn{height:43px!important;min-height:43px!important;min-width:118px!important;padding:0 16px!important;border-radius:9px!important;font-size:13px!important;line-height:1!important;font-weight:500!important}
-                #modal .modalbox.${BOX} p{margin:14px 20px 5px!important;padding:0!important;font-size:13px!important;line-height:1.4!important}
+                #modal .modalbox.${BOX} .field label{display:block!important;margin:0 0 4px!important;padding:0!important;font-size:12px!important;line-height:1.15!important;font-weight:650!important;color:#304059!important}
+                #modal .modalbox.${BOX} .field input,#modal .modalbox.${BOX} .field select,#modal .modalbox.${BOX} .field textarea{width:100%!important;max-width:100%!important;height:40px!important;min-height:40px!important;padding:7px 10px!important;box-sizing:border-box!important;border:1px solid #cbd8e6!important;border-radius:8px!important;font-size:13px!important;line-height:1.2!important;box-shadow:none!important}
+                #modal .modalbox.${BOX} .formactions{width:calc(100% - 40px)!important;max-width:none!important;height:58px!important;min-height:58px!important;margin:10px 20px 0!important;padding:8px 0!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;border:0!important;outline:0!important;box-shadow:none!important;background:#fff!important}
+                #modal .modalbox.${BOX} .formactions .btn{height:38px!important;min-height:38px!important;min-width:100px!important;padding:0 13px!important;border-radius:8px!important;font-size:12px!important}
+                #modal .modalbox.${BOX} p{margin:0 20px 12px!important;padding:0!important;font-size:13px!important;line-height:1.4!important}
                 #modal .modalbox.${BOX} p.note{margin:0 20px 8px!important;font-size:11px!important}
-                #modal .modalbox.${BOX} .field>div[style*="justify-content:space-between"]{padding:8px 10px!important;border-radius:8px!important;gap:9px!important}
-                #modal .modalbox.${BOX} .field>div[style*="justify-content:space-between"] .btn{height:32px!important;min-height:32px!important;font-size:11px!important;padding:0 11px!important}
-                @media(max-width:620px){#modal .modalbox.${BOX}{width:calc(100vw - 28px)!important;min-width:0!important;max-width:none!important;border-radius:16px!important}#modal .modalbox.${BOX} .modalhead{border-radius:16px 16px 0 0!important}}
-                @media(max-width:520px){#modal .modalbox.${BOX} .modalhead{height:82px!important;min-height:82px!important;padding:15px 16px!important}#modal .modalbox.${BOX} .modalhead h3{font-size:21px!important}#modal .modalbox.${BOX} .modalhead button{height:40px!important;min-height:40px!important;min-width:92px!important}#modal .modalbox.${BOX} .formgrid{grid-template-columns:1fr!important}#modal .modalbox.${BOX} .field,#modal .modalbox.${BOX} .formgrid,#modal .modalbox.${BOX} .formactions{width:calc(100% - 32px)!important;max-width:calc(100% - 32px)!important;margin-left:16px!important;margin-right:16px!important}}
+                #modal .modalbox.${BOX} .field>div[style*="justify-content:space-between"]{padding:8px 10px!important;border-radius:8px!important}
+                @media(max-width:620px){#modal .modalbox.${BOX}{width:calc(100vw - 28px)!important;min-width:0!important;max-width:none!important;border-radius:16px!important}#modal .modalbox.${BOX} .modalhead{width:calc(100% + 32px)!important;margin-left:-16px!important;border-radius:16px 16px 0 0!important}#modal .modalbox.${BOX} .field,#modal .modalbox.${BOX} .formgrid,#modal .modalbox.${BOX} .formactions{width:calc(100% - 32px)!important;margin-left:16px!important;margin-right:16px!important}}
+                @media(max-width:520px){#modal .modalbox.${BOX} .formgrid{grid-template-columns:1fr!important}#modal .modalbox.${BOX} .modalhead h3{font-size:20px!important}}
               `;document.head.appendChild(s);
             }
             function apply(){
               style();
               document.querySelectorAll('#modal .modalbox').forEach(box=>{
                 const title=(box.querySelector('.modalhead h3')?.textContent||'').trim();
-                if(titles.test(title)&&names.test(title)){
-                  box.classList.add(BOX);
-                  ['width','min-width','max-width'].forEach(k=>box.style.setProperty(k,'576px','important'));
-                  box.style.setProperty('height','auto','important');
-                  box.style.setProperty('min-height','0','important');
-                  box.style.setProperty('padding','0','important');
-                  box.style.setProperty('margin','0','important');
-                  box.style.setProperty('border','0','important');
-                  box.style.setProperty('outline','0','important');
-                  box.style.setProperty('box-shadow','none','important');
-                  box.style.setProperty('overflow','hidden','important');
-                }
+                if(!(titles.test(title)&&names.test(title)))return;
+                box.classList.add(BOX);
+                box.style.cssText += ';width:576px!important;min-width:576px!important;max-width:576px!important;height:auto!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;border:0!important;outline:0!important;box-shadow:none!important;box-sizing:border-box!important;';
+                const head=box.querySelector('.modalhead');
+                if(head){head.style.cssText += ';width:calc(100% + 40px)!important;max-width:none!important;height:82px!important;min-height:82px!important;margin:0 0 24px -20px!important;padding:16px 20px!important;border:0!important;outline:0!important;box-shadow:none!important;box-sizing:border-box!important;';}
+                box.querySelectorAll('.field').forEach(el=>{el.style.setProperty('box-sizing','border-box','important');el.style.setProperty('margin-bottom','9px','important');});
+                box.querySelectorAll('input,select,textarea').forEach(el=>{el.style.setProperty('box-sizing','border-box','important');el.style.setProperty('height','40px','important');el.style.setProperty('min-height','40px','important');});
               });
             }
-            function boot(){apply();new MutationObserver(()=>{clearTimeout(window.__mdCompactTimer);window.__mdCompactTimer=setTimeout(apply,15)}).observe(document.body,{childList:true,subtree:true});}
+            function boot(){apply();new MutationObserver(()=>{clearTimeout(window.__mdCompactFinalTimer);window.__mdCompactFinalTimer=setTimeout(apply,10)}).observe(document.body,{childList:true,subtree:true});}
             if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
           })();'''
-          Path('master-data-compact-runtime-v5.js').write_text(runtime, encoding='utf-8')
-          html = Path('index.html').read_text(encoding='utf-8')
-          tag = '<script src="./master-data-compact-runtime-v5.js?v=5" defer></script>'
+          Path('master-data-compact-runtime-v6.js').write_text(runtime, encoding='utf-8')
+          html=Path('index.html').read_text(encoding='utf-8')
+          tag='<script src="./master-data-compact-runtime-v6.js?v=6" defer></script>'
           if tag not in html:
-              html = html.replace('</body>', tag + '</body>')
-              Path('index.html').write_text(html, encoding='utf-8')
-          print('Master Data compact runtime v5 injected.')
+              html=html.replace('</body>',tag+'</body>')
+              Path('index.html').write_text(html,encoding='utf-8')
+          print('Final Master Data modal runtime v6 injected.')
       - name: Final dashboard table compact layout
         shell: python
         run: |
           from pathlib import Path
           html = Path('index.html').read_text(encoding='utf-8')
           style = r'''<style id="sikoyek-final-dashboard-table-v1">
-          /* Final SiKoyek V1.0 dashboard table revision:
-             remove the artificial empty block below the panels,
-             tighten row height, and use subtle zebra striping. */
           .dashboard-panel .tablecard{min-height:0!important;height:auto!important}
           .dashboard-panel .table{height:auto!important}
           .dashboard-panel .table th,
