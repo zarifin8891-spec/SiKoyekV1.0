@@ -54,8 +54,8 @@ body{background:linear-gradient(180deg,#f7f9fc 0%,#f1f5fa 100%);color:var(--ui-t
 .tablecard .table th{font-weight:800!important}
 .sectiontitle .btn{font-weight:500!important}
 
-/* User Management — Add User modal: reduce the oversized modal by ~30%. */
-.modalbox:has(.um-add-form){width:min(980px,calc(100vw - 36px))!important}
+/* User Management — Add User modal: target width ~30% of the existing form. */
+.modalbox:has(.um-add-form){width:min(420px,calc(100vw - 36px))!important}
 
 @media(max-width:1100px){.shell{grid-template-columns:230px minmax(0,1fr)}.content{padding:26px 24px 36px}}
 @media(max-width:780px){.shell{grid-template-columns:1fr}.sidebar{padding:10px 12px}.sidebrand{font-size:20px;padding:0 8px}.content{padding:20px 17px 30px}.top{align-items:flex-start;margin-bottom:18px}}
