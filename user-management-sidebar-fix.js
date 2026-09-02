@@ -12,7 +12,15 @@
     b.onclick=window.openUserManagement;
     nav.appendChild(b);
   }
-  const boot=()=>{ensure(); if(!window.__SIKOYEK_USER_SIDEBAR_OBS__){
+  function loadResetModule(){
+    if(document.getElementById('user-management-reset-v1-script')) return;
+    const s=document.createElement('script');
+    s.id='user-management-reset-v1-script';
+    s.src='./user-management-reset-v1.js?v=1';
+    s.defer=true;
+    document.body.appendChild(s);
+  }
+  const boot=()=>{ensure();loadResetModule(); if(!window.__SIKOYEK_USER_SIDEBAR_OBS__){
     window.__SIKOYEK_USER_SIDEBAR_OBS__=new MutationObserver(()=>setTimeout(ensure,20));
     window.__SIKOYEK_USER_SIDEBAR_OBS__.observe(document.body,{childList:true,subtree:true});
   }};
