@@ -1,8 +1,21 @@
-/* SiKoyek Auth Login Fix V1 — clear any existing local session before a new login. */
+/* SiKoyek Auth Login Fix V2 — use the actual Supabase client available on the login page. */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_AUTH_LOGIN_FIX_V1__) return;
-  window.__SIKOYEK_AUTH_LOGIN_FIX_V1__=true;
+  if(window.__SIKOYEK_AUTH_LOGIN_FIX_V2__) return;
+  window.__SIKOYEK_AUTH_LOGIN_FIX_V2__=true;
+
+  function getClient(){
+    if(window.sb?.auth) return window.sb;
+    if(!window.supabase?.createClient) return null;
+    if(!window.__siKoyekAuthClient){
+      window.__siKoyekAuthClient=window.supabase.createClient(
+        'https://mmkusplegmittrlxqxby.supabase.co',
+        'sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf',
+        {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
+      );
+    }
+    return window.__siKoyekAuthClient;
+  }
 
   function bind(){
     const btn=document.getElementById('loginBtn');
@@ -19,13 +32,15 @@
       const email=emailEl.value.trim();
       const password=passwordEl.value;
       if(!email||!password){errEl.textContent='Email dan password wajib diisi.';return}
+      const client=getClient();
+      if(!client?.auth){errEl.textContent='Koneksi autentikasi belum siap. Silakan muat ulang halaman.';return}
       fresh.disabled=true;
       fresh.textContent='Memproses...';
       errEl.textContent='';
       errEl.style.color='';
       try{
-        await window.sb.auth.signOut({scope:'local'});
-        const {data,error}=await window.sb.auth.signInWithPassword({email,password});
+        await client.auth.signOut({scope:'local'});
+        const {data,error}=await client.auth.signInWithPassword({email,password});
         if(error) throw error;
         if(!data?.user) throw new Error('Login gagal: user tidak ditemukan.');
         await window.loadSummary?.();
