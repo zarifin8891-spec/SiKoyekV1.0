@@ -1,16 +1,16 @@
-/* SiKoyek Dashboard User V2 — resolve the actual active Supabase user. */
+/* SiKoyek Dashboard User V3 — resolve the actual active Supabase user. */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_DASHBOARD_USER_V2__) return;
-  window.__SIKOYEK_DASHBOARD_USER_V2__=true;
+  if(window.__SIKOYEK_DASHBOARD_USER_V3__) return;
+  window.__SIKOYEK_DASHBOARD_USER_V3__=true;
   let lastUserId='';
   let busy=false;
 
   async function resolveUser(){
-    const client=window.__siKoyekSupabase||window.sb;
-    const info=document.querySelector('.dashboard-userinfo');
+    const client=(typeof sb!=='undefined'&&sb)||window.__siKoyekSupabase||window.sb;
     const actual=document.querySelector('.dashboard-user');
-    if(!client?.auth?.getSession || (!info&&!actual) || busy) return;
+    const info=document.querySelector('.dashboard-userinfo');
+    if(!client?.auth?.getSession || (!actual&&!info) || busy) return;
     busy=true;
     try{
       const {data,error}=await client.auth.getSession();
