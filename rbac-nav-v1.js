@@ -1,8 +1,8 @@
 /* SiKoyek V1.0 — centralized RBAC engine. Database permissions are the single source of truth. */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_RBAC_ENGINE_V6__) return;
-  window.__SIKOYEK_RBAC_ENGINE_V6__=true;
+  if(window.__SIKOYEK_RBAC_ENGINE_V7__) return;
+  window.__SIKOYEK_RBAC_ENGINE_V7__=true;
 
   const MODULES={DASHBOARD:'DASHBOARD',PROJECTS:'PROJECTS',MASTER_DATA:'MASTER_DATA',PROGRESS:'PROGRESS',RAP:'RAP',KEUANGAN:'KEUANGAN',USERS:'USERS'};
   const norm=v=>String(v??'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
@@ -20,6 +20,7 @@
     if(t==='progress'||h.includes('progress.html'))return MODULES.PROGRESS;
     if(t==='rap'||h.includes('rap.html'))return MODULES.RAP;
     if(t==='keuangan'||h.includes('keuangan.html'))return MODULES.KEUANGAN;
+    if(t==='item_pekerjaan'||h.includes('item-pekerjaan.html'))return MODULES.PROJECTS;
     return '';
   }
 
@@ -59,6 +60,18 @@
       if(t==='progress'||t.includes('progress')){setMeta(el,MODULES.PROGRESS,'VIEW');return}
       if(t==='keuangan'||t.includes('keuangan')){setMeta(el,MODULES.KEUANGAN,'VIEW');return}
       if(t==='rap'||t.includes('rap')){setMeta(el,MODULES.RAP,'VIEW');return}
+    }
+
+    /* Item Pekerjaan belongs to Daftar Proyek, not Master Data. */
+    if(onclick.includes('openitemform')){setMeta(el,MODULES.PROJECTS,'ADD');return}
+    if((onclick.includes('edititem')||onclick.includes('updateitem')||onclick.includes('saveitem')) && el.closest('#page')){setMeta(el,MODULES.PROJECTS,'EDIT');return}
+    if((onclick.includes('deleteitem')||onclick.includes('removeitem')) && el.closest('#page')){setMeta(el,MODULES.PROJECTS,'DELETE');return}
+    if(el.closest('#page')){
+      const activeTab=norm(document.querySelector('.tabs button.active')?.textContent||'');
+      if(activeTab==='item_pekerjaan'){
+        if(t==='edit'||t.startsWith('edit_')){setMeta(el,MODULES.PROJECTS,'EDIT');return}
+        if(t==='hapus'||t.startsWith('hapus_')){setMeta(el,MODULES.PROJECTS,'DELETE');return}
+      }
     }
 
     if(onclick.includes('opentxform')){setMeta(el,MODULES.KEUANGAN,'ADD');return}
