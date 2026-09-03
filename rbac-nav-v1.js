@@ -1,14 +1,14 @@
 /* SiKoyek V1.0 — centralized RBAC engine. Database permissions are the single source of truth. */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_RBAC_ENGINE_V5__) return;
-  window.__SIKOYEK_RBAC_ENGINE_V5__=true;
+  if(window.__SIKOYEK_RBAC_ENGINE_V6__) return;
+  window.__SIKOYEK_RBAC_ENGINE_V6__=true;
 
   const MODULES={DASHBOARD:'DASHBOARD',PROJECTS:'PROJECTS',MASTER_DATA:'MASTER_DATA',PROGRESS:'PROGRESS',RAP:'RAP',KEUANGAN:'KEUANGAN',USERS:'USERS'};
   const norm=v=>String(v??'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
   const attr=(el,n)=>String(el?.getAttribute?.(n)||'');
-  const canModule=module=>{const p=window.__SIKOYEK_RBAC_PERMISSIONS_V5__;const m=String(module||'').toUpperCase();return p?.role==='admin'||p?.views?.[m]===true};
-  const canAction=(module,action)=>{const p=window.__SIKOYEK_RBAC_PERMISSIONS_V5__;const m=String(module||'').toUpperCase(),a=String(action||'').toUpperCase();return p?.role==='admin'||p?.actions?.[m]?.[a]===true};
+  const canModule=module=>{const p=window.__SIKOYEK_RBAC_PERMISSIONS_V6__;const m=String(module||'').toUpperCase();return p?.role==='admin'||p?.views?.[m]===true};
+  const canAction=(module,action)=>{const p=window.__SIKOYEK_RBAC_PERMISSIONS_V6__;const m=String(module||'').toUpperCase(),a=String(action||'').toUpperCase();return p?.role==='admin'||p?.actions?.[m]?.[a]===true};
   const setMeta=(el,module,action)=>{if(!el)return;if(module)el.dataset.rbacModule=String(module).toUpperCase();if(action)el.dataset.rbacAction=String(action).toUpperCase()};
 
   function classifySidebar(el){
@@ -66,6 +66,10 @@
     if(onclick.includes('editproject')){setMeta(el,MODULES.PROJECTS,'EDIT');return}
     if(onclick.includes('deleteproject')||onclick.includes('removeproject')){setMeta(el,MODULES.PROJECTS,'DELETE');return}
 
+    /* Project list action buttons may use a legacy/anonymous delete handler. */
+    if((t==='hapus'||t.startsWith('hapus_')) && el.closest('.projects-page-v2')){setMeta(el,MODULES.PROJECTS,'DELETE');return}
+    if((t==='edit'||t.startsWith('edit_')) && el.closest('.projects-page-v2')){setMeta(el,MODULES.PROJECTS,'EDIT');return}
+
     const dataModule=attr(el,'data-module');
     if(dataModule){setMeta(el,dataModule,attr(el,'data-action')||'VIEW');return}
   }
@@ -92,7 +96,7 @@
       if(el.closest('.sidebar')){if(!canModule(m))el.style.display='none';return}
       if(a==='VIEW'){if(!canModule(m))disable(el)}else if(!canAction(m,a))disable(el);
     });
-    window.__SIKOYEK_RBAC_APPLIED_V5__=true;
+    window.__SIKOYEK_RBAC_APPLIED_V6__=true;
   }
 
   async function load(){
@@ -106,6 +110,7 @@
         const ids=(rps||[]).map(x=>x.permission_id).filter(Boolean);
         if(ids.length){const {data:ps,error:qe}=await client.from('permissions').select('id,module,action').in('id',ids);if(qe)throw qe;(ps||[]).forEach(p=>{const m=String(p.module||'').toUpperCase(),a=String(p.action||'').toUpperCase();if(a==='VIEW')permissions.views[m]=true;else{permissions.actions[m]??={};permissions.actions[m][a]=true}})}
       }
+      window.__SIKOYEK_RBAC_PERMISSIONS_V6__=permissions;
       window.__SIKOYEK_RBAC_PERMISSIONS_V5__=permissions;
       window.__SIKOYEK_RBAC_PERMISSIONS_V4__=permissions;
       window.__SIKOYEK_RBAC_PERMISSIONS_V1__=permissions;
@@ -116,9 +121,9 @@
   }
 
   window.sikoyekCan=canAction;window.sikoyekCanView=canModule;
-  window.applyRBACNav=async()=>{if(!window.__SIKOYEK_RBAC_PERMISSIONS_V5__)await load();else applyUI()};
+  window.applyRBACNav=async()=>{if(!window.__SIKOYEK_RBAC_PERMISSIONS_V6__)await load();else applyUI()};
   window.applyRBACUiLock=()=>applyUI();
   const boot=()=>{load();setTimeout(load,250);setTimeout(load,900)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  new MutationObserver(()=>{clearTimeout(window.__sikoyekRbacTimer);window.__sikoyekRbacTimer=setTimeout(()=>{if(window.__SIKOYEK_RBAC_PERMISSIONS_V5__)applyUI()},80)}).observe(document.body,{childList:true,subtree:true});
+  new MutationObserver(()=>{clearTimeout(window.__sikoyekRbacTimer);window.__sikoyekRbacTimer=setTimeout(()=>{if(window.__SIKOYEK_RBAC_PERMISSIONS_V6__)applyUI()},80)}).observe(document.body,{childList:true,subtree:true});
 })();
