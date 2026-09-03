@@ -1,12 +1,7 @@
+/* SiKoyek V1.0 — compatibility bridge to the centralized RBAC engine. */
 (function(){
   'use strict';
-  const id='rbac-ui-lock-v3-script';
-  const apply=()=>window.applyRBACUiLock?.();
-  if(document.getElementById(id)){apply();return}
-  const s=document.createElement('script');
-  s.id=id;
-  s.src='./rbac-ui-lock-v3.js?v=1';
-  s.defer=true;
-  s.onload=apply;
-  document.body.appendChild(s);
+  const run=()=>window.applyRBACNav?.();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});
+  else setTimeout(run,0);
 })();
