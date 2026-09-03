@@ -1,8 +1,8 @@
 /* SiKoyek V1.0 — centralized RBAC engine. Database permissions are the single source of truth. */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_RBAC_ENGINE_V7__) return;
-  window.__SIKOYEK_RBAC_ENGINE_V7__=true;
+  if(window.__SIKOYEK_RBAC_ENGINE_V8__) return;
+  window.__SIKOYEK_RBAC_ENGINE_V8__=true;
 
   const MODULES={DASHBOARD:'DASHBOARD',PROJECTS:'PROJECTS',MASTER_DATA:'MASTER_DATA',PROGRESS:'PROGRESS',RAP:'RAP',KEUANGAN:'KEUANGAN',USERS:'USERS'};
   const norm=v=>String(v??'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
@@ -42,14 +42,6 @@
     if(el.closest('.sidebar')){const m=classifySidebar(el);if(m)setMeta(el,m,'VIEW');return}
     const onclick=attr(el,'onclick').toLowerCase();
     const t=norm(el.textContent);
-
-    /* Daftar Proyek actions. These buttons belong to PROJECTS, not KEUANGAN. */
-    if(el.closest('.actions')){
-      if(t==='edit_proyek'||onclick.includes('editproject')){setMeta(el,MODULES.PROJECTS,'EDIT');return}
-      if(t.includes('item_pekerjaan')||onclick.includes('openitemform')){setMeta(el,MODULES.PROJECTS,'ADD');return}
-      if(t==='hapus'||t.startsWith('hapus_')||onclick.includes('deleteproject')||onclick.includes('removeproject')){setMeta(el,MODULES.PROJECTS,'DELETE');return}
-    }
-
     if(el.dataset.rbacModule&&el.dataset.rbacAction)return;
 
     if(onclick.includes('mdadd')||onclick.includes('mdsaveprojectcategory')||onclick.includes('mdsavemanager')||onclick.includes("add('transaction_categories'")||onclick.includes("add('payment_methods'")){setMeta(el,MODULES.MASTER_DATA,'ADD');return}
@@ -68,10 +60,9 @@
       if(t==='progress'||t.includes('progress')){setMeta(el,MODULES.PROGRESS,'VIEW');return}
       if(t==='keuangan'||t.includes('keuangan')){setMeta(el,MODULES.KEUANGAN,'VIEW');return}
       if(t==='rap'||t.includes('rap')){setMeta(el,MODULES.RAP,'VIEW');return}
-      if(t==='item_pekerjaan'){setMeta(el,MODULES.PROJECTS,'VIEW');return}
+      if(t==='kontrol_biaya'||t.includes('kontrol_biaya')||t==='cost_control'||t.includes('cost_control')){setMeta(el,MODULES.KEUANGAN,'VIEW');return}
     }
 
-    /* Item Pekerjaan belongs to Daftar Proyek, not Master Data. */
     if(onclick.includes('openitemform')){setMeta(el,MODULES.PROJECTS,'ADD');return}
     if((onclick.includes('edititem')||onclick.includes('updateitem')||onclick.includes('saveitem')) && el.closest('#page')){setMeta(el,MODULES.PROJECTS,'EDIT');return}
     if((onclick.includes('deleteitem')||onclick.includes('removeitem')) && el.closest('#page')){setMeta(el,MODULES.PROJECTS,'DELETE');return}
@@ -88,7 +79,6 @@
     if(onclick.includes('editproject')){setMeta(el,MODULES.PROJECTS,'EDIT');return}
     if(onclick.includes('deleteproject')||onclick.includes('removeproject')){setMeta(el,MODULES.PROJECTS,'DELETE');return}
 
-    /* Project list action buttons may use a legacy/anonymous delete handler. */
     if((t==='hapus'||t.startsWith('hapus_')) && el.closest('.projects-page-v2')){setMeta(el,MODULES.PROJECTS,'DELETE');return}
     if((t==='edit'||t.startsWith('edit_')) && el.closest('.projects-page-v2')){setMeta(el,MODULES.PROJECTS,'EDIT');return}
 
