@@ -1,6 +1,6 @@
 const SK_URL='https://mmkusplegmittrlxqxby.supabase.co';
 const SK_KEY='sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf';
-const sb=window.sb=window.sb||window.supabase.createClient(SK_URL,SK_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const sb=window.sb=window.sb||window.supabase.createClient(SK_URL,SK_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.sessionStorage}});
 const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
 const pct=n=>Number(n||0).toFixed(2)+'%';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
