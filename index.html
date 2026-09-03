@@ -30,7 +30,7 @@
 <body><div id="app"></div><script>
 const SUPABASE_URL='https://mmkusplegmittrlxqxby.supabase.co';
 const SUPABASE_KEY='sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf';
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const sb=window.sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.sessionStorage}});
 const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
 const moneyPlain=n=>new Intl.NumberFormat('id-ID',{maximumFractionDigits:0}).format(Number(n||0));
 const pct=n=>Number(n||0).toFixed(2)+'%';
