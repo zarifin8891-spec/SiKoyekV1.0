@@ -1,10 +1,12 @@
 (function(){
   'use strict';
-  if(document.getElementById('rbac-ui-lock-v2-script')){window.applyRBACUiLock?.();return}
+  const id='rbac-ui-lock-v3-script';
+  const apply=()=>window.applyRBACUiLock?.();
+  if(document.getElementById(id)){apply();return}
   const s=document.createElement('script');
-  s.id='rbac-ui-lock-v2-script';
-  s.src='./rbac-ui-lock-v2.js?v=1';
+  s.id=id;
+  s.src='./rbac-ui-lock-v3.js?v=1';
   s.defer=true;
-  s.onload=()=>window.applyRBACUiLock?.();
+  s.onload=apply;
   document.body.appendChild(s);
 })();
