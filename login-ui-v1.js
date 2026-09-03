@@ -1,0 +1,63 @@
+/* SiKoyek Login UI V1 — polished two-panel login presentation. */
+(function(){
+  'use strict';
+  if(window.__SIKOYEK_LOGIN_UI_V1__) return;
+  window.__SIKOYEK_LOGIN_UI_V1__=true;
+
+  const icons={
+    shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v5c0 4.6-2.8 8.1-7 10-4.2-1.9-7-5.4-7-10V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg>',
+    chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5M4 19h16"/><path d="m7 15 3-4 3 2 5-6"/></svg>',
+    users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.5a3 3 0 0 1 0 5.8M18 14c1.8.9 3 2.6 3 5"/></svg>',
+    mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>',
+    lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
+    login:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 5h6v14h-6"/><path d="M3 12h11M10 8l4 4-4 4"/></svg>'
+  };
+
+  function html(){
+    return `<div class="login login-v1"><div class="loginbox loginbox-v1">
+      <section class="login-brand-panel">
+        <div class="login-brand-mark"><span class="login-building"><i></i><i></i><i></i></span><span>SiKoyek <b>V1.0</b></span></div>
+        <div class="login-brand-line"></div>
+        <h2>Sistem Kontrol Proyek</h2>
+        <p>Kelola proyek Anda dengan lebih terstruktur, terkontrol, dan terintegrasi dalam satu sistem.</p>
+        <div class="login-construction"><div class="login-crane"><span></span><i></i><b></b></div><div class="login-house"><i></i><i></i><i></i></div></div>
+        <div class="login-benefits">
+          <div><span>${icons.shield}</span><strong>Aman</strong><small>Data Anda terlindungi</small></div>
+          <div><span>${icons.chart}</span><strong>Terstruktur</strong><small>Pantau progres secara real-time</small></div>
+          <div><span>${icons.users}</span><strong>Terintegrasi</strong><small>Semua informasi dalam satu sistem</small></div>
+        </div>
+      </section>
+      <section class="login-form-panel">
+        <div class="login-access"><span>${icons.shield}</span><div><strong>Akses Terbatas</strong><small>Silakan login untuk melanjutkan</small></div></div>
+        <div class="login-welcome"><h1>Selamat Datang Kembali</h1><p>Masuk ke akun SiKoyek V1.0 Anda</p></div>
+        <div class="field"><label>Email</label><div class="login-input-wrap"><span>${icons.mail}</span><input id="email" type="email" placeholder="nama@email.com" autocomplete="username"></div></div>
+        <div class="field"><label>Password</label><div class="login-input-wrap"><span>${icons.lock}</span><input id="password" type="password" placeholder="Masukkan password" autocomplete="current-password"><button id="togglePassword" class="toggle-password" type="button" aria-label="Tampilkan password" title="Tampilkan password"><svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.1 12s3.6-6 9.9-6 9.9 6 9.9 6-3.6 6-9.9 6-9.9-6-9.9-6Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button></div></div>
+        <div class="login-options"><label><input id="rememberLogin" type="checkbox"> <span>Ingat saya</span></label><button id="forgotPassword" class="forgot-link" type="button">Lupa password?</button></div>
+        <button id="loginBtn" class="btn primary login-submit" type="button"><span>${icons.login}</span>Masuk</button>
+        <div id="loginErr" class="err"></div>
+        <div class="login-divider"><span>atau</span></div>
+        <button class="login-admin-note" type="button" disabled><span>${icons.lock}</span><strong>Login sesuai akun yang terdaftar</strong></button>
+        <div class="login-security">${icons.shield}<span>Dengan masuk, Anda menyetujui kebijakan keamanan sistem.</span></div>
+      </section>
+    </div></div>`;
+  }
+
+  function bindExtras(){
+    document.getElementById('togglePassword')?.addEventListener('click',window.togglePassword);
+    document.getElementById('forgotPassword')?.addEventListener('click',window.forgotPassword);
+    document.getElementById('password')?.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginBtn')?.click()});
+    document.getElementById('loginBtn')?.addEventListener('click',()=>window.login?.());
+  }
+
+  function apply(){
+    const old=document.querySelector('.login:not(.login-v1)');
+    if(!old && document.querySelector('.login-v1')) return;
+    if(!old) return;
+    old.outerHTML=html();
+    bindExtras();
+  }
+
+  window.loginHTML=html;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(apply,120));
+  else setTimeout(apply,80);
+})();
