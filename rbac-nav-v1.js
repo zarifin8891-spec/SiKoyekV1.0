@@ -1,8 +1,8 @@
 /* SiKoyek V1.0 — centralized RBAC engine. Database permissions are the single source of truth. */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_RBAC_ENGINE_V8__) return;
-  window.__SIKOYEK_RBAC_ENGINE_V8__=true;
+  if(window.__SIKOYEK_RBAC_ENGINE_V9__) return;
+  window.__SIKOYEK_RBAC_ENGINE_V9__=true;
 
   const MODULES={DASHBOARD:'DASHBOARD',PROJECTS:'PROJECTS',MASTER_DATA:'MASTER_DATA',PROGRESS:'PROGRESS',RAP:'RAP',KEUANGAN:'KEUANGAN',USERS:'USERS'};
   const norm=v=>String(v??'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
@@ -34,6 +34,25 @@
       const keep=users.find(x=>x.dataset.usersNav==='1')||users[0];
       users.forEach(x=>{if(x!==keep)x.remove()});
       keep.dataset.usersNav='1';
+    }
+  }
+
+  function ensureLaporanNav(){
+    const nav=document.querySelector('.sidebar .nav');
+    if(!nav)return;
+    const items=[...nav.querySelectorAll('button,a')].filter(x=>norm(x.textContent)==='laporan');
+    let b=items.find(x=>x.dataset.laporanNav==='1')||items[0];
+    if(!b){
+      b=document.createElement('button');
+      b.type='button';
+      b.dataset.laporanNav='1';
+      b.textContent='Laporan';
+      b.onclick=()=>{window.location.href='./laporan.html'};
+      const project=nav.querySelector('button[data-rbac-module="PROJECTS"],a[href*="workspace.html"]');
+      if(project?.nextSibling)nav.insertBefore(b,project.nextSibling);else nav.appendChild(b);
+    }else{
+      b.dataset.laporanNav='1';
+      items.forEach(x=>{if(x!==b)x.remove()});
     }
   }
 
@@ -100,7 +119,7 @@
   }
 
   function applyUI(){
-    resetControlled();ensureUserNav();
+    resetControlled();ensureUserNav();ensureLaporanNav();
     document.querySelectorAll('button,a').forEach(annotate);
     document.querySelectorAll('[data-rbac-module]').forEach(el=>{
       const m=String(el.dataset.rbacModule||'').toUpperCase(),a=String(el.dataset.rbacAction||'VIEW').toUpperCase();
