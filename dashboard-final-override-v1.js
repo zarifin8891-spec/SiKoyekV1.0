@@ -1,15 +1,15 @@
-/* SiKoyek Dashboard Final Override V15 — safe CSS-only layout override. */
+/* SiKoyek Dashboard Final Override V16 — safe layout + financial visibility for restricted roles. */
 (function(){
 'use strict';
 function addStyle(){
- if(document.getElementById('dashboard-final-v15-style'))return;
- const s=document.createElement('style');s.id='dashboard-final-v15-style';
+ if(document.getElementById('dashboard-final-v16-style'))return;
+ const s=document.createElement('style');s.id='dashboard-final-v16-style';
  s.textContent=`
 .dashboard-kpis{display:grid!important;grid-template-columns:repeat(5,minmax(0,1.25fr)) repeat(3,minmax(90px,.75fr))!important;gap:10px!important;align-items:stretch!important}
 .dashboard-kpi{min-width:0!important;height:96px!important;padding:14px!important;box-sizing:border-box!important}
 .dashboard-kpi-main{min-width:0!important;flex:1 1 auto!important}
 .dashboard-kpi .label{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:10px!important}
-.dashboard-kpi .value{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:20px!important;line-height:1.15!important}
+.dashboard-kpi .value{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:20px!important}
 .dashboard-status{min-width:0!important;height:96px!important;box-sizing:border-box!important;padding:14px!important}
 .dashboard-status .label{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 .dashboard-panels{display:grid!important;grid-template-columns:minmax(0,40fr) minmax(0,60fr)!important;gap:14px!important;align-items:stretch!important}
@@ -38,6 +38,9 @@ function addStyle(){
 .dashboard-panel .table tbody tr:nth-child(even){background:#eef4f9!important}
 .dashboard-panel .table tbody td{border-bottom:1px solid #dfe7ef!important}
 .dashboard-panel .table tbody tr:last-child td{border-bottom:0!important}
+
+/* Restricted financial KPI masking. */
+.dashboard-financial-masked .value{letter-spacing:.08em!important}
 
 /* Analysis Visual: compact single-line filter bar on desktop. */
 .dashboard-graphs-section .graphs-head{display:grid!important;grid-template-columns:minmax(230px,1fr) auto;align-items:center!important;gap:12px!important;margin:0 0 8px!important}
@@ -96,10 +99,44 @@ function ensureMasterData(){
  b.onclick=async()=>{if(typeof window.openMasterData==='function'){window.openMasterData();return}const sc=document.createElement('script');sc.src='./master-data-v1.js?v=2';sc.onload=()=>window.openMasterData?.();document.body.appendChild(sc)};
  nav.appendChild(b);
 }
+
+let financialRole='';
+let financialLoaded=false;
+async function loadFinancialVisibilityRole(){
+ if(financialLoaded)return financialRole;
+ financialLoaded=true;
+ try{
+   const client=window.__siKoyekSupabase||window.sb;
+   if(!client?.auth?.getUser||!client?.from)return '';
+   const {data:{user}}=await client.auth.getUser();
+   if(!user)return '';
+   const {data:profile}=await client.from('profiles').select('is_active,roles(name)').eq('id',user.id).maybeSingle();
+   financialRole=String(profile?.roles?.name||'').trim().toLowerCase();
+ }catch(e){console.warn('SiKoyek financial visibility:',e)}
+ return financialRole;
+}
+function applyFinancialKpiMask(){
+ const restricted=['pelaksana','marketing'];
+ if(!restricted.includes(financialRole))return;
+ document.querySelectorAll('.dashboard-kpi').forEach(kpi=>{
+   const label=(kpi.querySelector('.label')?.textContent||'').trim().toUpperCase();
+   if(!['NILAI KONTRAK','TOTAL RAP','TOTAL REALISASI'].includes(label))return;
+   const value=kpi.querySelector('.value');
+   if(!value)return;
+   kpi.classList.add('dashboard-financial-masked');
+   if(value.dataset.financialOriginal==null)value.dataset.financialOriginal=value.textContent||'';
+   value.textContent='Rp ••••••••';
+ });
+}
+async function applyFinancialVisibility(){
+ await loadFinancialVisibilityRole();
+ applyFinancialKpiMask();
+}
 function boot(){
  addStyle();
  ensureMasterData();
- const obs=new MutationObserver(()=>{addStyle();ensureMasterData()});
+ applyFinancialVisibility();
+ const obs=new MutationObserver(()=>{addStyle();ensureMasterData();applyFinancialKpiMask()});
  obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
