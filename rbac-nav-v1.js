@@ -1,10 +1,10 @@
 /* SiKoyek V1.0 — centralized RBAC engine. Database permissions are the single source of truth. */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_RBAC_ENGINE_V9__) return;
-  window.__SIKOYEK_RBAC_ENGINE_V9__=true;
+  if(window.__SIKOYEK_RBAC_ENGINE_V10__) return;
+  window.__SIKOYEK_RBAC_ENGINE_V10__=true;
 
-  const MODULES={DASHBOARD:'DASHBOARD',PROJECTS:'PROJECTS',MASTER_DATA:'MASTER_DATA',PROGRESS:'PROGRESS',RAP:'RAP',KEUANGAN:'KEUANGAN',USERS:'USERS'};
+  const MODULES={DASHBOARD:'DASHBOARD',PROJECTS:'PROJECTS',MASTER_DATA:'MASTER_DATA',PROGRESS:'PROGRESS',RAP:'RAP',KEUANGAN:'KEUANGAN',USERS:'USERS',LAPORAN:'LAPORAN'};
   const norm=v=>String(v??'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
   const attr=(el,n)=>String(el?.getAttribute?.(n)||'');
   const canModule=module=>{const p=window.__SIKOYEK_RBAC_PERMISSIONS_V6__;const m=String(module||'').toUpperCase();return p?.role==='admin'||p?.views?.[m]===true};
@@ -16,6 +16,7 @@
     if(t.includes('dashboard')||h.includes('index.html'))return MODULES.DASHBOARD;
     if(t.includes('daftar_proyek')||t==='projects'||h.includes('workspace.html'))return MODULES.PROJECTS;
     if(t.includes('data_master')||t.includes('master_data'))return MODULES.MASTER_DATA;
+    if(t.includes('laporan')||h.includes('laporan.html'))return MODULES.LAPORAN;
     if(t.includes('daftar_user')||t.includes('management_user')||t.includes('user_management'))return MODULES.USERS;
     if(t==='progress'||h.includes('progress.html'))return MODULES.PROGRESS;
     if(t==='rap'||h.includes('rap.html'))return MODULES.RAP;
