@@ -1,32 +1,41 @@
-/* SiKoyek V1.0 — Laporan Ringkasan Proyek V1 */
+/* SiKoyek V1.0 — Laporan Ringkasan & Progress Proyek V2 */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_LAPORAN_V2__)return;
-  window.__SIKOYEK_LAPORAN_V2__=true;
+  if(window.__SIKOYEK_LAPORAN_V3__)return;
+  window.__SIKOYEK_LAPORAN_V3__=true;
 
   const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
   const pct=n=>Number(n||0).toFixed(2)+'%';
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
-  let rows=[];
+  let projects=[];
+  let summaryRows=[];
+  let workItems=[];
+  let progressRecords=[];
+  let activeReport='summary';
 
   function styles(){
-    if(document.getElementById('laporan-v2-style'))return;
-    const s=document.createElement('style');s.id='laporan-v2-style';
+    if(document.getElementById('laporan-v3-style'))return;
+    const s=document.createElement('style');s.id='laporan-v3-style';
     s.textContent=`
-      .laporan-v2{display:grid;gap:16px}
-      .laporan-v2 .report-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
-      .laporan-v2 .report-head h2{margin:0;font-size:20px}
-      .laporan-v2 .report-head p{margin:4px 0 0;color:var(--muted);font-size:12px}
-      .laporan-v2 .filters{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:10px;align-items:end}
-      .laporan-v2 .field{margin:0}.laporan-v2 .field label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px}
-      .laporan-v2 .field input,.laporan-v2 .field select{width:100%;height:40px;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:#fff;color:var(--text)}
-      .laporan-v2 .filter-actions{display:flex;gap:8px}.laporan-v2 .filter-actions .btn{height:40px;padding:0 13px}
-      .laporan-v2 .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-      .laporan-v2 .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 14px}
-      .laporan-v2 .kpi .label{font-size:10px;color:var(--muted);font-weight:700}.laporan-v2 .kpi .value{margin-top:5px;font-size:19px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .laporan-v2 .tablecard{overflow:hidden}.laporan-v2 .scroll{overflow:auto}.laporan-v2 table{width:100%;border-collapse:collapse}.laporan-v2 th,.laporan-v2 td{padding:10px 11px;border-bottom:1px solid var(--line);font-size:12px;text-align:left;white-space:nowrap}.laporan-v2 th{font-size:9px;color:var(--muted);text-transform:uppercase;background:#fafbfd}.laporan-v2 .num{text-align:right}.laporan-v2 .pill{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:700}.laporan-v2 .green{background:var(--green2);color:var(--green)}.laporan-v2 .amber{background:var(--amber2);color:var(--amber)}.laporan-v2 .red{background:var(--red2);color:var(--red)}
-      @media(max-width:1000px){.laporan-v2 .filters{grid-template-columns:1fr 1fr}.laporan-v2 .filter-actions{grid-column:1/-1}.laporan-v2 .kpis{grid-template-columns:repeat(3,1fr)}}
-      @media(max-width:650px){.laporan-v2 .filters,.laporan-v2 .kpis{grid-template-columns:1fr 1fr}.laporan-v2 .kpi .value{font-size:17px}}
+      .laporan-v3{display:grid;gap:16px}
+      .laporan-v3 .report-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
+      .laporan-v3 .report-head h2{margin:0;font-size:20px}
+      .laporan-v3 .report-head p{margin:4px 0 0;color:var(--muted);font-size:12px}
+      .laporan-v3 .report-tabs{display:flex;gap:6px;flex-wrap:wrap}
+      .laporan-v3 .report-tabs button{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:9px;padding:9px 13px;cursor:pointer;font-weight:700}
+      .laporan-v3 .report-tabs button.active{background:var(--blue);border-color:var(--blue);color:#fff}
+      .laporan-v3 .filters{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:10px;align-items:end}
+      .laporan-v3 .field{margin:0}.laporan-v3 .field label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px}
+      .laporan-v3 .field input,.laporan-v3 .field select{width:100%;height:40px;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:#fff;color:var(--text)}
+      .laporan-v3 .filter-actions{display:flex;gap:8px}.laporan-v3 .filter-actions .btn{height:40px;padding:0 13px}
+      .laporan-v3 .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+      .laporan-v3 .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 14px}
+      .laporan-v3 .kpi .label{font-size:10px;color:var(--muted);font-weight:700}.laporan-v3 .kpi .value{margin-top:5px;font-size:19px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .laporan-v3 .tablecard{overflow:hidden}.laporan-v3 .scroll{overflow:auto}.laporan-v3 table{width:100%;border-collapse:collapse}.laporan-v3 th,.laporan-v3 td{padding:10px 11px;border-bottom:1px solid var(--line);font-size:12px;text-align:left;white-space:nowrap}.laporan-v3 th{font-size:9px;color:var(--muted);text-transform:uppercase;background:#fafbfd}.laporan-v3 .num{text-align:right}.laporan-v3 .center{text-align:center}.laporan-v3 .pill{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:700}.laporan-v3 .green{background:var(--green2);color:var(--green)}.laporan-v3 .amber{background:var(--amber2);color:var(--amber)}.laporan-v3 .red{background:var(--red2);color:var(--red)}
+      .laporan-v3 .progressbar{width:140px;max-width:100%;height:8px;background:#edf1f6;border-radius:999px;overflow:hidden}.laporan-v3 .progressbar i{display:block;height:100%;background:var(--blue)}
+      .laporan-v3 .note-card{padding:12px 14px;font-size:12px;color:var(--muted)}
+      @media(max-width:1000px){.laporan-v3 .filters{grid-template-columns:1fr 1fr}.laporan-v3 .filter-actions{grid-column:1/-1}.laporan-v3 .kpis{grid-template-columns:repeat(3,1fr)}}
+      @media(max-width:650px){.laporan-v3 .filters,.laporan-v3 .kpis{grid-template-columns:1fr 1fr}.laporan-v3 .kpi .value{font-size:17px}}
     `;
     document.head.appendChild(s);
   }
@@ -34,35 +43,49 @@
   function shell(){
     const p=document.getElementById('page')||document.getElementById('app');
     if(!p)return null;
-    p.innerHTML=`<div class="laporan-v2">
-      <div class="report-head"><div><h2>Ringkasan Proyek</h2><p>Rekap kondisi proyek berdasarkan data Project Control.</p></div></div>
-      <div class="card" style="padding:14px">
-        <div class="filters">
-          <div class="field"><label>Proyek</label><select id="lapProject"><option value="">Semua Proyek</option></select></div>
-          <div class="field"><label>Status</label><select id="lapStatus"><option value="">Semua Status</option><option value="SEHAT">Sehat</option><option value="PERLU PENGAWASAN">Perlu Pengawasan</option><option value="BERISIKO">Berisiko</option></select></div>
-          <div class="field"><label>Cari</label><input id="lapSearch" placeholder="Kode atau nama proyek..."></div>
-          <div class="filter-actions"><button class="btn ghost" type="button" id="lapReset">Reset</button></div>
-        </div>
+    p.innerHTML=`<div class="laporan-v3">
+      <div class="report-head"><div><h2>Laporan Proyek</h2><p>Ringkasan dan monitoring progress proyek.</p></div></div>
+      <div class="report-tabs">
+        <button type="button" data-report="summary" class="active">Ringkasan Proyek</button>
+        <button type="button" data-report="progress">Progress Proyek</button>
       </div>
-      <div class="kpis">
-        <div class="kpi"><div class="label">TOTAL PROYEK</div><div class="value" id="lapKpiProjects">0</div></div>
-        <div class="kpi"><div class="label">NILAI KONTRAK</div><div class="value" id="lapKpiContract">Rp 0</div></div>
-        <div class="kpi"><div class="label">TOTAL RAP</div><div class="value" id="lapKpiRap">Rp 0</div></div>
-        <div class="kpi"><div class="label">TOTAL REALISASI</div><div class="value" id="lapKpiReal">Rp 0</div></div>
-        <div class="kpi"><div class="label">AVG PROGRESS</div><div class="value" id="lapKpiProgress">0.00%</div></div>
-      </div>
-      <div class="card tablecard"><div class="scroll"><table><thead><tr>
-        <th>Kode</th><th>Nama Proyek</th><th class="num">Nilai Kontrak</th><th class="num">RAP</th><th class="num">Realisasi</th><th>Progress</th><th>Rasio Biaya</th><th>Status</th>
-      </tr></thead><tbody id="lapBody"><tr><td colspan="8" class="empty">Memuat data...</td></tr></tbody></table></div></div>
+      <div id="reportContent"></div>
     </div>`;
+    p.querySelectorAll('[data-report]').forEach(btn=>btn.addEventListener('click',()=>{activeReport=btn.dataset.report;renderReport()}));
     return p;
   }
 
-  function filtered(){
-    const project=(document.getElementById('lapProject')?.value||'').trim();
-    const status=(document.getElementById('lapStatus')?.value||'').trim();
-    const search=(document.getElementById('lapSearch')?.value||'').trim().toLowerCase();
-    return rows.filter(x=>{
+  function projectOptions(selected=''){
+    return '<option value="">Semua Proyek</option>'+projects.map(x=>`<option value="${esc(x.id)}" ${String(x.id)===String(selected)?'selected':''}>${esc(x.project_code)} — ${esc(x.project_name)}</option>`).join('');
+  }
+
+  function summaryView(){
+    const content=document.getElementById('reportContent');
+    content.innerHTML=`
+      <div class="card" style="padding:14px"><div class="filters">
+        <div class="field"><label>Proyek</label><select id="sumProject">${projectOptions()}</select></div>
+        <div class="field"><label>Status</label><select id="sumStatus"><option value="">Semua Status</option><option value="SEHAT">Sehat</option><option value="PERLU PENGAWASAN">Perlu Pengawasan</option><option value="BERISIKO">Berisiko</option></select></div>
+        <div class="field"><label>Cari</label><input id="sumSearch" placeholder="Kode atau nama proyek..."></div>
+        <div class="filter-actions"><button class="btn ghost" type="button" id="sumReset">Reset</button></div>
+      </div></div>
+      <div class="kpis">
+        <div class="kpi"><div class="label">TOTAL PROYEK</div><div class="value" id="sumKpiProjects">0</div></div>
+        <div class="kpi"><div class="label">NILAI KONTRAK</div><div class="value" id="sumKpiContract">Rp 0</div></div>
+        <div class="kpi"><div class="label">TOTAL RAP</div><div class="value" id="sumKpiRap">Rp 0</div></div>
+        <div class="kpi"><div class="label">TOTAL REALISASI</div><div class="value" id="sumKpiReal">Rp 0</div></div>
+        <div class="kpi"><div class="label">AVG PROGRESS</div><div class="value" id="sumKpiProgress">0.00%</div></div>
+      </div>
+      <div class="card tablecard"><div class="scroll"><table><thead><tr><th>Kode</th><th>Nama Proyek</th><th class="num">Nilai Kontrak</th><th class="num">RAP</th><th class="num">Realisasi</th><th>Progress</th><th>Rasio Biaya</th><th>Status</th></tr></thead><tbody id="sumBody"><tr><td colspan="8" class="empty">Memuat data...</td></tr></tbody></table></div></div>`;
+    ['sumProject','sumStatus','sumSearch'].forEach(id=>document.getElementById(id)?.addEventListener(id==='sumSearch'?'input':'change',renderSummary));
+    document.getElementById('sumReset')?.addEventListener('click',()=>{document.getElementById('sumProject').value='';document.getElementById('sumStatus').value='';document.getElementById('sumSearch').value='';renderSummary()});
+    renderSummary();
+  }
+
+  function filteredSummary(){
+    const project=document.getElementById('sumProject')?.value||'';
+    const status=document.getElementById('sumStatus')?.value||'';
+    const search=(document.getElementById('sumSearch')?.value||'').trim().toLowerCase();
+    return summaryRows.filter(x=>{
       if(project && String(x.project_id||'')!==project)return false;
       if(status && String(x.health_status||'')!==status)return false;
       if(search){const hay=`${x.project_code||''} ${x.project_name||''}`.toLowerCase();if(!hay.includes(search))return false}
@@ -70,41 +93,103 @@
     });
   }
 
-  function render(){
-    const data=filtered();
+  function renderSummary(){
+    const data=filteredSummary();
     const sum=k=>data.reduce((t,x)=>t+Number(x[k]||0),0);
     const avg=data.length?sum('project_progress')/data.length:0;
-    document.getElementById('lapKpiProjects').textContent=data.length;
-    document.getElementById('lapKpiContract').textContent=money(sum('contract_value'));
-    document.getElementById('lapKpiRap').textContent=money(sum('total_rap'));
-    document.getElementById('lapKpiReal').textContent=money(sum('total_realization'));
-    document.getElementById('lapKpiProgress').textContent=pct(avg);
-    const body=document.getElementById('lapBody');
-    if(!body)return;
+    document.getElementById('sumKpiProjects').textContent=data.length;
+    document.getElementById('sumKpiContract').textContent=money(sum('contract_value'));
+    document.getElementById('sumKpiRap').textContent=money(sum('total_rap'));
+    document.getElementById('sumKpiReal').textContent=money(sum('total_realization'));
+    document.getElementById('sumKpiProgress').textContent=pct(avg);
+    const body=document.getElementById('sumBody');if(!body)return;
     if(!data.length){body.innerHTML='<tr><td colspan="8" class="empty">Tidak ada data yang sesuai.</td></tr>';return}
-    body.innerHTML=data.map(x=>{
-      const hs=String(x.health_status||'').toUpperCase();
-      const cls=hs==='SEHAT'?'green':hs==='BERISIKO'?'red':'amber';
-      return `<tr><td><strong>${esc(x.project_code)}</strong></td><td>${esc(x.project_name)}</td><td class="num">${money(x.contract_value)}</td><td class="num">${money(x.total_rap)}</td><td class="num">${money(x.total_realization)}</td><td>${pct(x.project_progress)}</td><td>${pct(x.cost_ratio)}</td><td><span class="pill ${cls}">${esc(x.health_status||'-')}</span></td></tr>`;
-    }).join('');
+    body.innerHTML=data.map(x=>{const hs=String(x.health_status||'').toUpperCase();const cls=hs==='SEHAT'?'green':hs==='BERISIKO'?'red':'amber';return `<tr><td><strong>${esc(x.project_code)}</strong></td><td>${esc(x.project_name)}</td><td class="num">${money(x.contract_value)}</td><td class="num">${money(x.total_rap)}</td><td class="num">${money(x.total_realization)}</td><td>${pct(x.project_progress)}</td><td>${pct(x.cost_ratio)}</td><td><span class="pill ${cls}">${esc(x.health_status||'-')}</span></td></tr>`}).join('');
+  }
+
+  function progressView(){
+    const content=document.getElementById('reportContent');
+    content.innerHTML=`
+      <div class="card" style="padding:14px"><div class="filters">
+        <div class="field"><label>Proyek</label><select id="progProject">${projectOptions()}</select></div>
+        <div class="field"><label>Dari Tanggal</label><input id="progFrom" type="date"></div>
+        <div class="field"><label>Sampai Tanggal</label><input id="progTo" type="date"></div>
+        <div class="filter-actions"><button class="btn ghost" type="button" id="progReset">Reset</button></div>
+      </div></div>
+      <div class="kpis">
+        <div class="kpi"><div class="label">TOTAL ITEM</div><div class="value" id="progKpiItems">0</div></div>
+        <div class="kpi"><div class="label">ITEM SUDAH BERJALAN</div><div class="value" id="progKpiStarted">0</div></div>
+        <div class="kpi"><div class="label">ITEM SELESAI</div><div class="value" id="progKpiDone">0</div></div>
+        <div class="kpi"><div class="label">AVG PROGRESS ITEM</div><div class="value" id="progKpiAvg">0.00%</div></div>
+        <div class="kpi"><div class="label">PROJECT PROGRESS</div><div class="value" id="progKpiProject">0.00%</div></div>
+      </div>
+      <div class="card tablecard"><div class="scroll"><table><thead><tr><th>Kode</th><th>Nama Proyek</th><th>Item Pekerjaan</th><th class="num">Bobot</th><th class="num">Progress Item</th><th class="num">Progress Berbobot</th><th>Visual</th><th>Status</th></tr></thead><tbody id="progBody"><tr><td colspan="8" class="empty">Memuat data...</td></tr></tbody></table></div></div>
+      <div class="card note-card">Progress item dihitung dari akumulasi progress yang tersimpan. Progress berbobot = bobot item × progress item. Laporan ini tidak menampilkan target pekerjaan karena data target belum tersedia di struktur Progress saat ini.</div>`;
+    ['progProject','progFrom','progTo'].forEach(id=>document.getElementById(id)?.addEventListener('change',renderProgress));
+    document.getElementById('progReset')?.addEventListener('click',()=>{document.getElementById('progProject').value='';document.getElementById('progFrom').value='';document.getElementById('progTo').value='';renderProgress()});
+    renderProgress();
+  }
+
+  function renderProgress(){
+    const pid=document.getElementById('progProject')?.value||'';
+    const from=document.getElementById('progFrom')?.value||'';
+    const to=document.getElementById('progTo')?.value||'';
+    const selectedProjects=projects.filter(p=>!pid||String(p.id)===String(pid));
+    const selectedIds=new Set(selectedProjects.map(p=>String(p.id)));
+    const recByItem={};
+    progressRecords.forEach(r=>{
+      if(!selectedIds.has(String(r.project_id)))return;
+      if(from && String(r.progress_date||'')<from)return;
+      if(to && String(r.progress_date||'')>to)return;
+      recByItem[r.work_item_id]=(recByItem[r.work_item_id]||0)+Number(r.progress_percentage||0);
+    });
+    const data=workItems.filter(i=>selectedIds.has(String(i.project_id))).map(i=>{
+      const progress=Math.min(100,recByItem[i.id]||0);
+      const weight=Number(i.weight||0);
+      const weighted=weight*(progress/100)*100;
+      const project=projects.find(p=>String(p.id)===String(i.project_id));
+      return {...i,progress,weighted,project};
+    });
+    const avg=data.length?data.reduce((s,x)=>s+x.progress,0)/data.length:0;
+    const started=data.filter(x=>x.progress>0).length;
+    const done=data.filter(x=>x.progress>=100).length;
+    const projectProgress=selectedProjects.length?selectedProjects.reduce((s,p)=>{
+      const items=data.filter(x=>String(x.project_id)===String(p.id));
+      return s+(items.reduce((a,x)=>a+x.weighted,0));
+    },0)/selectedProjects.length:0;
+    document.getElementById('progKpiItems').textContent=data.length;
+    document.getElementById('progKpiStarted').textContent=started;
+    document.getElementById('progKpiDone').textContent=done;
+    document.getElementById('progKpiAvg').textContent=pct(avg);
+    document.getElementById('progKpiProject').textContent=pct(projectProgress);
+    const body=document.getElementById('progBody');if(!body)return;
+    if(!data.length){body.innerHTML='<tr><td colspan="8" class="empty">Tidak ada item atau progress pada filter yang dipilih.</td></tr>';return}
+    body.innerHTML=data.map(x=>{const cls=x.progress>=100?'green':x.progress>0?'amber':'red';const status=x.progress>=100?'SELESAI':x.progress>0?'BERJALAN':'BELUM MULAI';return `<tr><td><strong>${esc(x.project?.project_code||'-')}</strong></td><td>${esc(x.project?.project_name||'-')}</td><td>${esc(x.work_name||'-')}</td><td class="num">${pct(Number(x.weight||0)*100)}</td><td class="num">${pct(x.progress)}</td><td class="num">${pct(x.weighted)}</td><td><div class="progressbar"><i style="width:${Math.min(100,x.progress)}%"></i></div></td><td><span class="pill ${cls}">${status}</span></td></tr>`}).join('');
   }
 
   async function load(){
     const client=window.SK?.sb||window.sb;
-    const {data,error}=await client.from('project_summary').select('*').order('project_code');
-    if(error)throw error;
-    rows=data||[];
-    const sel=document.getElementById('lapProject');
-    if(sel)sel.innerHTML='<option value="">Semua Proyek</option>'+rows.map(x=>`<option value="${esc(x.project_id)}">${esc(x.project_code)} — ${esc(x.project_name)}</option>`).join('');
-    render();
+    const [{data:ps,error:pe},{data:wi,error:we},{data:pr,error:re}]=await Promise.all([
+      client.from('projects').select('id,project_code,project_name').order('project_code'),
+      client.from('project_work_items').select('id,project_id,work_name,weight,sort_order').order('sort_order'),
+      client.from('progress_records').select('id,project_id,work_item_id,progress_date,progress_percentage').order('progress_date')
+    ]);
+    if(pe)throw pe;if(we)throw we;if(re)throw re;
+    projects=ps||[];workItems=wi||[];progressRecords=pr||[];
+    const {data:sum,error:se}=await client.from('project_summary').select('*').order('project_code');
+    if(se)throw se;summaryRows=sum||[];
+  }
+
+  function renderReport(){
+    const root=document.querySelector('.laporan-v3');if(!root)return;
+    root.querySelectorAll('[data-report]').forEach(btn=>btn.classList.toggle('active',btn.dataset.report===activeReport));
+    if(activeReport==='progress')progressView();else summaryView();
   }
 
   async function renderPage(){
     styles();
     shell();
-    ['lapProject','lapStatus','lapSearch'].forEach(id=>document.getElementById(id)?.addEventListener(id==='lapSearch'?'input':'change',render));
-    document.getElementById('lapReset')?.addEventListener('click',()=>{document.getElementById('lapProject').value='';document.getElementById('lapStatus').value='';document.getElementById('lapSearch').value='';render()});
-    try{await load()}catch(e){const p=document.getElementById('page')||document.getElementById('app');if(p)p.innerHTML='<div class="card"><div class="empty">Gagal memuat laporan: '+esc(e?.message||'Kesalahan tidak diketahui')+'</div></div>';console.warn('SiKoyek Laporan:',e)}
+    try{await load();renderReport()}catch(e){const p=document.getElementById('page')||document.getElementById('app');if(p)p.innerHTML='<div class="card"><div class="empty">Gagal memuat laporan: '+esc(e?.message||'Kesalahan tidak diketahui')+'</div></div>';console.warn('SiKoyek Laporan:',e)}
     window.applyRBACNav?.();
   }
 
