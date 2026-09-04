@@ -1,9 +1,9 @@
-/* SiKoyek Dashboard Final Override V16 — safe layout + financial visibility for restricted roles. */
+/* SiKoyek Dashboard Final Override V17 — safe layout + reliable financial visibility for restricted roles. */
 (function(){
 'use strict';
 function addStyle(){
- if(document.getElementById('dashboard-final-v16-style'))return;
- const s=document.createElement('style');s.id='dashboard-final-v16-style';
+ if(document.getElementById('dashboard-final-v17-style'))return;
+ const s=document.createElement('style');s.id='dashboard-final-v17-style';
  s.textContent=`
 .dashboard-kpis{display:grid!important;grid-template-columns:repeat(5,minmax(0,1.25fr)) repeat(3,minmax(90px,.75fr))!important;gap:10px!important;align-items:stretch!important}
 .dashboard-kpi{min-width:0!important;height:96px!important;padding:14px!important;box-sizing:border-box!important}
@@ -38,11 +38,8 @@ function addStyle(){
 .dashboard-panel .table tbody tr:nth-child(even){background:#eef4f9!important}
 .dashboard-panel .table tbody td{border-bottom:1px solid #dfe7ef!important}
 .dashboard-panel .table tbody tr:last-child td{border-bottom:0!important}
-
-/* Restricted financial KPI masking. */
 .dashboard-financial-masked .value{letter-spacing:.08em!important}
 
-/* Analysis Visual: compact single-line filter bar on desktop. */
 .dashboard-graphs-section .graphs-head{display:grid!important;grid-template-columns:minmax(230px,1fr) auto;align-items:center!important;gap:12px!important;margin:0 0 8px!important}
 .dashboard-graphs-section .graphs-head>div{min-width:0!important}
 .dashboard-graphs-section .graphs-head h2{font-size:17px!important;line-height:1.15!important;margin:0!important}
@@ -101,42 +98,80 @@ function ensureMasterData(){
 }
 
 let financialRole='';
-let financialLoaded=false;
-async function loadFinancialVisibilityRole(){
- if(financialLoaded)return financialRole;
- financialLoaded=true;
- try{
-   const client=window.__siKoyekSupabase||window.sb;
-   if(!client?.auth?.getUser||!client?.from)return '';
-   const {data:{user}}=await client.auth.getUser();
-   if(!user)return '';
-   const {data:profile}=await client.from('profiles').select('is_active,roles(name)').eq('id',user.id).maybeSingle();
-   financialRole=String(profile?.roles?.name||'').trim().toLowerCase();
- }catch(e){console.warn('SiKoyek financial visibility:',e)}
- return financialRole;
-}
-function applyFinancialKpiMask(){
+let financialClient=null;
+async function loadFinancialVisibilityRole(retry=0){
  const restricted=['pelaksana','marketing'];
- if(!restricted.includes(financialRole))return;
- document.querySelectorAll('.dashboard-kpi').forEach(kpi=>{
-   const label=(kpi.querySelector('.label')?.textContent||'').trim().toUpperCase();
-   if(!['NILAI KONTRAK','TOTAL RAP','TOTAL REALISASI'].includes(label))return;
-   const value=kpi.querySelector('.value');
-   if(!value)return;
-   kpi.classList.add('dashboard-financial-masked');
-   if(value.dataset.financialOriginal==null)value.dataset.financialOriginal=value.textContent||'';
-   value.textContent='Rp ••••••••';
+ try{
+   financialClient=window.__siKoyekSupabase||window.sb||financialClient;
+   if(!financialClient&&window.supabase?.createClient){
+     financialClient=window.supabase.createClient(
+       'https://mmkusplegmittrlxqxby.supabase.co',
+       'sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf',
+       {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
+     );
+   }
+   if(!financialClient?.auth?.getUser||!financialClient?.from){
+     if(retry<10)setTimeout(()=>loadFinancialVisibilityRole(retry+1),250);
+     return '';
+   }
+   const {data:{user}}=await financialClient.auth.getUser();
+   if(!user){
+     if(retry<10)setTimeout(()=>loadFinancialVisibilityRole(retry+1),250);
+     return '';
+   }
+   const {data:profile}=await financialClient.from('profiles').select('is_active,roles(name)').eq('id',user.id).maybeSingle();
+   financialRole=String(profile?.roles?.name||'').trim().toLowerCase();
+   return financialRole;
+ }catch(e){
+   console.warn('SiKoyek financial visibility:',e);
+   if(retry<10)setTimeout(()=>loadFinancialVisibilityRole(retry+1),250);
+   return '';
+ }
+}
+function isRestrictedFinancialRole(){return ['pelaksana','marketing'].includes(financialRole)}
+function maskTextNode(node){
+ if(!node||node.parentElement?.closest('script,style,textarea,input,select'))return;
+ const text=node.nodeValue||'';
+ if(!text.trim())return;
+ if(/Rp\.?\s*[\d.,]+/i.test(text)){
+   node.nodeValue=text.replace(/Rp\.?\s*[\d.,]+/gi,'Rp ••••••••');
+   return;
+ }
+ if(/^-?\d{1,3}(?:\.\d{3})+$/.test(text.trim())||/^-?\d{7,}$/.test(text.trim())){
+   node.nodeValue='••••••••';
+ }
+}
+function maskDashboardFinancialText(){
+ if(!isRestrictedFinancialRole())return;
+ document.querySelectorAll('.dashboard-view').forEach(root=>{
+   root.querySelectorAll('.dashboard-kpi').forEach(kpi=>{
+     const label=(kpi.querySelector('.label')?.textContent||'').trim().toUpperCase();
+     if(!['NILAI KONTRAK','TOTAL RAP','TOTAL REALISASI'].includes(label))return;
+     const value=kpi.querySelector('.value');
+     if(!value)return;
+     kpi.classList.add('dashboard-financial-masked');
+     value.textContent='••••••••';
+   });
+   const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(node){
+     if(node.parentElement?.closest('.dashboard-kpi,.dashboard-status,script,style,textarea,input,select'))return NodeFilter.FILTER_REJECT;
+     return NodeFilter.FILTER_ACCEPT;
+   }});
+   const nodes=[];let n;while((n=walker.nextNode()))nodes.push(n);nodes.forEach(maskTextNode);
  });
 }
 async function applyFinancialVisibility(){
- await loadFinancialVisibilityRole();
- applyFinancialKpiMask();
+ if(!financialRole)await loadFinancialVisibilityRole();
+ maskDashboardFinancialText();
 }
 function boot(){
  addStyle();
  ensureMasterData();
  applyFinancialVisibility();
- const obs=new MutationObserver(()=>{addStyle();ensureMasterData();applyFinancialKpiMask()});
+ const obs=new MutationObserver(()=>{
+   addStyle();
+   ensureMasterData();
+   if(financialRole)maskDashboardFinancialText();
+ });
  obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
