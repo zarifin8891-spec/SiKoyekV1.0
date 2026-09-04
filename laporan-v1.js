@@ -44,7 +44,6 @@
     const p=document.getElementById('page')||document.getElementById('app');
     if(!p)return null;
     p.innerHTML=`<div class="laporan-v3">
-      <div class="report-head"><div><h2>Laporan Proyek</h2><p>Ringkasan dan monitoring progress proyek.</p></div></div>
       <div class="report-tabs">
         <button type="button" data-report="summary" class="active">Ringkasan Proyek</button>
         <button type="button" data-report="progress">Progress Proyek</button>
