@@ -12,9 +12,8 @@
 
   const run=()=>{
     if(location.pathname.toLowerCase().endsWith('laporan.html')){
-      /* Laporan now has one canonical shell. The previous two repair scripts
-         competed with RBAC and could recreate/duplicate sidebar entries. */
-      load('laporan-shell-clean-v1-script','./laporan-shell-clean-v1.js?v=1');
+      /* Laporan has one canonical shell; legacy repair scripts are intentionally not loaded. */
+      load('laporan-shell-clean-v1-script','./laporan-shell-clean-v1.js?v=2');
     }
     window.applyRBACNav?.();
   };
