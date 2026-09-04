@@ -12,6 +12,16 @@
   const canAct=(m,a)=>{const p=perms();return !!(p&&(p.role==='admin'||p.actions?.[String(m).toUpperCase()]?.[String(a).toUpperCase()]===true))};
   const setMeta=(el,m,a)=>{el.dataset.rbacModule=String(m).toUpperCase();el.dataset.rbacAction=String(a||'VIEW').toUpperCase()};
 
+  function installNavStyle(){
+    if(document.getElementById('sikoyek-rbac-direct-nav-style'))return;
+    const s=document.createElement('style');s.id='sikoyek-rbac-direct-nav-style';
+    s.textContent=`
+      .sidebar .nav a,.sidebar .nav button{color:#cbd5e1!important;text-decoration:none!important;background:transparent;border:0;text-align:left;font:inherit;font-weight:700;cursor:pointer}
+      .sidebar .nav a:hover,.sidebar .nav a.active,.sidebar .nav button:hover,.sidebar .nav button.active{color:#fff!important;text-decoration:none!important;background:#202938}
+    `;
+    document.head.appendChild(s);
+  }
+
   function sidebarModule(el){
     const t=norm(el.textContent),h=attr(el,'href').toLowerCase();
     if(t.includes('dashboard')||h.includes('index.html'))return M.DASHBOARD;
@@ -83,6 +93,7 @@
   function apply(){
     const p=perms();
     if(!p)return;
+    installNavStyle();
     resetControlled();
     ensureCoreItems();
     document.querySelectorAll('button,a').forEach(annotate);
