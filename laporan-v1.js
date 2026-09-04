@@ -17,6 +17,7 @@
     if(document.getElementById('laporan-v3-style'))return;
     const s=document.createElement('style');s.id='laporan-v3-style';
     s.textContent=`
+      .shell:has(.laporan-v3) .sidefoot{display:none!important}
       .laporan-v3{display:grid;gap:16px}
       .laporan-v3 .report-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
       .laporan-v3 .report-head h2{margin:0;font-size:20px}
