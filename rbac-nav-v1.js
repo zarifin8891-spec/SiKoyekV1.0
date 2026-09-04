@@ -1,8 +1,8 @@
 /* SiKoyek V1.0 — centralized RBAC engine. Database permissions are the single source of truth. */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_RBAC_ENGINE_V10__) return;
-  window.__SIKOYEK_RBAC_ENGINE_V10__=true;
+  if(window.__SIKOYEK_RBAC_ENGINE_V11__) return;
+  window.__SIKOYEK_RBAC_ENGINE_V11__=true;
 
   const MODULES={DASHBOARD:'DASHBOARD',PROJECTS:'PROJECTS',MASTER_DATA:'MASTER_DATA',PROGRESS:'PROGRESS',RAP:'RAP',KEUANGAN:'KEUANGAN',USERS:'USERS',LAPORAN:'LAPORAN'};
   const norm=v=>String(v??'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
@@ -55,6 +55,18 @@
       b.dataset.laporanNav='1';
       items.forEach(x=>{if(x!==b)x.remove()});
     }
+  }
+
+  function normalizeCoreNavOrder(){
+    const nav=document.querySelector('.sidebar .nav');
+    if(!nav)return;
+    const desired=['dashboard','daftar_proyek','data_master','daftar_user','laporan'];
+    const map={};
+    [...nav.querySelectorAll('button,a')].forEach(el=>{
+      const key=norm(el.textContent);
+      if(desired.includes(key)&&!map[key])map[key]=el;
+    });
+    desired.forEach(key=>{if(map[key])nav.appendChild(map[key])});
   }
 
   function annotate(el){
@@ -120,7 +132,7 @@
   }
 
   function applyUI(){
-    resetControlled();ensureUserNav();ensureLaporanNav();
+    resetControlled();ensureUserNav();ensureLaporanNav();normalizeCoreNavOrder();
     document.querySelectorAll('button,a').forEach(annotate);
     document.querySelectorAll('[data-rbac-module]').forEach(el=>{
       const m=String(el.dataset.rbacModule||'').toUpperCase(),a=String(el.dataset.rbacAction||'VIEW').toUpperCase();
