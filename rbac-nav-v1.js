@@ -1,8 +1,8 @@
 /* SiKoyek V1.0 — centralized RBAC engine. Database permissions are the single source of truth. */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_RBAC_ENGINE_V11__) return;
-  window.__SIKOYEK_RBAC_ENGINE_V11__=true;
+  if(window.__SIKOYEK_RBAC_ENGINE_V12__) return;
+  window.__SIKOYEK_RBAC_ENGINE_V12__=true;
 
   const MODULES={DASHBOARD:'DASHBOARD',PROJECTS:'PROJECTS',MASTER_DATA:'MASTER_DATA',PROGRESS:'PROGRESS',RAP:'RAP',KEUANGAN:'KEUANGAN',USERS:'USERS',LAPORAN:'LAPORAN'};
   const norm=v=>String(v??'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
@@ -143,6 +143,32 @@
     window.__SIKOYEK_RBAC_APPLIED_V6__=true;
   }
 
+  function wireSidebarNavigation(){
+    const nav=document.querySelector('.sidebar .nav');
+    if(!nav)return;
+    nav.querySelectorAll('button,a').forEach(el=>{
+      if(el.dataset.rbacNavWired==='1')return;
+      el.dataset.rbacNavWired='1';
+      el.addEventListener('click',function(e){
+        if(this.dataset.rbacControlled==='1')return;
+        const text=norm(this.textContent);
+        if(text==='dashboard'){
+          e.preventDefault();e.stopPropagation();
+          if(typeof window.go==='function')window.go('dashboard');else window.location.href='./index.html';
+        }else if(text==='projects'||text==='daftar_proyek'){
+          e.preventDefault();e.stopPropagation();
+          if(typeof window.go==='function')window.go('projects');else window.location.href='./workspace.html';
+        }else if(text==='laporan'){
+          e.preventDefault();e.stopPropagation();window.location.href='./laporan.html';
+        }else if(text==='data_master'){
+          e.preventDefault();e.stopPropagation();window.openMasterData?.();
+        }else if(text==='daftar_user'){
+          e.preventDefault();e.stopPropagation();window.openUserManagement?.();
+        }
+      });
+    });
+  }
+
   async function load(){
     const client=window.SK?.sb||window.sb;if(!client?.auth||!client?.from)return;
     try{
@@ -161,13 +187,14 @@
       window.__SIKOYEK_RBAC_PERMISSIONS_V2__=permissions;
       window.__SIKOYEK_RBAC_PERMISSIONS_V3__=permissions;
       applyUI();
+      wireSidebarNavigation();
     }catch(e){console.warn('SiKoyek RBAC:',e)}
   }
 
   window.sikoyekCan=canAction;window.sikoyekCanView=canModule;
-  window.applyRBACNav=async()=>{if(!window.__SIKOYEK_RBAC_PERMISSIONS_V6__)await load();else applyUI()};
-  window.applyRBACUiLock=()=>applyUI();
+  window.applyRBACNav=async()=>{if(!window.__SIKOYEK_RBAC_PERMISSIONS_V6__)await load();else{applyUI();wireSidebarNavigation()}};
+  window.applyRBACUiLock=()=>{applyUI();wireSidebarNavigation()};
   const boot=()=>{load();setTimeout(load,250);setTimeout(load,900)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  new MutationObserver(()=>{clearTimeout(window.__sikoyekRbacTimer);window.__sikoyekRbacTimer=setTimeout(()=>{if(window.__SIKOYEK_RBAC_PERMISSIONS_V6__)applyUI()},80)}).observe(document.body,{childList:true,subtree:true});
+  new MutationObserver(()=>{clearTimeout(window.__sikoyekRbacTimer);window.__sikoyekRbacTimer=setTimeout(()=>{if(window.__SIKOYEK_RBAC_PERMISSIONS_V6__){applyUI();wireSidebarNavigation()}},80)}).observe(document.body,{childList:true,subtree:true});
 })();
