@@ -26,11 +26,11 @@
       .sidebar .nav{display:grid;gap:5px}
       .sidebar .nav a,.sidebar .nav button{
         display:block;width:100%;box-sizing:border-box;border:0;background:transparent;
-        color:#cbd5e1;text-decoration:none;text-align:left;padding:11px 12px;border-radius:10px;
+        color:#cbd5e1!important;text-decoration:none!important;text-align:left;padding:11px 12px;border-radius:10px;
         font:inherit;font-weight:700;cursor:pointer;pointer-events:auto!important;
       }
       .sidebar .nav a:hover,.sidebar .nav a.active,
-      .sidebar .nav button:hover,.sidebar .nav button.active{background:#202938;color:#fff;text-decoration:none}
+      .sidebar .nav button:hover,.sidebar .nav button.active{background:#202938!important;color:#fff!important;text-decoration:none!important}
     `;
     document.head.appendChild(s);
   }
@@ -40,11 +40,11 @@
     if(!nav)return;
 
     nav.innerHTML=`
-      <a href="index.html" data-lap-side="dashboard">Dashboard</a>
-      <a href="workspace.html" data-lap-side="projects">Daftar Proyek</a>
-      <button type="button" data-lap-side="master" data-master-data-nav="1">Data Master</button>
-      <button type="button" data-lap-side="users" data-users-nav="1">Daftar User</button>
-      <a href="laporan.html" class="active" data-lap-side="laporan" data-laporan-nav="1">Laporan</a>`;
+      <a href="index.html" data-lap-side="dashboard" data-rbac-nav-wired="1">Dashboard</a>
+      <a href="workspace.html" data-lap-side="projects" data-rbac-nav-wired="1">Daftar Proyek</a>
+      <button type="button" data-lap-side="master" data-master-data-nav="1" data-rbac-nav-wired="1">Data Master</button>
+      <button type="button" data-lap-side="users" data-users-nav="1" data-rbac-nav-wired="1">Daftar User</button>
+      <a href="laporan.html" class="active" data-lap-side="laporan" data-laporan-nav="1" data-rbac-nav-wired="1">Laporan</a>`;
 
     nav.querySelector('[data-master-data-nav]')?.addEventListener('click',()=>{
       loadScript('lap-master-data-loader-clean-v1','./master-data-v1.js?v=5',()=>window.openMasterData?.());
