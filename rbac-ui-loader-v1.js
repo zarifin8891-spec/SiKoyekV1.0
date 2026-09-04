@@ -1,11 +1,14 @@
 /* SiKoyek V1.0 — compatibility bridge to centralized RBAC + Laporan shell. */
 (function(){
   'use strict';
+  const load=(id,src)=>{
+    if(document.getElementById(id))return;
+    const s=document.createElement('script');s.id=id;s.src=src;s.defer=true;document.head.appendChild(s);
+  };
   const run=()=>{
     if(location.pathname.toLowerCase().endsWith('laporan.html')){
-      if(!document.getElementById('laporan-shell-fix-v1-script')){
-        const s=document.createElement('script');s.id='laporan-shell-fix-v1-script';s.src='./laporan-shell-fix-v1.js?v=1';s.defer=true;document.head.appendChild(s);
-      }
+      load('laporan-shell-fix-v1-script','./laporan-shell-fix-v1.js?v=2');
+      load('laporan-nav-fix-v1-script','./laporan-nav-fix-v1.js?v=1');
     }
     window.applyRBACNav?.();
   };
