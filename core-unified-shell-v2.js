@@ -30,6 +30,18 @@
     if(!window.openLaporan)await loadScript('./laporan-v1.js?v=5','openLaporan');
   }
 
+  function waitForUserHeader(timeout=4000){
+    return new Promise(resolve=>{
+      const started=Date.now();
+      const check=()=>{
+        const head=document.querySelector('#page .um-head');
+        if(head || Date.now()-started>=timeout){resolve(head||null);return}
+        setTimeout(check,25);
+      };
+      check();
+    });
+  }
+
   async function unifiedGo(page){page=CORE.has(page)?page:'dashboard';state.page=page;state.selected=null;state.detail=null;if(page==='dashboard'||page==='projects')await loadSummary();renderApp();location.hash=page==='dashboard'?'':page}
 
   async function unifiedRenderPage(){
@@ -42,9 +54,7 @@
       if(typeof window.openUserManagement==='function'){
         if(window.__SIKOYEK_USER_MOUNTING__)return;window.__SIKOYEK_USER_MOUNTING__=true;
         const savedRenderApp=window.renderApp;window.renderApp=()=>{};
-        try{await window.openUserManagement()}finally{window.renderApp=savedRenderApp;window.__SIKOYEK_USER_MOUNTING__=false}
-        const head=document.querySelector('#page .um-head');
-        if(head){head.classList.remove('um-head');head.classList.add('top');const heading=head.querySelector('h1');if(heading)heading.textContent='Daftar User'}
+        try{await window.openUserManagement();const head=await waitForUserHeader();if(head){head.classList.remove('um-head');head.classList.add('top');const heading=head.querySelector('h1');if(heading)heading.textContent='Daftar User'}}finally{window.renderApp=savedRenderApp;window.__SIKOYEK_USER_MOUNTING__=false}
         return;
       }
       el.innerHTML='<div class="empty">Modul Daftar User belum siap.</div>';return;
