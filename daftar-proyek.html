@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SiKoyek V1.0 — Daftar Proyek</title>
+<link rel="stylesheet" href="./app-shell.css?v=2">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebrand">SiKoyek <b>V1.0</b></div>
+    <nav class="nav">
+      <a href="index.html" data-rbac-nav-wired="1">Dashboard</a>
+      <a href="daftar-proyek.html" class="active" data-rbac-nav-wired="1">Daftar Proyek</a>
+      <a href="master-data.html" data-rbac-nav-wired="1">Data Master</a>
+      <a href="user-management.html" data-rbac-nav-wired="1">Daftar User</a>
+      <a href="laporan.html" data-rbac-nav-wired="1">Laporan</a>
+    </nav>
+  </aside>
+  <main class="content">
+    <div class="top">
+      <div><h1>Daftar Proyek</h1><p class="muted">Kelola dan lihat ringkasan seluruh proyek.</p></div>
+      <button class="btn ghost" id="logoutBtn">Keluar</button>
+    </div>
+    <div id="page"></div>
+  </main>
+</div>
+<script src="./app-shell.js?v=8"></script>
+<script>
+function money(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0))}
+function pct(n){return Number(n||0).toFixed(2)+'%'}
+function esc(s){return String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
+function healthClass(s){return s==='SEHAT'?'green':s==='BERISIKO'?'red':'amber'}
+async function bootProjects(){
+  const session=await window.SK.requireSession();
+  if(!session)return;
+  const page=document.getElementById('page');
+  try{
+    const {data,error}=await window.SK.sb.from('project_summary').select('*').order('project_code');
+    if(error)throw error;
+    const rows=data||[];
+    page.innerHTML=`<div class="card tablecard"><div class="scroll"><table class="table"><thead><tr><th>Kode</th><th>Nama Proyek</th><th>Kontrak</th><th>RAP</th><th>Progress</th><th>Cost Ratio</th><th>RAP Consumption</th><th>Health</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(x.project_code)}</td><td><strong>${esc(x.project_name)}</strong></td><td>${money(x.contract_value)}</td><td>${money(x.total_rap)}</td><td>${pct(x.project_progress)}</td><td>${pct(x.cost_ratio)}</td><td>${pct(x.rap_consumption)}</td><td><span class="pill ${healthClass(x.health_status)}">${esc(x.health_status||'-')}</span></td></tr>`).join('')||'<tr><td colspan="8" class="empty">Belum ada proyek.</td></tr>'}</tbody></table></div></div>`;
+  }catch(e){page.innerHTML='<div class="card"><div class="empty">Gagal memuat daftar proyek: '+esc(e?.message||e)+'</div></div>'}
+}
+bootProjects().catch(e=>{const p=document.getElementById('page');if(p)p.innerHTML='<div class="card"><div class="empty">Gagal memuat daftar proyek: '+esc(e?.message||e)+'</div></div>'});
+</script>
+</body>
+</html>
