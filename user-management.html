@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SiKoyek V1.0 — Daftar User</title>
+<link rel="stylesheet" href="./app-shell.css?v=2">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebrand">SiKoyek <b>V1.0</b></div>
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="workspace.html">Daftar Proyek</a>
+      <a href="master-data.html">Data Master</a>
+      <a href="user-management.html" class="active">Daftar User</a>
+      <a href="laporan.html">Laporan</a>
+    </nav>
+  </aside>
+  <main class="content">
+    <div class="top">
+      <div><h1>Daftar User</h1><p class="muted">Kelola pengguna, role, status, dan hak akses SiKoyek.</p></div>
+      <button class="btn ghost" id="logoutBtn">Keluar</button>
+    </div>
+    <div id="page"></div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./app-shell.js?v=7"></script>
+<script>
+window.state={page:'users',selected:null,detail:null,detailTab:'overview',search:'',summary:[],period:{from:'',to:''}};
+window.toast=window.toast||function(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)};
+window.renderApp=window.renderApp||function(){return document.getElementById('page')};
+</script>
+<script src="./user-management-v1.js?v=5"></script>
+<script>
+(async function(){
+  try{
+    const session=await window.SK?.requireSession?.();
+    if(!session)return;
+    if(typeof window.openUserManagement==='function')window.openUserManagement();
+  }catch(e){console.error(e);document.getElementById('page').innerHTML='<div class="card"><div class="empty">Gagal memuat Daftar User: '+String(e?.message||e)+'</div></div>'}
+})();
+</script>
+</body>
+</html>
