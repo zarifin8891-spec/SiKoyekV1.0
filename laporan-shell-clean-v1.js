@@ -18,6 +18,21 @@
     document.head.appendChild(s);
   };
 
+  function installBridge(){
+    /* Data Master/User modules were written for the Dashboard runtime. Give them the
+       minimal runtime they need on Laporan without replacing the Laporan shell. */
+    window.state=window.state||{page:'dashboard',selected:null,detail:null,detailTab:'overview',search:'',summary:[],period:{from:'',to:''}};
+    window.toast=window.toast||function(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)};
+    window.go=window.go||function(page){
+      if(page==='projects'||page==='detail')window.location.href='./workspace.html';
+      else window.location.href='./index.html';
+    };
+    window.renderApp=window.renderApp||function(){
+      const page=document.getElementById('page');
+      if(page)page.innerHTML='<div class="empty">Memuat...</div>';
+    };
+  }
+
   function installStyle(){
     if(document.getElementById('laporan-canonical-nav-style'))return;
     const s=document.createElement('style');
@@ -47,11 +62,13 @@
       <a href="laporan.html" class="active" data-lap-side="laporan" data-laporan-nav="1" data-rbac-nav-wired="1">Laporan</a>`;
 
     nav.querySelector('[data-master-data-nav]')?.addEventListener('click',()=>{
-      loadScript('lap-master-data-loader-clean-v1','./master-data-v1.js?v=5',()=>window.openMasterData?.());
+      installBridge();
+      loadScript('lap-master-data-loader-clean-v1','./master-data-v1.js?v=6',()=>window.openMasterData?.());
     });
 
     nav.querySelector('[data-users-nav]')?.addEventListener('click',()=>{
-      loadScript('lap-users-loader-clean-v1','./user-management-v1.js?v=4',()=>window.openUserManagement?.());
+      installBridge();
+      loadScript('lap-users-loader-clean-v1','./user-management-v1.js?v=5',()=>window.openUserManagement?.());
     });
   }
 
@@ -98,6 +115,7 @@
 
   function boot(){
     if(!location.pathname.toLowerCase().endsWith('laporan.html'))return;
+    installBridge();
     installStyle();
     buildCanonicalSidebar();
     ensureHeader();
