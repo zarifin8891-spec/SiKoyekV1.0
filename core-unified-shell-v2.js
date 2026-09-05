@@ -12,7 +12,7 @@
     const s=document.createElement('script');s.src=src;s.async=false;s.dataset.unifiedLoad=src;
     s.onload=resolve;s.onerror=()=>reject(new Error('Gagal memuat '+src));document.head.appendChild(s);
   });
-  const loadCss=(href,key)=>new Promise(resolve=>{if(key&&document.getElementById(key))return resolve();const l=document.createElement('link');l.rel='stylesheet';l.href=href;l.id=key||'';l.dataset.unifiedCss=href;l.onload=()=>resolve();l.onerror=()=>resolve();document.head.appendChild(l)});
+  const loadCss=(href,key)=>new Promise(resolve=>{if(key&&document.getElementById(key))return resolve();const l=document.createElement('link');l.rel='stylesheet';l.href=href;l.id=key||'';l.onload=()=>resolve();l.onerror=()=>resolve();document.head.appendChild(l)});
 
   function nav(active){return `<aside class="sidebar"><div class="sidebrand">SiKoyek <b>V1.0</b></div><div class="nav">
     <button type="button" data-core-page="dashboard" class="${active==='dashboard'?'active':''}" onclick="go('dashboard')">Dashboard</button>
@@ -32,7 +32,7 @@
     if(!window.openLaporan)await loadScript('./laporan-v1.js?v=6','openLaporan');
     await loadCss('./laporan-layout-v2.css?v=2','laporan-layout-v2-styles');
     await loadCss('./laporan-summary-filter-v1.css?v=1','laporan-summary-filter-v1-styles');
-    await loadScript('./laporan-period-fill-v1.js?v=3','__SIKOYEK_LAPORAN_PERIOD_FILL_V1__');
+    await loadScript('./laporan-period-fill-v2.js?v=1','__SIKOYEK_LAPORAN_PERIOD_FILL_V2__');
   }
 
   function waitForUserHeader(timeout=4000){
