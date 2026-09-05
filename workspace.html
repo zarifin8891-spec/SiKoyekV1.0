@@ -13,7 +13,7 @@
 const sb=supabase.createClient('https://mmkusplegmittrlxqxby.supabase.co','sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
 const pct=n=>Number(n||0).toFixed(2)+'%';
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
 let summary=[];
 function loginHTML(){return `<div class="login"><div class="box"><h1>SiKoyek <span style="color:#245cff">V1.0</span></h1><p class="muted">Project Control Workspace</p><div class="field"><label>Email</label><input id="email" type="email"></div><div class="field"><label>Password</label><input id="password" type="password"></div><button class="btn primary" onclick="login()">Masuk</button><div id="msg" class="err"></div></div></div>`}
 async function login(){const {error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:password.value});if(error)msg.textContent=error.message;else boot()}
