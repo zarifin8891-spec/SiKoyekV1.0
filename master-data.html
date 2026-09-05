@@ -4,23 +4,27 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SiKoyek V1.0 — Data Master</title>
 <link rel="stylesheet" href="./app-shell.css?v=2">
+<link rel="stylesheet" href="./locked-secondary-pages-v1.css?v=1">
 </head>
-<body>
+<body class="secondary-page">
 <div class="shell">
   <aside class="sidebar">
     <div class="sidebrand">SiKoyek <b>V1.0</b></div>
     <nav class="nav">
       <a href="index.html" data-rbac-nav-wired="1">Dashboard</a>
       <a href="daftar-proyek.html" data-rbac-nav-wired="1">Daftar Proyek</a>
-      <a href="master-data.html" class="active" data-rbac-nav-wired="1">Data Master</a>
-      <a href="user-management.html" data-rbac-nav-wired="1">Daftar User</a>
-      <a href="laporan.html" data-rbac-nav-wired="1">Laporan</a>
+      <a href="master-data.html" class="active" data-master-data-nav="1" data-rbac-nav-wired="1">Data Master</a>
+      <a href="user-management.html" data-users-nav="1" data-rbac-nav-wired="1">Daftar User</a>
+      <a href="laporan.html" data-laporan-nav="1" data-rbac-nav-wired="1">Laporan</a>
     </nav>
   </aside>
   <main class="content">
     <div class="top">
-      <div><h1>Data Master</h1><p class="muted">Kelola data referensi untuk Project dan Keuangan.</p></div>
-      <button class="btn ghost" id="logoutBtn">Keluar</button>
+      <div><h1>Data Master</h1><p>Kelola data referensi untuk Project dan Keuangan.</p></div>
+      <div class="locked-actions">
+        <div class="locked-userinfo"><div class="locked-user-main">Pengguna</div><div class="locked-user-role">Memuat...</div></div>
+        <button class="btn ghost" id="logoutBtn">Keluar</button>
+      </div>
     </div>
     <div id="page"></div>
   </main>
@@ -39,6 +43,9 @@ window.renderApp=window.renderApp||function(){return document.getElementById('pa
   try{
     const session=await window.SK?.requireSession?.();
     if(!session)return;
+    const {data:profile}=await window.SK.sb.from('profiles').select('roles(name)').eq('id',session.user.id).maybeSingle();
+    document.querySelector('.locked-user-main')?.replaceChildren(document.createTextNode(session.user?.user_metadata?.full_name||session.user?.email||'Pengguna'));
+    document.querySelector('.locked-user-role')?.replaceChildren(document.createTextNode(profile?.roles?.name?'Role: '+String(profile.roles.name).toUpperCase():'Pengguna'));
     if(typeof window.openMasterData==='function')window.openMasterData();
   }catch(e){console.error(e);document.getElementById('page').innerHTML='<div class="card"><div class="empty">Gagal memuat Data Master: '+String(e?.message||e)+'</div></div>'}
 })();
