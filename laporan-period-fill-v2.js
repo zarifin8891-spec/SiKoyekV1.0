@@ -76,7 +76,8 @@
       .laporan-v3 .rap-period-filter{background:#fff;border:1px solid var(--line);border-radius:10px;padding:7px 9px;display:flex;align-items:center;min-width:0;}
       .laporan-v3 .rap-period-filter .field{width:100%;}
       .laporan-v3 .rap-period-toolbar .field label{font-size:10px;line-height:1.1;margin-bottom:5px;}
-      .laporan-v3 .rap-period-toolbar .field select,.laporan-v3 .rap-period-toolbar .field input{height:34px;border-radius:8px;padding:6px 8px;font-size:13px;}
+      .laporan-v3 .rap-period-toolbar .field select{height:34px;border-radius:8px;padding:6px 8px;font-size:13px;}
+      .laporan-v3 .rap-period-toolbar .field input{height:36px;border-radius:8px;padding:6px 8px;font-size:15px;font-weight:600;}
       .laporan-v3 .rap-period-kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:7px 8px;min-height:55px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;min-width:0;overflow:hidden;}
       .laporan-v3 .rap-period-kpi small{font-size:9px;line-height:1.1;color:var(--muted);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
       .laporan-v3 .rap-period-kpi strong{font-size:14px;line-height:1.05;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
