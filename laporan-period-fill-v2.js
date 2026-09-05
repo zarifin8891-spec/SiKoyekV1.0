@@ -75,11 +75,11 @@
       .laporan-v3 .rap-period-toolbar{display:grid;grid-template-columns:220px 145px 145px repeat(4,minmax(95px,1fr));gap:7px;align-items:stretch;width:100%;}
       .laporan-v3 .rap-period-filter{background:#fff;border:1px solid var(--line);border-radius:10px;padding:7px 9px;display:flex;align-items:center;min-width:0;}
       .laporan-v3 .rap-period-filter .field{width:100%;}
-      .laporan-v3 .rap-period-toolbar .field label{font-size:8px;line-height:1.1;margin-bottom:4px;}
-      .laporan-v3 .rap-period-toolbar .field select,.laporan-v3 .rap-period-toolbar .field input{height:34px;border-radius:8px;padding:6px 8px;font-size:10px;}
+      .laporan-v3 .rap-period-toolbar .field label{font-size:10px;line-height:1.1;margin-bottom:5px;}
+      .laporan-v3 .rap-period-toolbar .field select,.laporan-v3 .rap-period-toolbar .field input{height:34px;border-radius:8px;padding:6px 8px;font-size:12px;}
       .laporan-v3 .rap-period-kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:7px 8px;min-height:55px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;min-width:0;overflow:hidden;}
-      .laporan-v3 .rap-period-kpi small{font-size:7px;line-height:1.1;color:var(--muted);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-      .laporan-v3 .rap-period-kpi strong{font-size:12px;line-height:1.05;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .laporan-v3 .rap-period-kpi small{font-size:9px;line-height:1.1;color:var(--muted);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .laporan-v3 .rap-period-kpi strong{font-size:14px;line-height:1.05;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
       @media(max-width:1200px){.laporan-v3 .rap-period-toolbar{grid-template-columns:200px 125px 125px repeat(4,minmax(85px,1fr));}}
       @media(max-width:1000px){.laporan-v3 .rap-period-toolbar{grid-template-columns:1fr 1fr 1fr}.laporan-v3 .rap-period-filter{grid-column:1/-1;}}
       @media(max-width:650px){.laporan-v3 .rap-period-toolbar{grid-template-columns:1fr 1fr}.laporan-v3 .rap-period-filter{grid-column:1/-1;}}
