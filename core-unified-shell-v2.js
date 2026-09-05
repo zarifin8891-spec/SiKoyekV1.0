@@ -29,11 +29,12 @@
   async function ensureModules(){
     if(!window.openUserManagement)await loadScript('./user-management-v1.js?v=5','openUserManagement');
     await loadCss('./user-management-density-v1.css?v=1','um-density-styles');
-    if(!window.openLaporan)await loadScript('./laporan-unified-v3.js?v=1','openLaporan');
+    if(!window.openLaporan)await loadScript('./laporan-unified-v3.js?v=2','openLaporan');
     await loadCss('./laporan-layout-v2.css?v=2','laporan-layout-v2-styles');
     await loadCss('./laporan-summary-filter-v1.css?v=1','laporan-summary-filter-v1-styles');
     await loadScript('./laporan-period-fill-v2.js?v=4','__SIKOYEK_LAPORAN_PERIOD_FILL_V4__');
     await loadScript('./laporan-progress-project-v1.js?v=1','__SIKOYEK_LAPORAN_PROGRESS_PROJECT_V1__');
+    await loadScript('./laporan-rap-biaya-v1.js?v=1','__SIKOYEK_LAPORAN_RAP_BIAYA_V1__');
   }
 
   function waitForUserHeader(timeout=4000){return new Promise(resolve=>{const started=Date.now();const check=()=>{const head=document.querySelector('#page .um-head');if(head||Date.now()-started>=timeout){resolve(head||null);return}setTimeout(check,25)};check()})}
