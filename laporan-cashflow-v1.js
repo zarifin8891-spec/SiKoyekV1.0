@@ -121,4 +121,9 @@
   window.openLaporanCashFlow=open;
   window.renderLaporanCashFlow=render;
   window.mountLaporanCashFlow=async function(){styles();await load();render()};
+
+  document.addEventListener('click',e=>{
+    const btn=e.target.closest?.('[data-report="cashflow"]');
+    if(btn)setTimeout(()=>window.openLaporanCashFlow?.(),0);
+  });
 })();
