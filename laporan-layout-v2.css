@@ -1,0 +1,67 @@
+/* SiKoyek V1.0 — Laporan compact filter layout v2 */
+.laporan-v3 .filters{
+  grid-template-columns:210px minmax(175px,1fr) minmax(240px,1.12fr) auto!important;
+  gap:10px!important;
+  align-items:end!important;
+  width:100%!important;
+}
+.laporan-v3 .filters>.field{
+  min-width:0!important;
+}
+.laporan-v3 .filters>.field select,
+.laporan-v3 .filters>.field input{
+  height:42px!important;
+  min-height:42px!important;
+  border-radius:10px!important;
+  padding:8px 12px!important;
+  font-size:15px!important;
+  line-height:1.2!important;
+}
+.laporan-v3 .filters>.field select{
+  font-weight:500!important;
+}
+.laporan-v3 .filters>.field label{
+  font-size:12px!important;
+  font-weight:700!important;
+  margin-bottom:5px!important;
+}
+.laporan-v3 .filter-actions{
+  align-self:end!important;
+}
+.laporan-v3 .filter-actions .btn{
+  height:42px!important;
+  min-height:42px!important;
+  border-radius:10px!important;
+  padding:0 15px!important;
+  font-size:15px!important;
+  font-weight:500!important;
+  white-space:nowrap!important;
+}
+/* Keep the custom date controls below the main row only when Custom is selected. */
+.laporan-v3 .period-custom.show{
+  display:grid!important;
+  grid-column:1/-1!important;
+  grid-template-columns:minmax(210px,1fr) minmax(210px,1fr)!important;
+  gap:10px!important;
+}
+@media(max-width:1050px){
+  .laporan-v3 .filters{
+    grid-template-columns:210px minmax(175px,1fr) minmax(220px,1fr) auto!important;
+  }
+}
+@media(max-width:900px){
+  .laporan-v3 .filters{
+    grid-template-columns:1fr 1fr!important;
+  }
+  .laporan-v3 .filter-actions{
+    grid-column:auto!important;
+  }
+}
+@media(max-width:650px){
+  .laporan-v3 .filters{
+    grid-template-columns:1fr!important;
+  }
+  .laporan-v3 .period-custom.show{
+    grid-template-columns:1fr!important;
+  }
+}
