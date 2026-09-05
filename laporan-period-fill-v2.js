@@ -87,20 +87,28 @@
     document.head.appendChild(s);
   }
 
-  async function renderRap(){
+  async function renderRap(savedState){
     const c=document.getElementById('reportContent');
     if(!c)return;
     const client=window.SK?.sb||window.sb;
     if(!client)return;
+
+    const previous=savedState||{
+      period:document.getElementById('rapPeriod')?.value||'',
+      from:document.getElementById('rapFrom')?.value||'',
+      to:document.getElementById('rapTo')?.value||''
+    };
+
     const [{data:summary,error:e1},{data:tx,error:e2},{data:pr,error:e3}]=await Promise.all([
       client.from('project_summary').select('*').order('project_code'),
       client.from('financial_transactions').select('*').order('transaction_date'),
       client.from('progress_records').select('*').order('progress_date')
     ]);
     if(e1||e2||e3)throw(e1||e2||e3);
-    const period=document.getElementById('rapPeriod')?.value||'all';
-    const from=document.getElementById('rapFrom')?.value||'';
-    const to=document.getElementById('rapTo')?.value||'';
+
+    const period=previous.period||'all';
+    const from=previous.from||'';
+    const to=previous.to||'';
     const ids=new Set();
     if(period==='all'&&!from&&!to){(summary||[]).forEach(x=>ids.add(String(x.project_id)));}
     else {
@@ -123,9 +131,33 @@
         <div class="rap-period-kpi"><small>RAP TERSISA</small><strong>${money(residual)}</strong></div>
       </div>
       <div class="card tablecard"><div class="scroll"><table><thead><tr><th>Kode</th><th>Nama Proyek</th><th class="num">RAP</th><th class="num">Realisasi</th><th class="num">Sisa RAP</th><th>Progress</th><th>Rasio Biaya</th><th>Status</th></tr></thead><tbody>${rows.map(x=>`<tr><td><strong>${esc(x.project_code||'-')}</strong></td><td>${esc(x.project_name||'-')}</td><td class="num">${money(x.total_rap)}</td><td class="num">${money(x.total_realization)}</td><td class="num">${money(Number(x.total_rap||0)-Number(x.total_realization||0))}</td><td>${pct(x.project_progress)}</td><td>${pct(x.cost_ratio)}</td><td>${esc(x.health_status||'-')}</td></tr>`).join('')||'<tr><td colspan="8" class="extra-empty">Tidak ada data pada periode ini.</td></tr>'}</tbody></table></div></div>`;
-    fill('rap');
+
+    const newPeriod=document.getElementById('rapPeriod');
+    const newFrom=document.getElementById('rapFrom');
+    const newTo=document.getElementById('rapTo');
+    if(previous.period){
+      newPeriod.value=previous.period;
+      if(previous.period!=='custom'){
+        const r=getRange(previous.period);
+        newFrom.value=previous.from||r.from;
+        newTo.value=previous.to||r.to;
+      }else{
+        newFrom.value=previous.from||'';
+        newTo.value=previous.to||'';
+      }
+    }else{
+      fill('rap');
+    }
     bind('rap');
-    const rerender=()=>renderRap().catch(err=>{const el=document.getElementById('reportContent');if(el)el.innerHTML='<div class="card"><div class="empty">Gagal memuat Laporan RAP & Biaya: '+esc(err?.message||err)+'</div></div>';});
+
+    const rerender=()=>{
+      const state={
+        period:document.getElementById('rapPeriod')?.value||'all',
+        from:document.getElementById('rapFrom')?.value||'',
+        to:document.getElementById('rapTo')?.value||''
+      };
+      renderRap(state).catch(err=>{const el=document.getElementById('reportContent');if(el)el.innerHTML='<div class="card"><div class="empty">Gagal memuat Laporan RAP & Biaya: '+esc(err?.message||err)+'</div></div>';});
+    };
     document.getElementById('rapPeriod')?.addEventListener('change',rerender);
     document.getElementById('rapFrom')?.addEventListener('change',rerender);
     document.getElementById('rapTo')?.addEventListener('change',rerender);
