@@ -1,8 +1,8 @@
 /* SiKoyek V1.0 — RBAC tanpa mengambil alih navigasi. */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_RBAC_DIRECT_V1__)return;
-  window.__SIKOYEK_RBAC_DIRECT_V1__=true;
+  if(window.__SIKOYEK_RBAC_DIRECT_V2__)return;
+  window.__SIKOYEK_RBAC_DIRECT_V2__=true;
 
   const M={DASHBOARD:'DASHBOARD',PROJECTS:'PROJECTS',MASTER_DATA:'MASTER_DATA',PROGRESS:'PROGRESS',RAP:'RAP',KEUANGAN:'KEUANGAN',USERS:'USERS',LAPORAN:'LAPORAN'};
   const norm=v=>String(v??'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
@@ -13,11 +13,17 @@
   const setMeta=(el,m,a)=>{el.dataset.rbacModule=String(m).toUpperCase();el.dataset.rbacAction=String(a||'VIEW').toUpperCase()};
 
   function installNavStyle(){
-    if(document.getElementById('sikoyek-rbac-direct-nav-style'))return;
-    const s=document.createElement('style');s.id='sikoyek-rbac-direct-nav-style';
+    if(document.getElementById('sikoyek-rbac-direct-nav-style-v2'))return;
+    const s=document.createElement('style');s.id='sikoyek-rbac-direct-nav-style-v2';
     s.textContent=`
-      .sidebar .nav a,.sidebar .nav button{color:#cbd5e1!important;text-decoration:none!important;background:transparent;border:0;text-align:left;font:inherit;font-weight:700;cursor:pointer}
-      .sidebar .nav a:hover,.sidebar .nav a.active,.sidebar .nav button:hover,.sidebar .nav button.active{color:#fff!important;text-decoration:none!important;background:#202938}
+      .sidebar .nav a,.sidebar .nav button{
+        color:#cbd5e1!important;text-decoration:none!important;background:transparent;
+        border:0;text-align:left;font:inherit;font-weight:700;cursor:pointer;
+      }
+      .sidebar .nav a:hover,.sidebar .nav a.active,
+      .sidebar .nav button:hover,.sidebar .nav button.active{
+        color:#fff!important;text-decoration:none!important;background:#202938;
+      }
     `;
     document.head.appendChild(s);
   }
@@ -39,16 +45,19 @@
       const b=document.createElement('button');b.type='button';b.dataset.usersNav='1';b.textContent='Daftar User';b.onclick=()=>window.openUserManagement();nav.appendChild(b);
     }
     if(!hasText('laporan')){
-      const a=document.createElement('a');a.href='./laporan.html';a.dataset.laporanNav='1';a.textContent='Laporan';nav.appendChild(a);
+      /* Use a button, matching the rest of the dashboard navigation. */
+      const b=document.createElement('button');
+      b.type='button';
+      b.dataset.laporanNav='1';
+      b.textContent='Laporan';
+      b.onclick=()=>{window.location.href='./laporan.html'};
+      nav.appendChild(b);
     }
   }
 
   function annotate(el){
     if(!el||el.closest('script,style,textarea,input,select'))return;
-    if(el.closest('.sidebar')){
-      const m=sidebarModule(el);if(m)setMeta(el,m,'VIEW');
-      return;
-    }
+    if(el.closest('.sidebar')){const m=sidebarModule(el);if(m)setMeta(el,m,'VIEW');return;}
     if(el.dataset.rbacModule&&el.dataset.rbacAction)return;
     const o=attr(el,'onclick').toLowerCase(),t=norm(el.textContent);
     if(o.includes('mdadd')||o.includes('mdsaveprojectcategory')||o.includes('mdsavemanager')||o.includes("add('transaction_categories'")||o.includes("add('payment_methods'")){setMeta(el,M.MASTER_DATA,'ADD');return}
@@ -91,23 +100,16 @@
   }
 
   function apply(){
-    const p=perms();
-    if(!p)return;
-    installNavStyle();
-    resetControlled();
-    ensureCoreItems();
+    const p=perms();if(!p)return;
+    installNavStyle();resetControlled();ensureCoreItems();
     document.querySelectorAll('button,a').forEach(annotate);
     document.querySelectorAll('[data-rbac-module]').forEach(el=>{
       const m=String(el.dataset.rbacModule||'').toUpperCase(),a=String(el.dataset.rbacAction||'VIEW').toUpperCase();
       if(!m)return;
-      if(el.closest('.sidebar')){
-        el.style.display=canView(m)?'':'none';
-        el.style.removeProperty('pointer-events');
-        return;
-      }
+      if(el.closest('.sidebar')){el.style.display=canView(m)?'':'none';el.style.removeProperty('pointer-events');return;}
       if(a==='VIEW'){if(!canView(m))disable(el)}else if(!canAct(m,a))disable(el);
     });
-    window.__SIKOYEK_RBAC_APPLIED_V7__=true;
+    window.__SIKOYEK_RBAC_APPLIED_V8__=true;
   }
 
   async function load(){
@@ -115,18 +117,19 @@
     try{
       const {data:{user},error:ue}=await client.auth.getUser();if(ue||!user)return;
       const {data:profile,error:pe}=await client.from('profiles').select('is_active,role_id,roles(name)').eq('id',user.id).maybeSingle();if(pe||!profile?.is_active)return;
-      const role=String(profile?.roles?.name||'').trim().toLowerCase(), out={role,views:{},actions:{}};
+      const role=String(profile?.roles?.name||'').trim().toLowerCase(),out={role,views:{},actions:{}};
       if(role!=='admin'){
         const {data:rps,error:re}=await client.from('role_permissions').select('permission_id').eq('role_id',profile.role_id);if(re)throw re;
         const ids=(rps||[]).map(x=>x.permission_id).filter(Boolean);
         if(ids.length){const {data:ps,error:qe}=await client.from('permissions').select('id,module,action').in('id',ids);if(qe)throw qe;(ps||[]).forEach(x=>{const m=String(x.module||'').toUpperCase(),a=String(x.action||'').toUpperCase();if(a==='VIEW')out.views[m]=true;else{out.actions[m]??={};out.actions[m][a]=true}})}
       }
-      window.__SIKOYEK_RBAC_PERMISSIONS_V6__=out;
-      apply();
+      window.__SIKOYEK_RBAC_PERMISSIONS_V6__=out;apply();
     }catch(e){console.warn('SiKoyek RBAC direct:',e)}
   }
 
-  window.sikoyekCan=canAct;window.sikoyekCanView=canView;window.applyRBACNav=async()=>{if(!perms())await load();else apply()};window.applyRBACUiLock=()=>apply();
+  window.sikoyekCan=canAct;window.sikoyekCanView=canView;
+  window.applyRBACNav=async()=>{if(!perms())await load();else apply()};
+  window.applyRBACUiLock=()=>apply();
   const boot=()=>{load();setTimeout(()=>{if(perms())apply()},300)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else setTimeout(boot,0);
 })();
