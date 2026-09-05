@@ -1,0 +1,50 @@
+/* SiKoyek V1.0 — Laporan filter layout polish */
+.laporan-v3 .filters{
+  grid-template-columns:minmax(220px,1.12fr) minmax(220px,1fr) minmax(280px,1.18fr) auto!important;
+  gap:10px!important;
+  align-items:end!important;
+}
+.laporan-v3 .filters>.field select,
+.laporan-v3 .filters>.field input{
+  height:42px!important;
+  min-height:42px!important;
+  border-radius:10px!important;
+  padding:8px 12px!important;
+  font-size:15px!important;
+  line-height:1.2!important;
+}
+.laporan-v3 .filters>.field select{
+  font-weight:500!important;
+  background:#fff!important;
+  color:var(--text)!important;
+  border-color:#d7dee8!important;
+}
+.laporan-v3 .filters>.field label{
+  margin-bottom:5px!important;
+  font-size:12px!important;
+  font-weight:700!important;
+}
+.laporan-v3 .filter-actions .btn{
+  height:42px!important;
+  min-height:42px!important;
+  border-radius:10px!important;
+  padding:0 15px!important;
+  font-size:15px!important;
+  font-weight:500!important;
+  white-space:nowrap!important;
+}
+.laporan-v3 .period-custom.show{
+  display:grid!important;
+  grid-column:1/-1!important;
+  grid-template-columns:minmax(220px,1fr) minmax(220px,1fr)!important;
+  gap:10px!important;
+}
+@media(max-width:900px){
+  .laporan-v3 .filters{grid-template-columns:1fr 1fr!important}
+  .laporan-v3 .filter-actions{grid-column:1/-1!important}
+}
+@media(max-width:650px){
+  .laporan-v3 .filters{grid-template-columns:1fr!important}
+  .laporan-v3 .filter-actions{grid-column:auto!important}
+  .laporan-v3 .period-custom.show{grid-template-columns:1fr!important}
+}
