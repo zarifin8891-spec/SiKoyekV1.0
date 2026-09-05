@@ -1,23 +1,7 @@
-/* SiKoyek V1.0 — compatibility bridge to centralized RBAC + canonical Laporan shell. */
+/* SiKoyek V1.0 — compatibility bridge to centralized RBAC. */
 (function(){
   'use strict';
-  const load=(id,src)=>{
-    if(document.getElementById(id))return;
-    const s=document.createElement('script');
-    s.id=id;
-    s.src=src;
-    s.defer=true;
-    document.head.appendChild(s);
-  };
-
-  const run=()=>{
-    if(location.pathname.toLowerCase().endsWith('laporan.html')){
-      /* Laporan has one canonical shell; legacy repair scripts are intentionally not loaded. */
-      load('laporan-shell-clean-v1-script','./laporan-shell-clean-v1.js?v=2');
-    }
-    window.applyRBACNav?.();
-  };
-
+  const run=()=>window.applyRBACNav?.();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});
   else setTimeout(run,0);
 })();
