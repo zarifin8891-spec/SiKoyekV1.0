@@ -8,6 +8,25 @@
   const pct=n=>Number(n||0).toFixed(2)+'%';
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
 
+  function styles(){
+    if(document.getElementById('laporan-progress-project-v1-style'))return;
+    const s=document.createElement('style');
+    s.id='laporan-progress-project-v1-style';
+    s.textContent=`
+      .laporan-v3 .progress-project-toolbar{display:grid;grid-template-columns:240px repeat(5,minmax(112px,1fr));gap:8px;align-items:stretch}
+      .laporan-v3 .progress-project-filter{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;align-items:center;min-width:0}
+      .laporan-v3 .progress-project-filter .field{width:100%}
+      .laporan-v3 .progress-project-filter .field label{font-size:8px;line-height:1.1;margin-bottom:4px}
+      .laporan-v3 .progress-project-filter .field select{height:34px;border-radius:8px;padding:6px 8px;font-size:11px}
+      .laporan-v3 .progress-project-toolbar .kpi{min-width:0;width:auto!important;max-width:none!important;min-height:58px;padding:8px 10px}
+      .laporan-v3 .progress-project-toolbar .kpi .label{font-size:8px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .laporan-v3 .progress-project-toolbar .kpi .value{font-size:14px;line-height:1.05;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      @media(max-width:1100px){.laporan-v3 .progress-project-toolbar{grid-template-columns:1fr 1fr 1fr}.laporan-v3 .progress-project-filter{grid-column:1/-1}}
+      @media(max-width:650px){.laporan-v3 .progress-project-toolbar{grid-template-columns:1fr 1fr}.laporan-v3 .progress-project-filter{grid-column:1/-1}}
+    `;
+    document.head.appendChild(s);
+  }
+
   async function loadData(){
     const client=window.SK?.sb||window.sb;
     if(!client)throw new Error('Supabase client belum siap.');
@@ -22,15 +41,15 @@
   }
 
   function render(data){
+    styles();
     const content=document.getElementById('reportContent');
     if(!content)return;
     const options=data.projects.map(p=>`<option value="${esc(p.id)}">${esc(p.project_code||'-')} — ${esc(p.project_name||'-')}</option>`).join('');
     content.innerHTML=`
-      <div class="card" style="padding:14px"><div class="filters progress-project-filters">
-        <div class="field"><label>Proyek</label><select id="progProject"><option value="">Pilih Proyek...</option>${options}</select></div>
-        <div class="filter-actions"><button class="btn ghost" type="button" id="progProjectReset">Reset</button></div>
-      </div></div>
-      <div class="kpis">
+      <div class="progress-project-toolbar">
+        <div class="progress-project-filter">
+          <div class="field"><label>Proyek</label><select id="progProject"><option value="">Pilih Proyek...</option>${options}</select></div>
+        </div>
         <div class="kpi"><div class="label">TOTAL ITEM</div><div class="value" id="progKpiItems">0</div></div>
         <div class="kpi"><div class="label">ITEM SUDAH BERJALAN</div><div class="value" id="progKpiStarted">0</div></div>
         <div class="kpi"><div class="label">ITEM SELESAI</div><div class="value" id="progKpiDone">0</div></div>
@@ -42,7 +61,6 @@
 
     const select=document.getElementById('progProject');
     select?.addEventListener('change',()=>renderSelected(data));
-    document.getElementById('progProjectReset')?.addEventListener('click',()=>{if(select)select.value='';renderSelected(data)});
     renderSelected(data);
   }
 
@@ -98,6 +116,7 @@
   }
 
   function start(){
+    styles();
     const root=document.querySelector('.laporan-v3');
     if(!root)return;
     const button=root.querySelector('[data-report="progress"]');
