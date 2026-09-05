@@ -10,11 +10,11 @@
   <aside class="sidebar">
     <div class="sidebrand">SiKoyek <b>V1.0</b></div>
     <nav class="nav">
-      <a href="index.html">Dashboard</a>
-      <a href="workspace.html">Daftar Proyek</a>
-      <a href="master-data.html">Data Master</a>
-      <a href="user-management.html" class="active">Daftar User</a>
-      <a href="laporan.html">Laporan</a>
+      <a href="index.html" data-rbac-nav-wired="1">Dashboard</a>
+      <a href="daftar-proyek.html" data-rbac-nav-wired="1">Daftar Proyek</a>
+      <a href="master-data.html" data-rbac-nav-wired="1">Data Master</a>
+      <a href="user-management.html" class="active" data-rbac-nav-wired="1">Daftar User</a>
+      <a href="laporan.html" data-rbac-nav-wired="1">Laporan</a>
     </nav>
   </aside>
   <main class="content">
@@ -25,8 +25,7 @@
     <div id="page"></div>
   </main>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./app-shell.js?v=7"></script>
+<script src="./app-shell.js?v=8"></script>
 <script>
 window.state={page:'users',selected:null,detail:null,detailTab:'overview',search:'',summary:[],period:{from:'',to:''}};
 window.toast=window.toast||function(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)};
