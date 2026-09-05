@@ -64,37 +64,24 @@
     if(state.period==='week'){const d=new Date(now);d.setDate(d.getDate()-((d.getDay()+6)%7));return {from:localDate(d),to:today};}
     if(state.period==='month')return {from:localDate(new Date(now.getFullYear(),now.getMonth(),1)),to:localDate(new Date(now.getFullYear(),now.getMonth()+1,0))};
     if(state.period==='quarter'){const d=new Date(now);d.setMonth(d.getMonth()-2);d.setDate(1);return {from:localDate(d),to:today};}
-    if(state.period==='year')return {from:localDate(new Date(now.getFullYear(),0,1)),to:localDate(new Date(now.getFullYear(),11,31)};
+    if(state.period==='year')return {from:localDate(new Date(now.getFullYear(),0,1)),to:localDate(new Date(now.getFullYear(),11,31))};
     return {from:'',to:''};
-  }
-
-  function syncStateFromInputs(){
-    state.period=document.getElementById('cashflowV2Period')?.value||'all';
-    state.from=document.getElementById('cashflowV2From')?.value||'';
-    state.to=document.getElementById('cashflowV2To')?.value||'';
-    state.project=document.getElementById('cashflowV2Project')?.value||'all';
   }
 
   function calculate(){
     const r=periodRange();
     const projectFilter=state.project==='all'?null:String(state.project);
-    const filtered=[];
-    for(const tx of transactions){
+    const filtered=transactions.filter(tx=>{
       const d=txDate(tx);const type=txKind(tx);const amount=txAmount(tx);
-      if(!d||amount<0)continue;
-      if(r.from&&d<r.from)continue;
-      if(r.to&&d>r.to)continue;
-      if(projectFilter&&String(tx.project_id)!==projectFilter)continue;
-      if(type!=='MASUK'&&type!=='KELUAR')continue;
-      filtered.push(tx);
-    }
+      return !!d && amount>=0 && (!r.from||d>=r.from) && (!r.to||d<=r.to) && (!projectFilter||String(tx.project_id)===projectFilter) && (type==='MASUK'||type==='KELUAR');
+    });
     const meta=new Map(projects.map(p=>[String(p.id),p]));
     const byProject=new Map();
     for(const tx of filtered){
       const pid=String(tx.project_id||'');
       if(!byProject.has(pid))byProject.set(pid,{id:pid,in:0,out:0,transactions:0});
       const row=byProject.get(pid);
-      if(txKind(tx)==='MASUK')row.in+=txAmount(tx); else row.out+=txAmount(tx);
+      if(txKind(tx)==='MASUK')row.in+=txAmount(tx);else row.out+=txAmount(tx);
       row.transactions++;
     }
     const projectRows=[...byProject.values()].map(r=>{const p=meta.get(r.id)||{};return {...r,code:p.project_code||'-',name:p.project_name||'-',net:r.in-r.out};}).sort((a,b)=>String(a.code).localeCompare(String(b.code),'id'));
@@ -111,11 +98,13 @@
     return ['SEHAT','ok'];
   }
 
+  function metaProject(id){const p=projects.find(x=>String(x.id)===String(id));return p?{code:p.project_code||'-',name:p.project_name||'-'}:{code:'-',name:'-'};}
+
   function render(){
     const el=document.getElementById('reportContent');if(!el)return;
     const calc=calculate();
     const opts=projects.map(p=>`<option value="${esc(p.id)}">${esc(p.project_code||'-')} — ${esc(p.project_name||'-')}</option>`).join('');
-    const txRows=calc.filtered.slice().sort((a,b)=>txDate(b).localeCompare(txDate(a))); 
+    const txRows=calc.filtered.slice().sort((a,b)=>txDate(b).localeCompare(txDate(a)));
     const pRows=calc.projectRows;
     el.innerHTML=`<div class="cashflow-v2">
       <div class="cashflow-v2-toolbar">
@@ -132,21 +121,17 @@
       <div class="cashflow-v2-section"><div class="cashflow-v2-section-title">Ringkasan Cash Flow per Proyek</div><div class="cashflow-v2-scroll"><table class="cashflow-v2-table"><thead><tr><th>Kode</th><th>Nama Proyek</th><th class="num">Cash In</th><th class="num">Cash Out</th><th class="num">Net Cash Flow</th><th class="num">Transaksi</th><th>Status</th></tr></thead><tbody>${pRows.length?pRows.map(r=>{const st=status(r);return `<tr><td><strong>${esc(r.code)}</strong></td><td>${esc(r.name)}</td><td class="num">${money(r.in)}</td><td class="num">${money(r.out)}</td><td class="num">${money(r.net)}</td><td class="num">${r.transactions}</td><td><span class="cashflow-v2-pill ${st[1]}">${st[0]}</span></td></tr>`}).join(''):`<tr><td colspan="7" class="cashflow-v2-empty">Tidak ada transaksi pada filter yang dipilih.</td></tr>`}</tbody></table></div></div>
       <div class="cashflow-v2-section"><div class="cashflow-v2-section-title">Detail Transaksi</div><div class="cashflow-v2-scroll"><table class="cashflow-v2-table"><thead><tr><th>Tanggal</th><th>Kode</th><th>Nama Proyek</th><th>Jenis</th><th>Kategori</th><th>Deskripsi</th><th class="num">Cash In</th><th class="num">Cash Out</th></tr></thead><tbody>${txRows.length?txRows.map(tx=>{const p=metaProject(tx.project_id),isIn=txKind(tx)==='MASUK';return `<tr><td>${esc(txDate(tx))}</td><td>${esc(p.code)}</td><td>${esc(p.name)}</td><td>${esc(txKind(tx))}</td><td>${esc(tx.category||'-')}</td><td>${esc(tx.description||'-')}</td><td class="num">${money(isIn?txAmount(tx):0)}</td><td class="num">${money(!isIn?txAmount(tx):0)}</td></tr>`}).join(''):`<tr><td colspan="8" class="cashflow-v2-empty">Tidak ada transaksi pada filter yang dipilih.</td></tr>`}</tbody></table></div></div>
     </div>`;
-
     document.getElementById('cashflowV2Period').value=state.period;
     document.getElementById('cashflowV2From').value=state.from;
     document.getElementById('cashflowV2To').value=state.to;
     document.getElementById('cashflowV2Project').value=state.project;
-
-    const refresh=()=>{syncStateFromInputs();if(state.period!=='custom'){const r=periodRange();state.from=r.from;state.to=r.to;}render();};
+    const refresh=()=>{state.period=document.getElementById('cashflowV2Period').value;state.project=document.getElementById('cashflowV2Project').value;if(state.period!=='custom'){const r=periodRange();state.from=r.from;state.to=r.to;}render();};
     document.getElementById('cashflowV2Period').addEventListener('change',refresh);
     document.getElementById('cashflowV2From').addEventListener('change',()=>{state.from=document.getElementById('cashflowV2From').value;state.period='custom';render();});
     document.getElementById('cashflowV2To').addEventListener('change',()=>{state.to=document.getElementById('cashflowV2To').value;state.period='custom';render();});
     document.getElementById('cashflowV2Project').addEventListener('change',()=>{state.project=document.getElementById('cashflowV2Project').value;render();});
     document.getElementById('cashflowV2Reset').addEventListener('click',()=>{state.period='all';state.from='';state.to='';state.project='all';render();});
   }
-
-  function metaProject(id){const p=projects.find(x=>String(x.id)===String(id));return p?{code:p.project_code||'-',name:p.project_name||'-'}:{code:'-',name:'-'};}
 
   async function open(){styles();await load();render();}
   window.openLaporanCashFlow=open;
