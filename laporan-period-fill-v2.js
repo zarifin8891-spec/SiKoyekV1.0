@@ -1,10 +1,8 @@
-/* SiKoyek V1.0 — Laporan period autofill v2 */
+/* SiKoyek V1.0 — Laporan period autofill v3 */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_LAPORAN_PERIOD_FILL_V2__)return;
-  window.__SIKOYEK_LAPORAN_PERIOD_FILL_V2__=true;
-
-  const desired={sum:'all',prog:'all'};
+  if(window.__SIKOYEK_LAPORAN_PERIOD_FILL_V3__)return;
+  window.__SIKOYEK_LAPORAN_PERIOD_FILL_V3__=true;
 
   function localDate(d){
     const y=d.getFullYear();
@@ -13,7 +11,7 @@
     return `${y}-${m}-${day}`;
   }
 
-  function range(kind){
+  function getRange(kind){
     const now=new Date();
     const today=localDate(now);
     if(kind==='all')return {from:'',to:''};
@@ -23,65 +21,54 @@
       first.setDate(now.getDate()-((now.getDay()+6)%7));
       return {from:localDate(first),to:today};
     }
-    if(kind==='month'){
-      return {
-        from:localDate(new Date(now.getFullYear(),now.getMonth(),1)),
-        to:localDate(new Date(now.getFullYear(),now.getMonth()+1,0))
-      };
-    }
+    if(kind==='month')return {
+      from:localDate(new Date(now.getFullYear(),now.getMonth(),1)),
+      to:localDate(new Date(now.getFullYear(),now.getMonth()+1,0))
+    };
     if(kind==='quarter'){
       const first=new Date(now);
       first.setDate(now.getDate()-89);
       return {from:localDate(first),to:today};
     }
-    if(kind==='year'){
-      return {
-        from:localDate(new Date(now.getFullYear(),0,1)),
-        to:localDate(new Date(now.getFullYear(),11,31))
-      };
-    }
+    if(kind==='year')return {
+      from:localDate(new Date(now.getFullYear(),0,1)),
+      to:localDate(new Date(now.getFullYear(),11,31))
+    };
     return {from:'',to:''};
   }
 
-  function fill(prefix,keepCustom){
+  function fill(prefix){
     const period=document.getElementById(prefix+'Period');
     const from=document.getElementById(prefix+'From');
     const to=document.getElementById(prefix+'To');
     if(!period||!from||!to)return;
-
-    const kind=desired[prefix]||period.value||'all';
-    if(period.value!==kind)period.value=kind;
-    if(kind==='custom'&&keepCustom)return;
-
-    const r=range(kind);
-    from.value=r.from;
-    to.value=r.to;
+    const kind=period.value||'all';
+    if(kind==='custom')return;
+    const r=getRange(kind);
+    if(from.value!==r.from)from.value=r.from;
+    if(to.value!==r.to)to.value=r.to;
   }
 
-  function attach(prefix){
+  function bind(prefix){
     const period=document.getElementById(prefix+'Period');
-    if(!period)return;
-    if(period.dataset.periodFillBound!=='2'){
-      period.dataset.periodFillBound='2';
-      period.addEventListener('change',()=>{
-        desired[prefix]=period.value||'all';
-        fill(prefix,false);
-      },true);
-    }
-    fill(prefix,true);
+    if(!period||period.dataset.periodFillV3==='1')return;
+    period.dataset.periodFillV3='1';
+
+    /* Capture phase: populate dates before Laporan's native change handler. */
+    period.addEventListener('change',()=>fill(prefix),true);
+
+    fill(prefix);
   }
 
-  function setup(){
-    attach('sum');
-    attach('prog');
+  function scan(){
+    bind('sum');
+    bind('prog');
   }
-
-  const observer=new MutationObserver(()=>setup());
 
   function start(){
-    setup();
+    scan();
     const page=document.getElementById('page');
-    if(page)observer.observe(page,{childList:true,subtree:true});
+    if(page)new MutationObserver(scan).observe(page,{childList:true,subtree:true});
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
