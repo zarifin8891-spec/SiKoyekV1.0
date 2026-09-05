@@ -30,6 +30,7 @@
     if(!window.openUserManagement)await loadScript('./user-management-v1.js?v=5','openUserManagement');
     await loadCss('./user-management-density-v1.css?v=1','um-density-styles');
     if(!window.openLaporan)await loadScript('./laporan-v1.js?v=6','openLaporan');
+    await loadCss('./laporan-filter-layout-v1.css?v=1','laporan-filter-layout-styles');
   }
 
   function waitForUserHeader(timeout=4000){
