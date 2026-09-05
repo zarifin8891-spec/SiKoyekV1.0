@@ -1,6 +1,7 @@
 const SK_URL='https://mmkusplegmittrlxqxby.supabase.co';
 const SK_KEY='sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf';
-const sb=window.sb=window.sb||window.supabase.createClient(SK_URL,SK_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.sessionStorage}});
+/* SiKoyek V1.0 — all pages must share the same persisted Supabase auth session. */
+const sb=window.sb=window.sb||window.supabase.createClient(SK_URL,SK_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const moneyFormat=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
 const money=n=>['pelaksana','marketing'].includes(String(window.__SIKOYEK_FINANCIAL_VISIBILITY_ROLE__||'').toLowerCase())?'Rp ••••••••':moneyFormat(n);
 const pct=n=>Number(n||0).toFixed(2)+'%';
