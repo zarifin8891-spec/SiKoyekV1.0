@@ -1,0 +1,11 @@
+/* SiKoyek V1.0 — Daftar User density polish */
+.um-page{gap:10px!important}
+.um-card{border-radius:14px!important}
+.um-toolbar{padding:10px 17px!important}
+.um-table th,.um-table td{padding:6px 13px!important;line-height:1.25!important}
+.um-actions{gap:5px!important}
+.um-actions .btn{font-size:12px!important;line-height:1!important;padding:4px 9px!important;font-weight:400!important}
+.um-role-list{padding:9px 11px!important;gap:5px!important}
+.um-role-item{padding:7px 12px!important}
+.um-perm th,.um-perm td{padding:6px 10px!important;line-height:1.2!important}
+.um-note{padding-bottom:10px!important}
