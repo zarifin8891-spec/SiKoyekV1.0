@@ -95,7 +95,7 @@
   // This file is already loaded by index.html, so it is used as the safe bootstrap hook.
   if(!window.__SIKOYEK_UNIFIED_CORE__) {
     const s=document.createElement('script');
-    s.src='./core-unified-shell-v1.js?v=1';
+    s.src='./core-unified-shell-v2.js?v=2';
     s.async=false;
     document.head.appendChild(s);
   }
