@@ -28,12 +28,21 @@
     <div id="module"></div>
   </main>
 </div>
-<script src="./app-shell.js?v=6"></script>
-<script src="./laporan-v1.js?v=2"></script>
+<script src="./app-shell.js?v=7"></script>
+<script src="./laporan-v1.js?v=3"></script>
+<script src="./laporan-shell-clean-v1.js?v=3"></script>
 <script>
-(function(){
-  window.SK?.requireSession?.().then(session=>{if(!session)return;window.openLaporan?.();});
-  document.getElementById('logoutBtn')?.addEventListener('click',()=>window.SK?.logout?.());
+(async function(){
+  try{
+    const session=await window.SK?.requireSession?.();
+    if(!session)return;
+    if(typeof window.openLaporan==='function')await window.openLaporan();
+    else throw new Error('Renderer Laporan tidak tersedia.');
+  }catch(e){
+    console.error('SiKoyek Laporan boot:',e);
+    const p=document.getElementById('module');
+    if(p)p.innerHTML='<div class="card"><div class="empty">Gagal memuat Laporan: '+String(e?.message||e)+'</div></div>';
+  }
 })();
 </script>
 </body>
