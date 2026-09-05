@@ -167,8 +167,6 @@
     content.innerHTML=`
       <div class="card" style="padding:14px"><div class="filters">
         ${periodControls('prog')}
-        <div class="field"><label>Dari Tanggal</label><input id="progFrom" type="date"></div>
-        <div class="field"><label>Sampai Tanggal</label><input id="progTo" type="date"></div>
         <div class="filter-actions"><button class="btn ghost" type="button" id="progReset">Reset</button></div>
       </div></div>
       <div class="kpis">
@@ -181,17 +179,12 @@
       <div class="card tablecard"><div class="scroll"><table><thead><tr><th>Kode</th><th>Nama Proyek</th><th>Item Pekerjaan</th><th class="num">Bobot</th><th class="num">Progress Item</th><th class="num">Progress Berbobot</th><th>Visual</th><th>Status</th></tr></thead><tbody id="progBody"><tr><td colspan="8" class="empty">Memuat data...</td></tr></tbody></table></div></div>
       <div class="card note-card">Progress item dihitung dari akumulasi progress yang tersimpan. Progress berbobot = bobot item × progress item. Laporan ini tidak menampilkan target pekerjaan karena data target belum tersedia di struktur Progress saat ini.</div>`;
     bindPeriod('prog',renderProgress);
-    ['progFrom','progTo'].forEach(id=>document.getElementById(id)?.addEventListener('change',renderProgress));
     document.getElementById('progReset')?.addEventListener('click',()=>{document.getElementById('progPeriod').value='all';document.getElementById('progFrom').value='';document.getElementById('progTo').value='';toggleCustom('prog');renderProgress()});
     renderProgress();
   }
 
   function renderProgress(){
-    const selectedRange=periodRange('prog');
-    const manualFrom=document.getElementById('progFrom')?.value||'';
-    const manualTo=document.getElementById('progTo')?.value||'';
-    const from=manualFrom||selectedRange.from;
-    const to=manualTo||selectedRange.to;
+    const {from,to}=periodRange('prog');
     const selectedProjects=projects;
     const selectedIds=new Set(selectedProjects.map(p=>String(p.id)));
     const recByItem={};
