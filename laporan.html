@@ -24,12 +24,12 @@
       </div>
       <button class="btn ghost" id="logoutBtn">Keluar</button>
     </div>
-    <div id="module"></div>
+    <div id="page"></div>
   </main>
 </div>
 <script src="./app-shell.js?v=7"></script>
-<script src="./laporan-v1.js?v=3"></script>
-<script src="./laporan-shell-clean-v1.js?v=3"></script>
+<script src="./laporan-v1.js?v=4"></script>
+<script src="./laporan-shell-clean-v1.js?v=4"></script>
 <script>
 (async function(){
   try{
@@ -39,7 +39,7 @@
     else throw new Error('Renderer Laporan tidak tersedia.');
   }catch(e){
     console.error('SiKoyek Laporan boot:',e);
-    const p=document.getElementById('module');
+    const p=document.getElementById('page');
     if(p)p.innerHTML='<div class="card"><div class="empty">Gagal memuat Laporan: '+String(e?.message||e)+'</div></div>';
   }
 })();
