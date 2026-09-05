@@ -29,7 +29,7 @@
   async function ensureModules(){
     if(!window.openUserManagement)await loadScript('./user-management-v1.js?v=5','openUserManagement');
     await loadCss('./user-management-density-v1.css?v=1','um-density-styles');
-    if(!window.openLaporan)await loadScript('./laporan-v1.js?v=5','openLaporan');
+    if(!window.openLaporan)await loadScript('./laporan-v1.js?v=6','openLaporan');
   }
 
   function waitForUserHeader(timeout=4000){
