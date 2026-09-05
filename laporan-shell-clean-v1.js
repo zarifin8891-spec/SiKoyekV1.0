@@ -1,37 +1,8 @@
-/* SiKoyek V1.0 — canonical Laporan sidebar. One source of truth; no navigation interception. */
+/* SiKoyek V1.0 — canonical Laporan sidebar. Navigation uses standalone entry points only. */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_LAPORAN_SHELL_CLEAN_V1__)return;
-  window.__SIKOYEK_LAPORAN_SHELL_CLEAN_V1__=true;
-
-  const loadScript=(id,src,ready)=>{
-    const existing=document.getElementById(id);
-    if(existing){
-      if(existing.dataset.loaded==='1')ready?.();
-      else existing.addEventListener('load',()=>ready?.(),{once:true});
-      return;
-    }
-    const s=document.createElement('script');
-    s.id=id;
-    s.src=src;
-    s.onload=()=>{s.dataset.loaded='1';ready?.()};
-    document.head.appendChild(s);
-  };
-
-  function installBridge(){
-    /* Data Master/User modules were written for the Dashboard runtime. Give them the
-       minimal runtime they need on Laporan without replacing the Laporan shell. */
-    window.state=window.state||{page:'dashboard',selected:null,detail:null,detailTab:'overview',search:'',summary:[],period:{from:'',to:''}};
-    window.toast=window.toast||function(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)};
-    window.go=window.go||function(page){
-      if(page==='projects'||page==='detail')window.location.href='./workspace.html';
-      else window.location.href='./index.html';
-    };
-    window.renderApp=window.renderApp||function(){
-      const page=document.getElementById('page');
-      if(page)page.innerHTML='<div class="empty">Memuat...</div>';
-    };
-  }
+  if(window.__SIKOYEK_LAPORAN_SHELL_CLEAN_V2__)return;
+  window.__SIKOYEK_LAPORAN_SHELL_CLEAN_V2__=true;
 
   function installStyle(){
     if(document.getElementById('laporan-canonical-nav-style'))return;
@@ -53,23 +24,12 @@
   function buildCanonicalSidebar(){
     const nav=document.querySelector('.sidebar .nav');
     if(!nav)return;
-
     nav.innerHTML=`
       <a href="index.html" data-lap-side="dashboard" data-rbac-nav-wired="1">Dashboard</a>
       <a href="workspace.html" data-lap-side="projects" data-rbac-nav-wired="1">Daftar Proyek</a>
-      <button type="button" data-lap-side="master" data-master-data-nav="1" data-rbac-nav-wired="1">Data Master</button>
-      <button type="button" data-lap-side="users" data-users-nav="1" data-rbac-nav-wired="1">Daftar User</button>
+      <a href="master-data.html" data-lap-side="master" data-master-data-nav="1" data-rbac-nav-wired="1">Data Master</a>
+      <a href="user-management.html" data-lap-side="users" data-users-nav="1" data-rbac-nav-wired="1">Daftar User</a>
       <a href="laporan.html" class="active" data-lap-side="laporan" data-laporan-nav="1" data-rbac-nav-wired="1">Laporan</a>`;
-
-    nav.querySelector('[data-master-data-nav]')?.addEventListener('click',()=>{
-      installBridge();
-      loadScript('lap-master-data-loader-clean-v1','./master-data-v1.js?v=6',()=>window.openMasterData?.());
-    });
-
-    nav.querySelector('[data-users-nav]')?.addEventListener('click',()=>{
-      installBridge();
-      loadScript('lap-users-loader-clean-v1','./user-management-v1.js?v=5',()=>window.openUserManagement?.());
-    });
   }
 
   function ensureHeader(){
@@ -115,7 +75,6 @@
 
   function boot(){
     if(!location.pathname.toLowerCase().endsWith('laporan.html'))return;
-    installBridge();
     installStyle();
     buildCanonicalSidebar();
     ensureHeader();
