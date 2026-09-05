@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SiKoyek V1.0 — Data Master</title>
+<link rel="stylesheet" href="./app-shell.css?v=2">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebrand">SiKoyek <b>V1.0</b></div>
+    <nav class="nav">
+      <a href="index.html">Dashboard</a>
+      <a href="workspace.html">Daftar Proyek</a>
+      <a href="master-data.html" class="active">Data Master</a>
+      <a href="user-management.html">Daftar User</a>
+      <a href="laporan.html">Laporan</a>
+    </nav>
+  </aside>
+  <main class="content">
+    <div class="top">
+      <div><h1>Data Master</h1><p class="muted">Kelola data referensi untuk Project dan Keuangan.</p></div>
+      <button class="btn ghost" id="logoutBtn">Keluar</button>
+    </div>
+    <div id="page"></div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./app-shell.js?v=7"></script>
+<script>
+window.state={page:'master-data',selected:null,detail:null,detailTab:'overview',search:'',summary:[],period:{from:'',to:''}};
+window.toast=window.toast||function(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)};
+window.go=window.go||function(page){window.location.href=page==='projects'?'./workspace.html':'./index.html'};
+window.renderApp=window.renderApp||function(){return document.getElementById('page')};
+</script>
+<script src="./master-data-v1.js?v=6"></script>
+<script>
+(async function(){
+  try{
+    const session=await window.SK?.requireSession?.();
+    if(!session)return;
+    if(typeof window.openMasterData==='function')window.openMasterData();
+  }catch(e){console.error(e);document.getElementById('page').innerHTML='<div class="card"><div class="empty">Gagal memuat Data Master: '+String(e?.message||e)+'</div></div>'}
+})();
+</script>
+</body>
+</html>
