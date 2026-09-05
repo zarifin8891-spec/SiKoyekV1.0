@@ -34,7 +34,7 @@
     await loadCss('./laporan-summary-filter-v1.css?v=1','laporan-summary-filter-v1-styles');
     await loadScript('./laporan-period-fill-v2.js?v=4','__SIKOYEK_LAPORAN_PERIOD_FILL_V4__');
     await loadScript('./laporan-progress-project-v1.js?v=1','__SIKOYEK_LAPORAN_PROGRESS_PROJECT_V1__');
-    await loadScript('./laporan-extra-tabs-v1.js?v=1','__SIKOYEK_LAPORAN_EXTRA_TABS_V1__');
+    await loadScript('./laporan-extra-tabs-v2.js?v=1','__SIKOYEK_LAPORAN_EXTRA_TABS_V2__');
   }
 
   function waitForUserHeader(timeout=4000){
