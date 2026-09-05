@@ -44,7 +44,7 @@
         const savedRenderApp=window.renderApp;window.renderApp=()=>{};
         try{await window.openUserManagement()}finally{window.renderApp=savedRenderApp;window.__SIKOYEK_USER_MOUNTING__=false}
         const head=document.querySelector('#page .um-head');
-        if(head){head.classList.add('top');const heading=head.querySelector('h1');if(heading)heading.textContent='Daftar User'}
+        if(head){head.classList.remove('um-head');head.classList.add('top');const heading=head.querySelector('h1');if(heading)heading.textContent='Daftar User'}
         return;
       }
       el.innerHTML='<div class="empty">Modul Daftar User belum siap.</div>';return;
