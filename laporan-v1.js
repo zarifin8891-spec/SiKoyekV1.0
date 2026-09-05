@@ -42,7 +42,7 @@
   }
 
   function shell(){
-    const p=document.getElementById('page')||document.getElementById('app');
+    const p=document.getElementById('page')||document.getElementById('module')||document.getElementById('app');
     if(!p)return null;
     p.innerHTML=`<div class="laporan-v3">
       <div class="report-tabs">
@@ -164,32 +164,38 @@
     document.getElementById('progKpiProject').textContent=pct(projectProgress);
     const body=document.getElementById('progBody');if(!body)return;
     if(!data.length){body.innerHTML='<tr><td colspan="8" class="empty">Tidak ada item atau progress pada filter yang dipilih.</td></tr>';return}
-    body.innerHTML=data.map(x=>{const cls=x.progress>=100?'green':x.progress>0?'amber':'red';const status=x.progress>=100?'SELESAI':x.progress>0?'BERJALAN':'BELUM MULAI';return `<tr><td><strong>${esc(x.project?.project_code||'-')}</strong></td><td>${esc(x.project?.project_name||'-')}</td><td>${esc(x.work_name||'-')}</td><td class="num">${pct(Number(x.weight||0)*100)}</td><td class="num">${pct(x.progress)}</td><td class="num">${pct(x.weighted)}</td><td><div class="progressbar"><i style="width:${Math.min(100,x.progress)}%"></i></div></td><td><span class="pill ${cls}">${status}</span></td></tr>`}).join('');
+    body.innerHTML=data.map(x=>{const cls=x.progress>=100?'green':x.progress>0?'amber':'red';const status=x.progress>=100?'SELESAI':x.progress>0?'BERJALAN':'BELUM MULAI';return `<tr><td><strong>${esc(x.project?.project_code||'-')}</strong></td><td>${esc(x.project?.project_name||'-')}</td><td>${esc(x.work_name||'-')}</td><td class="num">${pct(Number(x.weight||0)*100)}</td><td class="num">${pct(x.progress)}</td><td class="num">${pct(x.weighted)}</td><td><div class="progressbar"><i style="width:${Math.max(0,Math.min(100,x.progress))}%"></i></div></td><td><span class="pill ${cls}">${status}</span></td></tr>`}).join('');
   }
 
   async function load(){
     const client=window.SK?.sb||window.sb;
-    const [{data:ps,error:pe},{data:wi,error:we},{data:pr,error:re}]=await Promise.all([
-      client.from('projects').select('id,project_code,project_name').order('project_code'),
-      client.from('project_work_items').select('id,project_id,work_name,weight,sort_order').order('sort_order'),
-      client.from('progress_records').select('id,project_id,work_item_id,progress_date,progress_percentage').order('progress_date')
+    if(!client)return;
+    const [{data:ps,error:e1},{data:sr,error:e2},{data:wi,error:e3},{data:pr,error:e4}]=await Promise.all([
+      client.from('projects').select('id,project_code,project_name,contract_value').order('project_code'),
+      client.from('project_summary').select('*').order('project_code'),
+      client.from('project_work_items').select('*').order('sort_order'),
+      client.from('progress_records').select('*').order('progress_date')
     ]);
-    if(pe)throw pe;if(we)throw we;if(re)throw re;
-    projects=ps||[];workItems=wi||[];progressRecords=pr||[];
-    const {data:sum,error:se}=await client.from('project_summary').select('*').order('project_code');
-    if(se)throw se;summaryRows=sum||[];
+    const err=e1||e2||e3||e4;
+    if(err)throw err;
+    projects=ps||[];
+    summaryRows=sr||[];
+    workItems=wi||[];
+    progressRecords=pr||[];
   }
 
   function renderReport(){
-    const root=document.querySelector('.laporan-v3');if(!root)return;
-    root.querySelectorAll('[data-report]').forEach(btn=>btn.classList.toggle('active',btn.dataset.report===activeReport));
+    const root=document.querySelector('.laporan-v3');
+    if(!root)return;
     if(activeReport==='progress')progressView();else summaryView();
+    root.querySelectorAll('[data-report]').forEach(b=>b.classList.toggle('active',b.dataset.report===activeReport));
   }
 
   async function renderPage(){
     styles();
-    shell();
-    try{await load();renderReport()}catch(e){const p=document.getElementById('page')||document.getElementById('app');if(p)p.innerHTML='<div class="card"><div class="empty">Gagal memuat laporan: '+esc(e?.message||'Kesalahan tidak diketahui')+'</div></div>';console.warn('SiKoyek Laporan:',e)}
+    const p=shell();
+    if(!p)return;
+    try{await load();renderReport()}catch(e){console.warn('SiKoyek Laporan:',e);const c=document.getElementById('reportContent');if(c)c.innerHTML='<div class="card"><div class="empty">Gagal memuat data Laporan: '+esc(e?.message||e)+'</div></div>'}
     window.applyRBACNav?.();
   }
 
