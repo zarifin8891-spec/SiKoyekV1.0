@@ -19,24 +19,27 @@
 
     const kind=period.value||'all';
     const now=new Date();
-    const end=localDate(now);
-    let start='';
+    const today=localDate(now);
+    let start='',end='';
 
     if(kind==='today'){
-      start=end;
+      start=end=today;
     }else if(kind==='week'){
-      const d=(now.getDay()+6)%7;
       const first=new Date(now);
-      first.setDate(now.getDate()-d);
+      first.setDate(now.getDate()-((now.getDay()+6)%7));
       start=localDate(first);
+      end=today;
     }else if(kind==='month'){
       start=localDate(new Date(now.getFullYear(),now.getMonth(),1));
+      end=localDate(new Date(now.getFullYear(),now.getMonth()+1,0));
     }else if(kind==='quarter'){
       const first=new Date(now);
       first.setDate(now.getDate()-89);
       start=localDate(first);
+      end=today;
     }else if(kind==='year'){
       start=localDate(new Date(now.getFullYear(),0,1));
+      end=localDate(new Date(now.getFullYear(),11,31));
     }
 
     if(kind==='all'){
@@ -50,20 +53,20 @@
     }
   }
 
-  function attach(prefix,rerender){
+  function attach(prefix){
     const period=document.getElementById(prefix+'Period');
     if(!period||period.dataset.periodFillBound==='1')return;
     period.dataset.periodFillBound='1';
     period.addEventListener('change',()=>{
       fill(prefix);
-      if(typeof rerender==='function')rerender();
+      /* Let the native Laporan handlers update the report using the new dates. */
     });
     fill(prefix);
   }
 
   function setup(){
-    attach('sum',window.renderSummary);
-    attach('prog',window.renderProgress);
+    attach('sum');
+    attach('prog');
   }
 
   const observer=new MutationObserver(setup);
