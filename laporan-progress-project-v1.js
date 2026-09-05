@@ -13,14 +13,14 @@
     const s=document.createElement('style');
     s.id='laporan-progress-project-v1-style';
     s.textContent=`
-      .laporan-v3 .progress-project-toolbar{display:grid;grid-template-columns:240px repeat(5,minmax(112px,1fr));gap:8px;align-items:stretch}
-      .laporan-v3 .progress-project-filter{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;align-items:center;min-width:0}
+      .laporan-v3 .progress-project-toolbar{display:grid;grid-template-columns:300px repeat(5,minmax(82px,1fr));gap:6px;align-items:stretch;width:100%}
+      .laporan-v3 .progress-project-filter{background:#fff;border:1px solid var(--line);border-radius:10px;padding:7px 10px;display:flex;align-items:center;min-width:0}
       .laporan-v3 .progress-project-filter .field{width:100%}
       .laporan-v3 .progress-project-filter .field label{font-size:8px;line-height:1.1;margin-bottom:4px}
       .laporan-v3 .progress-project-filter .field select{height:34px;border-radius:8px;padding:6px 8px;font-size:11px}
-      .laporan-v3 .progress-project-toolbar .kpi{min-width:0;width:auto!important;max-width:none!important;min-height:58px;padding:8px 10px}
-      .laporan-v3 .progress-project-toolbar .kpi .label{font-size:8px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .laporan-v3 .progress-project-toolbar .kpi .value{font-size:14px;line-height:1.05;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .laporan-v3 .progress-project-toolbar .kpi{min-width:0;width:auto!important;max-width:none!important;min-height:55px;padding:7px 8px;border-radius:10px;box-sizing:border-box}
+      .laporan-v3 .progress-project-toolbar .kpi .label{font-size:7px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .laporan-v3 .progress-project-toolbar .kpi .value{font-size:13px;line-height:1.05;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       @media(max-width:1100px){.laporan-v3 .progress-project-toolbar{grid-template-columns:1fr 1fr 1fr}.laporan-v3 .progress-project-filter{grid-column:1/-1}}
       @media(max-width:650px){.laporan-v3 .progress-project-toolbar{grid-template-columns:1fr 1fr}.laporan-v3 .progress-project-filter{grid-column:1/-1}}
     `;
