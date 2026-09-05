@@ -32,7 +32,7 @@
     if(!window.openLaporan)await loadScript('./laporan-v1.js?v=6','openLaporan');
     await loadCss('./laporan-layout-v2.css?v=2','laporan-layout-v2-styles');
     await loadCss('./laporan-summary-filter-v1.css?v=1','laporan-summary-filter-v1-styles');
-    await loadScript('./laporan-period-fill-v1.js?v=2','__SIKOYEK_LAPORAN_PERIOD_FILL_V1__');
+    await loadScript('./laporan-period-fill-v1.js?v=3','__SIKOYEK_LAPORAN_PERIOD_FILL_V1__');
   }
 
   function waitForUserHeader(timeout=4000){
