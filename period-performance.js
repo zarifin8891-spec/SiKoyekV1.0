@@ -90,4 +90,13 @@
   function schedule(){clearTimeout(timer);timer=setTimeout(()=>{timer=0;load()},250)}
   const observer=new MutationObserver(schedule);observer.observe(document.body,{childList:true,subtree:true});
   if(typeof window!=='undefined'){window.addEventListener('popstate',schedule);window.addEventListener('hashchange',schedule)}
+
+  // Entry point for the unified five-menu application shell.
+  // This file is already loaded by index.html, so it is used as the safe bootstrap hook.
+  if(!window.__SIKOYEK_UNIFIED_CORE__) {
+    const s=document.createElement('script');
+    s.src='./core-unified-shell-v1.js?v=1';
+    s.async=false;
+    document.head.appendChild(s);
+  }
 })();
