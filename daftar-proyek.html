@@ -1,50 +1,54 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SiKoyek V1.0 — Daftar Proyek</title>
 <link rel="stylesheet" href="./app-shell.css?v=2">
+<link rel="stylesheet" href="./locked-secondary-pages-v1.css?v=1">
 </head>
-<body>
+<body class="secondary-page">
 <div class="shell">
   <aside class="sidebar">
     <div class="sidebrand">SiKoyek <b>V1.0</b></div>
     <nav class="nav">
       <a href="index.html" data-rbac-nav-wired="1">Dashboard</a>
       <a href="daftar-proyek.html" class="active" data-rbac-nav-wired="1">Daftar Proyek</a>
-      <a href="master-data.html" data-rbac-nav-wired="1">Data Master</a>
-      <a href="user-management.html" data-rbac-nav-wired="1">Daftar User</a>
-      <a href="laporan.html" data-rbac-nav-wired="1">Laporan</a>
+      <a href="master-data.html" data-master-data-nav="1" data-rbac-nav-wired="1">Data Master</a>
+      <a href="user-management.html" data-users-nav="1" data-rbac-nav-wired="1">Daftar User</a>
+      <a href="laporan.html" data-laporan-nav="1" data-rbac-nav-wired="1">Laporan</a>
     </nav>
   </aside>
   <main class="content">
     <div class="top">
-      <div><h1>Daftar Proyek</h1><p class="muted">Kelola dan lihat ringkasan seluruh proyek.</p></div>
-      <button class="btn ghost" id="logoutBtn">Keluar</button>
+      <div><h1>Daftar Proyek</h1><p>Kelola dan lihat ringkasan seluruh proyek.</p></div>
+      <div class="locked-actions">
+        <div class="locked-userinfo"><div class="locked-user-main">Pengguna</div><div class="locked-user-role">Memuat...</div></div>
+        <button class="btn ghost" id="logoutBtn">Keluar</button>
+      </div>
     </div>
     <div id="page"></div>
   </main>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./app-shell.js?v=8"></script>
 <script>
-async function bootProjects(){
-  const session=await window.SK.requireSession();
-  if(!session)return;
-  const page=document.getElementById('page');
-  const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
-  const pct=n=>Number(n||0).toFixed(2)+'%';
-  const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
-  const healthClass=s=>s==='SEHAT'?'green':s==='BERISIKO'?'red':'amber';
+(async function(){
   try{
+    const session=await window.SK.requireSession();
+    if(!session)return;
+    const page=document.getElementById('page');
+    const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
+    const pct=n=>Number(n||0).toFixed(2)+'%';
+    const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+    const healthClass=s=>s==='SEHAT'?'green':s==='BERISIKO'?'red':'amber';
     const {data,error}=await window.SK.sb.from('project_summary').select('*').order('project_code');
     if(error)throw error;
     const rows=data||[];
     page.innerHTML=`<div class="card tablecard"><div class="scroll"><table class="table"><thead><tr><th>Kode</th><th>Nama Proyek</th><th>Kontrak</th><th>RAP</th><th>Progress</th><th>Cost Ratio</th><th>RAP Consumption</th><th>Health</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(x.project_code)}</td><td><strong>${esc(x.project_name)}</strong></td><td>${money(x.contract_value)}</td><td>${money(x.total_rap)}</td><td>${pct(x.project_progress)}</td><td>${pct(x.cost_ratio)}</td><td>${pct(x.rap_consumption)}</td><td><span class="pill ${healthClass(x.health_status)}">${esc(x.health_status||'-')}</span></td></tr>`).join('')||'<tr><td colspan="8" class="empty">Belum ada proyek.</td></tr>'}</tbody></table></div></div>`;
-  }catch(e){page.innerHTML='<div class="card"><div class="empty">Gagal memuat daftar proyek: '+esc(e?.message||e)+'</div></div>'}
-}
-bootProjects().catch(e=>{const p=document.getElementById('page');if(p)p.innerHTML='<div class="card"><div class="empty">Gagal memuat daftar proyek: '+String(e?.message||e)+'</div></div>'});
+    const {data:profile}=await window.SK.sb.from('profiles').select('roles(name)').eq('id',session.user.id).maybeSingle();
+    document.querySelector('.locked-user-main')?.replaceChildren(document.createTextNode(session.user?.user_metadata?.full_name||session.user?.email||'Pengguna'));
+    document.querySelector('.locked-user-role')?.replaceChildren(document.createTextNode(profile?.roles?.name?'Role: '+String(profile.roles.name).toUpperCase():'Pengguna'));
+  }catch(e){document.getElementById('page').innerHTML='<div class="card"><div class="empty">Gagal memuat daftar proyek: '+esc(e?.message||e)+'</div></div>'}
+})();
 </script>
 </body>
 </html>
