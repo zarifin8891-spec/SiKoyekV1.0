@@ -12,6 +12,7 @@
     const s=document.createElement('script');s.src=src;s.async=false;s.dataset.unifiedLoad=src;
     s.onload=resolve;s.onerror=()=>reject(new Error('Gagal memuat '+src));document.head.appendChild(s);
   });
+  const loadCss=(href,key)=>new Promise(resolve=>{if(key&&document.getElementById(key))return resolve();const l=document.createElement('link');l.rel='stylesheet';l.href=href;l.id=key||'';l.dataset.unifiedCss=href;l.onload=()=>resolve();l.onerror=()=>resolve();document.head.appendChild(l)});
 
   function nav(active){return `<aside class="sidebar"><div class="sidebrand">SiKoyek <b>V1.0</b></div><div class="nav">
     <button type="button" data-core-page="dashboard" class="${active==='dashboard'?'active':''}" onclick="go('dashboard')">Dashboard</button>
@@ -27,6 +28,7 @@
 
   async function ensureModules(){
     if(!window.openUserManagement)await loadScript('./user-management-v1.js?v=5','openUserManagement');
+    await loadCss('./user-management-density-v1.css?v=1','um-density-styles');
     if(!window.openLaporan)await loadScript('./laporan-v1.js?v=5','openLaporan');
   }
 
