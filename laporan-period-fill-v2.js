@@ -1,8 +1,8 @@
-/* SiKoyek V1.0 — Laporan period autofill v3 */
+/* SiKoyek V1.0 — Laporan period autofill v4 */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_LAPORAN_PERIOD_FILL_V3__)return;
-  window.__SIKOYEK_LAPORAN_PERIOD_FILL_V3__=true;
+  if(window.__SIKOYEK_LAPORAN_PERIOD_FILL_V4__)return;
+  window.__SIKOYEK_LAPORAN_PERIOD_FILL_V4__=true;
 
   function localDate(d){
     const y=d.getFullYear();
@@ -41,22 +41,24 @@
     const period=document.getElementById(prefix+'Period');
     const from=document.getElementById(prefix+'From');
     const to=document.getElementById(prefix+'To');
-    if(!period||!from||!to)return;
+    if(!period||!from||!to)return false;
     const kind=period.value||'all';
-    if(kind==='custom')return;
+    if(kind==='custom')return true;
     const r=getRange(kind);
     if(from.value!==r.from)from.value=r.from;
     if(to.value!==r.to)to.value=r.to;
+    return true;
   }
 
   function bind(prefix){
     const period=document.getElementById(prefix+'Period');
-    if(!period||period.dataset.periodFillV3==='1')return;
-    period.dataset.periodFillV3='1';
+    if(!period||period.dataset.periodFillV4==='1')return;
+    period.dataset.periodFillV4='1';
 
     /* Capture phase: populate dates before Laporan's native change handler. */
     period.addEventListener('change',()=>fill(prefix),true);
 
+    /* Fill immediately when the controls are mounted. */
     fill(prefix);
   }
 
@@ -67,8 +69,17 @@
 
   function start(){
     scan();
-    const page=document.getElementById('page');
-    if(page)new MutationObserver(scan).observe(page,{childList:true,subtree:true});
+    const target=document.body||document.documentElement;
+    if(target){
+      new MutationObserver(scan).observe(target,{childList:true,subtree:true});
+    }
+    /* Extra first-pass retry covers the async render sequence of Laporan. */
+    let tries=0;
+    const retry=()=>{
+      scan();
+      if(++tries<40)setTimeout(retry,100);
+    };
+    retry();
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
