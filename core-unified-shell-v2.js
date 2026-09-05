@@ -29,25 +29,15 @@
   async function ensureModules(){
     if(!window.openUserManagement)await loadScript('./user-management-v1.js?v=5','openUserManagement');
     await loadCss('./user-management-density-v1.css?v=1','um-density-styles');
-    if(!window.openLaporan)await loadScript('./laporan-v1.js?v=6','openLaporan');
+    if(!window.openLaporan)await loadScript('./laporan-v1.js?v=7','openLaporan');
     await loadCss('./laporan-layout-v2.css?v=2','laporan-layout-v2-styles');
     await loadCss('./laporan-summary-filter-v1.css?v=1','laporan-summary-filter-v1-styles');
     await loadScript('./laporan-period-fill-v2.js?v=4','__SIKOYEK_LAPORAN_PERIOD_FILL_V4__');
     await loadScript('./laporan-progress-project-v1.js?v=1','__SIKOYEK_LAPORAN_PROGRESS_PROJECT_V1__');
-    await loadScript('./laporan-extra-tabs-v2.js?v=1','__SIKOYEK_LAPORAN_EXTRA_TABS_V2__');
+    await loadScript('./laporan-extra-tabs-v1.js?v=2','__SIKOYEK_LAPORAN_EXTRA_TABS_V2__');
   }
 
-  function waitForUserHeader(timeout=4000){
-    return new Promise(resolve=>{
-      const started=Date.now();
-      const check=()=>{
-        const head=document.querySelector('#page .um-head');
-        if(head || Date.now()-started>=timeout){resolve(head||null);return}
-        setTimeout(check,25);
-      };
-      check();
-    });
-  }
+  function waitForUserHeader(timeout=4000){return new Promise(resolve=>{const started=Date.now();const check=()=>{const head=document.querySelector('#page .um-head');if(head||Date.now()-started>=timeout){resolve(head||null);return}setTimeout(check,25)};check()})}
 
   async function unifiedGo(page){page=CORE.has(page)?page:'dashboard';state.page=page;state.selected=null;state.detail=null;if(page==='dashboard'||page==='projects')await loadSummary();renderApp();location.hash=page==='dashboard'?'':page}
 
