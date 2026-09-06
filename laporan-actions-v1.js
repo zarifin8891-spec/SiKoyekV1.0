@@ -19,6 +19,34 @@
 
   function activeName(root){return root.querySelector('.report-tabs button.active')?.textContent?.trim()||'Laporan';}
 
+  function applyAreaChart(){
+    const svg=document.getElementById('kinerjaTrendSvg');
+    if(!svg)return;
+    const paths=[...svg.querySelectorAll('path')].slice(0,3);
+    if(paths.length<3)return;
+    const marker=svg.dataset.kinerjaAreaState;
+    if(marker==='done')return;
+    const viewBox=(svg.getAttribute('viewBox')||'0 0 960 330').split(/\s+/).map(Number);
+    const H=Number.isFinite(viewBox[3])?viewBox[3]:330;
+    const baseline=Math.max(0,H-45);
+    paths.forEach(path=>{
+      const d=path.getAttribute('d')||'';
+      const points=[...d.matchAll(/([ML])\s*(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)/g)];
+      if(!points.length)return;
+      const first=points[0],last=points[points.length-1];
+      const color=path.style.color||path.getAttribute('stroke')||'currentColor';
+      path.setAttribute('d',`${d} L ${last[2]} ${baseline} L ${first[2]} ${baseline} Z`);
+      path.setAttribute('fill',color);
+      path.setAttribute('fill-opacity','0.15');
+      path.setAttribute('stroke',color);
+      path.setAttribute('stroke-width','2.5');
+      path.setAttribute('stroke-linejoin','round');
+      path.style.color='';
+    });
+    [...svg.querySelectorAll('circle')].forEach(c=>c.setAttribute('r','3'));
+    svg.dataset.kinerjaAreaState='done';
+  }
+
   function inject(){
     const root=document.querySelector('.laporan-v3');
     if(!root)return false;
@@ -32,6 +60,7 @@
       bar.querySelector('#laporanPrintV1').addEventListener('click',printReport);
       bar.querySelector('#laporanCsvV1').addEventListener('click',exportCsv);
     }
+    applyAreaChart();
     return true;
   }
 
