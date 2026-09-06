@@ -1,15 +1,15 @@
-/* SiKoyek V1.0 — Laporan actions v1 */
+/* SiKoyek V1.0 — Laporan actions v2 */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_LAPORAN_ACTIONS_V1__)return;
-  window.__SIKOYEK_LAPORAN_ACTIONS_V1__=true;
+  if(window.__SIKOYEK_LAPORAN_ACTIONS_V2__)return;
+  window.__SIKOYEK_LAPORAN_ACTIONS_V2__=true;
 
   const escHtml=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
   const csvCell=s=>'"'+String(s??'').replace(/"/g,'""')+'"';
 
   function styles(){
-    if(document.getElementById('laporan-actions-v1-style'))return;
-    const s=document.createElement('style');s.id='laporan-actions-v1-style';s.textContent=`
+    if(document.getElementById('laporan-actions-v2-style'))return;
+    const s=document.createElement('style');s.id='laporan-actions-v2-style';s.textContent=`
       .laporan-v3 .report-actions-v1{display:flex;justify-content:flex-end;gap:6px;margin:0 0 8px}
       .laporan-v3 .report-actions-v1 button{height:32px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--text);padding:0 11px;cursor:pointer;font-size:11px;font-weight:700}
       .laporan-v3 .report-actions-v1 button:hover{background:#f8fafc}
@@ -17,7 +17,9 @@
     `;document.head.appendChild(s);
   }
 
-  function activeName(root){return root.querySelector('.report-tabs button.active')?.textContent?.trim()||'Laporan';}
+  function activeButton(root){return root.querySelector('.report-tabs button.active')||null}
+  function activeName(root){return activeButton(root)?.textContent?.trim()||'Laporan'}
+  function reportId(root){return activeButton(root)?.dataset?.report||''}
 
   function applyAreaChart(){
     const svg=document.getElementById('kinerjaTrendSvg');
@@ -67,11 +69,76 @@
   function printReport(){
     const root=document.querySelector('.laporan-v3'),content=root?.querySelector('#reportContent');
     if(!content)return;
+
     const title=activeName(root);
+    const id=reportId(root);
+    const landscape=id!=='progress';
+    const paper=landscape?'A4 landscape':'A4 portrait';
+    const now=new Date();
+    const printedAt=new Intl.DateTimeFormat('id-ID',{dateStyle:'medium',timeStyle:'short'}).format(now);
+    const contentHtml=content.innerHTML;
+
     const w=window.open('','_blank','noopener,noreferrer');
     if(!w){window.print();return}
-    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escHtml(title)}</title><style>body{font-family:Arial,sans-serif;color:#111827;padding:18px;font-size:12px}h1{font-size:18px;margin:0 0 14px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #d9dee7;padding:6px 7px;text-align:left;font-size:10px;vertical-align:top}th{background:#f3f4f6;font-weight:700}td.num,th.num{text-align:right}.card{border:1px solid #d9dee7;border-radius:8px;margin-bottom:10px;overflow:hidden}.kinerja-section{margin-bottom:10px}.kinerja-chart{max-width:100%;height:auto}.kinerja-legend{margin:6px 0 10px;font-size:10px}.extra-empty,.empty{padding:15px;text-align:center}@page{size:auto;margin:12mm}</style></head><body><h1>${escHtml(title)}</h1>${content.innerHTML}</body></html>`);
-    w.document.close();w.focus();setTimeout(()=>w.print(),250);
+
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escHtml(title)}</title><style>
+      *{box-sizing:border-box}
+      html,body{margin:0;padding:0;background:#fff}
+      body{font-family:Arial,Helvetica,sans-serif;color:#111827;font-size:9pt;line-height:1.2;padding:0}
+      .print-wrap{width:100%}
+      .print-header{margin:0 0 5mm;border-bottom:1px solid #cfd5de;padding-bottom:3mm}
+      .print-brand{font-size:11pt;font-weight:800;letter-spacing:.2px;text-transform:uppercase;margin:0}
+      .print-title{font-size:15pt;font-weight:800;margin:1mm 0 0}
+      .print-meta{font-size:8pt;color:#5b6472;margin-top:1.5mm}
+      .card{border:0!important;border-radius:0!important;box-shadow:none!important;margin:0 0 3mm!important;padding:0!important;overflow:visible!important;background:#fff!important}
+      .card-header{padding:0 0 1.5mm!important;margin:0!important;border:0!important}
+      .card-header h3,.card-header h4{font-size:10pt!important;margin:0!important}
+      table{width:100%;border-collapse:collapse;border-spacing:0;page-break-inside:auto}
+      thead{display:table-header-group}
+      tfoot{display:table-footer-group}
+      tr{break-inside:avoid;page-break-inside:avoid}
+      th,td{border:1px solid #bfc6d1;padding:2.2mm 2mm;text-align:left;font-size:8pt;line-height:1.15;vertical-align:top}
+      th{background:#f1f3f6!important;font-weight:700}
+      td.num,th.num{text-align:right;white-space:nowrap}
+      .empty,.extra-empty{padding:7mm!important;text-align:center}
+      .kpi,.kpis,.finance-summary,.summary-grid,.stats-grid{gap:2.5mm!important}
+      .kpi,.kpis>*,.finance-summary>*,.summary-grid>*,.stats-grid>*{box-shadow:none!important;border:1px solid #cfd5de!important;border-radius:3px!important;padding:2.5mm!important}
+      .kpi .value,.kpis .value,.finance-summary .value{font-size:11pt!important}
+      .kpi .label,.kpis .label,.finance-summary .label{font-size:7pt!important}
+      .progress-bar,.progress-track{height:5px!important;min-height:5px!important}
+      .kinerja-toolbar{margin:0 0 2.5mm!important;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important}
+      .kinerja-toolbar .kinerja-filter,.kinerja-toolbar select,.kinerja-toolbar input,.kinerja-toolbar label{font-size:7.5pt!important}
+      .kinerja-toolbar .kinerja-filter{display:none!important}
+      .kinerja-table th,.kinerja-table td{font-size:7.1pt!important;padding:1.55mm 1.4mm!important;white-space:nowrap}
+      .kinerja-table th:nth-child(2),.kinerja-table td:nth-child(2){white-space:normal}
+      .kinerja-section{margin:0 0 3mm!important}
+      .kinerja-section h3,.kinerja-section h4{font-size:10pt!important;margin:0 0 1.5mm!important}
+      .kinerja-chart-wrap{padding:0!important;margin:0!important;border:0!important}
+      .kinerja-chart{width:100%!important;max-width:100%!important;height:145px!important;min-height:145px!important}
+      .kinerja-legend{margin:1.5mm 0 2mm!important;font-size:7pt!important;line-height:1.1!important}
+      svg{max-width:100%}
+      .print-footer{margin-top:3mm;padding-top:1.5mm;border-top:1px solid #d8dde5;font-size:7pt;color:#6b7280;display:flex;justify-content:space-between}
+      .report-actions-v1,.report-tabs,.btn,.button,.actions,.toolbar,.filters,.filter-bar{display:none!important}
+      @page{size:${paper};margin:8mm}
+      @media print{
+        body{padding:0}
+        a{color:inherit;text-decoration:none}
+        .print-header{break-after:avoid}
+      }
+    </style></head><body>
+      <div class="print-wrap">
+        <header class="print-header">
+          <div class="print-brand">SiKoyek V1.0</div>
+          <div class="print-title">${escHtml(title)}</div>
+          <div class="print-meta">Dicetak ${escHtml(printedAt)}</div>
+        </header>
+        ${contentHtml}
+        <footer class="print-footer"><span>SiKoyek V1.0</span><span>${escHtml(title)}</span></footer>
+      </div>
+    </body></html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(()=>w.print(),250);
   }
 
   function tableToRows(table){return [...table.rows].map(row=>[...row.cells].map(cell=>cell.innerText.trim().replace(/\s+/g,' ')))}
