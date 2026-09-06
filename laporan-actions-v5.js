@@ -65,10 +65,14 @@
       kpis=readKpis('#reportContent .kpis');
     }else if(id==='progress'){
       meta=metaHtml('Proyek',selectedProject(['progProject'])||'-');
-      kpis=readKpis('#reportContent .progress-project-toolbar .kpi',['PROJECT PROGRESS']);
+      kpis=readKpis('#reportContent .progress-project-toolbar .kpi',['PROJECT PROGRESS']).map((x,i)=>{
+        const labels=['TOTAL ITEM','SEDANG BERJALAN','SELESAI','AVG PROGRESS'];
+        return {...x,label:labels[i]||x.label};
+      }).slice(0,4);
     }else if(id==='rap'){
       meta=metaHtml('Periode',periodText(['rap','rapBiaya']));
       kpis=readKpis('#reportContent .rap-biaya-kpis');
+      if(!kpis.length)kpis=readKpis('#reportContent .extra-kpis');
       if(kpis.length===5)kpis.unshift({label:'TOTAL PROYEK',value:textById('rapBiayaKpiProjects')||textById('rapKpiProject')||''});
     }else if(id==='finance'){
       meta=metaHtml('Periode',periodText(['finance']));
@@ -89,8 +93,7 @@
   function cleanContent(content,id){
     const clone=content.cloneNode(true);
     const remove=sel=>clone.querySelectorAll(sel).forEach(el=>el.remove());
-    remove('.report-actions-v1,.report-tabs,.filters,.finance-toolbar,.finance-summary,.progress-project-toolbar,.rap-biaya-filter,.rap-biaya-kpis,.extra-period-grid,.extra-kpis,.kinerja-toolbar');
-    remove('.kpis');
+    remove('.report-actions-v1,.report-tabs,.filters,.finance-toolbar,.finance-summary,.progress-project-toolbar,.rap-biaya-filter,.rap-biaya-kpis,.extra-period-grid,.extra-kpis,.kinerja-toolbar,.kpis');
     remove('[id^="sumKpi"]');
     remove('[id^="progKpi"]');
     remove('[id^="rapBiayaKpi"]');
@@ -136,7 +139,7 @@
       .print-meta-label{width:17mm}.print-meta-colon{width:4mm;text-align:center}
       .print-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3.2mm;margin-top:4mm;align-items:stretch}
       .print-header-progress .print-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
-      .print-header-rap .print-kpis{grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-flow:column}
+      .print-header-rap .print-kpis{grid-template-columns:repeat(5,minmax(0,1fr))}
       .print-header-finance .print-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
       .print-header-kinerja .print-kpis{grid-template-columns:repeat(5,minmax(0,1fr))}
       .print-kpi{border:1px solid #222;min-height:10mm;padding:2.3mm 2.5mm 2.2mm;display:flex;flex-direction:column;justify-content:center;text-align:center;overflow:hidden}
