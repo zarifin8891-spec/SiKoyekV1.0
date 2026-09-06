@@ -35,9 +35,11 @@
     await loadScript('./laporan-period-fill-v2.js?v=5','__SIKOYEK_LAPORAN_PERIOD_FILL_V5__');
     await loadScript('./laporan-progress-project-v1.js?v=1','__SIKOYEK_LAPORAN_PROGRESS_PROJECT_V1__');
     await loadScript('./laporan-finance-v1.js?v=1','__SIKOYEK_LAPORAN_FINANCE_V1__');
-    await loadScript('./laporan-cashflow-v1.js?v=3','__SIKOYEK_LAPORAN_CASHFLOW_V3__');
+    await loadScript('./laporan-kinerja-proyek-v1.js?v=1','__SIKOYEK_LAPORAN_KINERJA_PROYEK_V1__');
     await loadScript('./laporan-period-standard-v1.js?v=1','__SIKOYEK_LAPORAN_PERIOD_STANDARD_V1__');
     await loadScript('./laporan-finance-period-fix-v1.js?v=1','__SIKOYEK_FINANCE_PERIOD_FIX_V1__');
+    await loadScript('./laporan-tab-overrides-v1.js?v=1','__SIKOYEK_LAPORAN_TAB_OVERRIDES_V1__');
+    await loadScript('./laporan-actions-v1.js?v=1','__SIKOYEK_LAPORAN_ACTIONS_V1__');
   }
 
   function waitForUserHeader(timeout=4000){return new Promise(resolve=>{const started=Date.now();const check=()=>{const head=document.querySelector('#page .um-head');if(head||Date.now()-started>=timeout){resolve(head||null);return}setTimeout(check,25)};check()})}
