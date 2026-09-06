@@ -1,15 +1,15 @@
-/* SiKoyek V1.0 — Laporan actions v3 */
+/* SiKoyek V1.0 — Laporan actions v4 */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_LAPORAN_ACTIONS_V3__)return;
-  window.__SIKOYEK_LAPORAN_ACTIONS_V3__=true;
+  if(window.__SIKOYEK_LAPORAN_ACTIONS_V4__)return;
+  window.__SIKOYEK_LAPORAN_ACTIONS_V4__=true;
 
   const escHtml=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
   const csvCell=s=>'"'+String(s??'').replace(/"/g,'""')+'"';
 
   function styles(){
-    if(document.getElementById('laporan-actions-v3-style'))return;
-    const s=document.createElement('style');s.id='laporan-actions-v3-style';s.textContent=`
+    if(document.getElementById('laporan-actions-v4-style'))return;
+    const s=document.createElement('style');s.id='laporan-actions-v4-style';s.textContent=`
       .laporan-v3 .report-actions-v1{display:flex;justify-content:flex-end;gap:6px;margin:0 0 8px}
       .laporan-v3 .report-actions-v1 button{height:32px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--text);padding:0 11px;cursor:pointer;font-size:11px;font-weight:700}
       .laporan-v3 .report-actions-v1 button:hover{background:#f8fafc}
@@ -20,6 +20,91 @@
   function activeButton(root){return root.querySelector('.report-tabs button.active')||null}
   function activeName(root){return activeButton(root)?.textContent?.trim()||'Laporan'}
   function reportId(root){return activeButton(root)?.dataset?.report||''}
+  function textById(id){return document.getElementById(id)?.textContent?.trim()||''}
+  function valueById(id){return document.getElementById(id)?.value||''}
+  function formatDate(v){
+    const s=String(v||'').slice(0,10);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return '';
+    const [y,m,d]=s.split('-');
+    return `${d}-${m}-${y}`;
+  }
+  function periodText(prefixes){
+    let from='',to='';
+    for(const p of prefixes){
+      const f=valueById(p+'From'),t=valueById(p+'To');
+      if(f||t){from=formatDate(f);to=formatDate(t);break}
+    }
+    if(!from&&!to)return 'Semua Periode';
+    return `${from||'...'}  s/d  ${to||'...'}`;
+  }
+  function projectLabelFromSelect(ids){
+    for(const id of ids){
+      const el=document.getElementById(id);
+      if(el){
+        const opt=el.options?.[el.selectedIndex];
+        const txt=opt?.textContent?.trim()||'';
+        if(txt && !/semua proyek|pilih proyek/i.test(txt))return txt;
+      }
+    }
+    return '';
+  }
+  function readKpis(selector,excludeLabels=[]){
+    const root=document.querySelector(selector);
+    if(!root)return [];
+    return [...root.children].map(node=>{
+      const label=node.querySelector('.label,small')?.textContent?.trim()||'';
+      const value=node.querySelector('.value,strong')?.textContent?.trim()||'';
+      return {label,value};
+    }).filter(x=>x.label && !excludeLabels.some(v=>x.label.toUpperCase()===v.toUpperCase()));
+  }
+  function kpiBoxHtml(item){
+    return `<div class="print-kpi"><div class="print-kpi-label">${escHtml(item.label)}</div><div class="print-kpi-value">${escHtml(item.value)}</div></div>`;
+  }
+  function metaLineHtml(label,value){
+    return `<div class="print-meta-row"><span class="print-meta-label">${escHtml(label)}</span><span class="print-meta-colon">:</span><strong>${escHtml(value)}</strong></div>`;
+  }
+
+  function buildHeader(root,id,title){
+    let meta='',kpis=[];
+    if(id==='summary'){
+      meta=metaLineHtml('Periode',periodText(['sum']));
+      kpis=readKpis('#reportContent .kpis');
+    }else if(id==='progress'){
+      const project=projectLabelFromSelect(['progProject'])||'-';
+      meta=metaLineHtml('Proyek',project);
+      kpis=readKpis('#reportContent .progress-project-toolbar .kpi',['PROJECT PROGRESS']);
+    }else if(id==='rap'){
+      meta=metaLineHtml('Periode',periodText(['rap','rapBiaya']));
+      kpis=readKpis('#reportContent .rap-biaya-kpis');
+      if(!kpis.length)kpis=readKpis('#reportContent .extra-kpis');
+      if(kpis.length===5)kpis.unshift({label:'TOTAL PROYEK',value:textById('rapKpiProject')||textById('rapBiayaKpiProjects')||''});
+    }else if(id==='finance'){
+      meta=metaLineHtml('Periode',periodText(['finance']));
+      const project=projectLabelFromSelect(['financeProject']);
+      if(project)meta+=metaLineHtml('Proyek',project);
+      kpis=readKpis('#reportContent .finance-summary');
+    }else if(id==='kinerja'){
+      kpis=readKpis('#reportContent .kinerja-toolbar .kinerja-kpi');
+      if(!kpis.length)kpis=readKpis('#reportContent .kinerja-toolbar .kpi');
+    }
+
+    return `<header class="print-header print-header-${escHtml(id||'report')}" data-report-id="${escHtml(id||'report')}">
+      <div class="print-brand">SiKoyek V1.0</div>
+      <div class="print-title">${escHtml(title)}</div>
+      ${meta?`<div class="print-meta-block">${meta}</div>`:''}
+      ${kpis.length?`<div class="print-kpis">${kpis.map(kpiBoxHtml).join('')}</div>`:''}
+    </header>`;
+  }
+
+  function cleanContentHtml(content,id){
+    const clone=content.cloneNode(true);
+    const remove=(sel)=>clone.querySelectorAll(sel).forEach(el=>el.remove());
+    remove('.report-actions-v1,.report-tabs,.filters,.finance-toolbar,.finance-summary,.progress-project-toolbar,.rap-biaya-filter,.rap-biaya-kpis,.extra-period-grid,.extra-kpis,.kinerja-toolbar');
+    if(id==='kinerja'){
+      remove('.kinerja-trend-filter');
+    }
+    return clone.innerHTML;
+  }
 
   function inject(){
     const root=document.querySelector('.laporan-v3');
@@ -46,35 +131,38 @@
     const id=reportId(root);
     const landscape=id!=='progress';
     const paper=landscape?'A4 landscape':'A4 portrait';
-    const now=new Date();
-    const printedAt=new Intl.DateTimeFormat('id-ID',{dateStyle:'medium',timeStyle:'short'}).format(now);
-    const contentHtml=content.innerHTML;
+    const headerHtml=buildHeader(root,id,title);
+    const contentHtml=cleanContentHtml(content,id);
 
     const iframe=document.createElement('iframe');
     iframe.setAttribute('aria-hidden','true');
     iframe.title='Print preview';
-    iframe.style.position='fixed';
-    iframe.style.right='0';
-    iframe.style.bottom='0';
-    iframe.style.width='0';
-    iframe.style.height='0';
-    iframe.style.border='0';
-    iframe.style.visibility='hidden';
+    Object.assign(iframe.style,{position:'fixed',right:'0',bottom:'0',width:'0',height:'0',border:'0',visibility:'hidden'});
     document.body.appendChild(iframe);
 
     const doc=iframe.contentDocument;
     if(!doc){iframe.remove();window.print();return}
-
     doc.open();
     doc.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escHtml(title)}</title><style>
       *{box-sizing:border-box}
       html,body{margin:0;padding:0;background:#fff}
-      body{font-family:Arial,Helvetica,sans-serif;color:#111827;font-size:9pt;line-height:1.2}
-      .print-wrap{width:100%}
-      .print-header{margin:0 0 4mm;border-bottom:1px solid #cfd5de;padding-bottom:2.5mm}
-      .print-brand{font-size:10pt;font-weight:800;letter-spacing:.2px;text-transform:uppercase;margin:0}
-      .print-title{font-size:14pt;font-weight:800;margin:1mm 0 0}
-      .print-meta{font-size:7.5pt;color:#5b6472;margin-top:1mm}
+      body{font-family:Arial,Helvetica,sans-serif;color:#111;font-size:8.5pt;line-height:1.15}
+      .print-wrap{width:100%;}
+      .print-header{margin:0 0 3.5mm;padding:0 0 2.5mm;border-bottom:1px solid #222;break-after:avoid;}
+      .print-brand{font-size:15pt;font-weight:800;line-height:1;margin:0 0 1.8mm;}
+      .print-title{font-size:13.5pt;font-weight:800;line-height:1.05;margin:0 0 1.2mm;}
+      .print-meta-block{font-size:8.5pt;line-height:1.2;margin:0;}
+      .print-meta-row{display:flex;align-items:baseline;gap:0;margin:0 0 .6mm;white-space:nowrap;}
+      .print-meta-label{width:17mm;display:inline-block;}
+      .print-meta-colon{width:4mm;display:inline-block;text-align:center;}
+      .print-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3.2mm;margin-top:4mm;align-items:stretch;}
+      .print-header-progress .print-kpis{grid-template-columns:repeat(4,minmax(0,1fr));}
+      .print-header-rap .print-kpis{grid-template-columns:repeat(5,minmax(0,1fr));}
+      .print-header-finance .print-kpis{grid-template-columns:repeat(4,minmax(0,1fr));}
+      .print-header-kinerja .print-kpis{grid-template-columns:repeat(5,minmax(0,1fr));}
+      .print-kpi{border:1px solid #222;min-height:10mm;padding:2.3mm 2.5mm 2.2mm;display:flex;flex-direction:column;justify-content:center;text-align:center;overflow:hidden;}
+      .print-kpi-label{font-size:8.3pt;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .print-kpi-value{font-size:9pt;font-weight:700;line-height:1.05;margin-top:1.3mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
       .card{border:0!important;border-radius:0!important;box-shadow:none!important;margin:0 0 2.5mm!important;padding:0!important;overflow:visible!important;background:#fff!important}
       .card-header{padding:0 0 1mm!important;margin:0!important;border:0!important}
       .card-header h3,.card-header h4{font-size:9.5pt!important;margin:0!important}
@@ -82,55 +170,36 @@
       thead{display:table-header-group}
       tfoot{display:table-footer-group}
       tr{break-inside:avoid;page-break-inside:avoid}
-      th,td{border:1px solid #bfc6d1;padding:1.45mm 1.45mm;text-align:left;font-size:7.8pt;line-height:1.1;vertical-align:top}
-      th{background:#f1f3f6!important;font-weight:700}
+      th,td{border:1px solid #222;padding:1.25mm 1.35mm;text-align:left;font-size:7.7pt;line-height:1.08;vertical-align:top}
+      th{background:#f1f1f1!important;font-weight:700}
       td.num,th.num{text-align:right;white-space:nowrap}
       .empty,.extra-empty{padding:5mm!important;text-align:center}
-      .kpi,.kpis,.finance-summary,.summary-grid,.stats-grid{gap:1.8mm!important}
-      .kpi,.kpis>*,.finance-summary>*,.summary-grid>*,.stats-grid>*{box-shadow:none!important;border:1px solid #cfd5de!important;border-radius:3px!important;padding:1.7mm!important}
-      .kpi .value,.kpis .value,.finance-summary .value{font-size:10pt!important}
-      .kpi .label,.kpis .label,.finance-summary .label{font-size:6.7pt!important}
-      .progress-bar,.progress-track{height:4px!important;min-height:4px!important}
-      .kinerja-toolbar{margin:0 0 2mm!important;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important}
-      .kinerja-filter,.kinerja-toolbar select,.kinerja-toolbar input,.kinerja-toolbar label{display:none!important}
-      .kinerja-table{table-layout:auto!important}
-      .kinerja-table th,.kinerja-table td{font-size:6.7pt!important;padding:1.05mm 1.05mm!important;white-space:nowrap}
+      .progress-bar,.progress-track,.progressbar{height:3.5px!important;min-height:3.5px!important}
+      .kinerja-section{margin:0 0 2.5mm!important;border:0!important;border-radius:0!important;}
+      .kinerja-section h3,.kinerja-section h4,.kinerja-title{font-size:9.5pt!important;margin:0 0 1mm!important;padding:0!important;border:0!important;}
+      .kinerja-table th,.kinerja-table td{font-size:6.6pt!important;padding:1mm .95mm!important;white-space:nowrap}
       .kinerja-table th:nth-child(2),.kinerja-table td:nth-child(2){white-space:normal}
-      .kinerja-section{margin:0 0 2.5mm!important}
-      .kinerja-section h3,.kinerja-section h4{font-size:9.5pt!important;margin:0 0 1mm!important}
-      .kinerja-chart-wrap{padding:0!important;margin:0!important;border:0!important}
-      .kinerja-chart{width:100%!important;max-width:100%!important;height:120px!important;min-height:120px!important}
-      .kinerja-legend{margin:1mm 0 1.5mm!important;font-size:6.5pt!important;line-height:1.05!important}
+      .kinerja-chart-wrap{padding:0!important;margin:0!important;border:0!important;overflow:visible!important}
+      .kinerja-chart{width:100%!important;max-width:100%!important;height:110px!important;min-height:110px!important}
+      .kinerja-legend{margin:1mm 0 1.5mm!important;padding:0!important;font-size:6.3pt!important;line-height:1.05!important}
       svg{max-width:100%}
-      .print-footer{margin-top:2.5mm;padding-top:1mm;border-top:1px solid #d8dde5;font-size:6.7pt;color:#6b7280;display:flex;justify-content:space-between}
-      .report-actions-v1,.report-tabs,.btn,.button,.actions,.toolbar,.filters,.filter-bar{display:none!important}
+      .note-card{display:none!important}
       @page{size:${paper};margin:8mm}
-      @media print{body{padding:0}a{color:inherit;text-decoration:none}.print-header{break-after:avoid}}
+      @media print{body{padding:0}a{color:inherit;text-decoration:none}}
     </style></head><body>
       <div class="print-wrap">
-        <header class="print-header">
-          <div class="print-brand">SiKoyek V1.0</div>
-          <div class="print-title">${escHtml(title)}</div>
-          <div class="print-meta">Dicetak ${escHtml(printedAt)}</div>
-        </header>
+        ${headerHtml}
         ${contentHtml}
-        <footer class="print-footer"><span>SiKoyek V1.0</span><span>${escHtml(title)}</span></footer>
       </div>
     </body></html>`);
     doc.close();
 
     const win=iframe.contentWindow;
     let printed=false;
-    const cleanup=()=>{setTimeout(()=>iframe.remove(),800)};
-    const doPrint=()=>{
-      if(printed)return;
-      printed=true;
-      win.focus();
-      win.print();
-      cleanup();
-    };
+    const cleanup=()=>setTimeout(()=>iframe.remove(),800);
+    const doPrint=()=>{if(printed)return;printed=true;win.focus();win.print();cleanup()};
     iframe.onload=()=>setTimeout(doPrint,120);
-    setTimeout(doPrint,500);
+    setTimeout(doPrint,600);
   }
 
   function tableToRows(table){return [...table.rows].map(row=>[...row.cells].map(cell=>cell.innerText.trim().replace(/\s+/g,' ')))}
@@ -142,10 +211,7 @@
     if(!tables.length){alert('Tidak ada tabel yang dapat diekspor pada laporan ini.');return}
     const title=activeName(root).replace(/[^a-z0-9\-_]+/gi,'_').replace(/^_+|_+$/g,'').toLowerCase()||'laporan';
     const blocks=[];
-    tables.forEach((table,i)=>{
-      if(i)blocks.push(['']);
-      blocks.push(...tableToRows(table));
-    });
+    tables.forEach((table,i)=>{if(i)blocks.push(['']);blocks.push(...tableToRows(table));});
     const csv='\ufeff'+blocks.map(row=>row.map(csvCell).join(';')).join('\r\n');
     const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
     const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`${title}.csv`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
