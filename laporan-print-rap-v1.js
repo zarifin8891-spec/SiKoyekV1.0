@@ -1,64 +1,60 @@
-/* SiKoyek V1.0 — RAP & Biaya print header override v1 */
+/* SiKoyek V1.0 — RAP & Biaya print header override v2 */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_LAPORAN_PRINT_RAP_V1__)return;
-  window.__SIKOYEK_LAPORAN_PRINT_RAP_V1__=true;
+  if(window.__SIKOYEK_LAPORAN_PRINT_RAP_V2__)return;
+  window.__SIKOYEK_LAPORAN_PRINT_RAP_V2__=true;
 
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
-  const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
-  const pct=n=>Number(n||0).toFixed(2)+'%';
-
   function dateText(v){
     const s=String(v||'').slice(0,10);
     if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return '';
     const [y,m,d]=s.split('-');return `${d}-${m}-${y}`;
   }
-
   function periodText(){
     const f=document.getElementById('rapFrom')||document.getElementById('rapBiayaFrom');
     const t=document.getElementById('rapTo')||document.getElementById('rapBiayaTo');
     const from=dateText(f?.value),to=dateText(t?.value);
     return (from||to)?`${from||'...'}     s/d     ${to||'...'}`:'Semua Periode';
   }
-
   function projectCount(){
     const body=document.getElementById('rapBiayaBody');
     if(!body)return 0;
     return [...body.querySelectorAll('tr')].filter(tr=>tr.querySelectorAll('td').length>1).length;
   }
-
-  function projectMeta(){
-    const sel=document.getElementById('rapBiayaProject');
-    const text=sel?.options?.[sel.selectedIndex]?.textContent?.trim()||'';
-    return text && !/semua proyek/i.test(text) ? text : '';
-  }
-
   function kpiValue(id){return document.getElementById(id)?.textContent?.trim()||''}
 
   function header(){
-    const count=projectCount();
-    return `
-      <header class="rap-print-header">
-        <div class="rap-print-brand">SiKoyek V1.0</div>
-        <div class="rap-print-title">Laporan RAP &amp; Biaya</div>
-        <div class="rap-print-meta"><span class="label">Periode</span><span class="colon">:</span><strong>${esc(periodText())}</strong></div>
-        <div class="rap-print-meta extra-project"><span class="label">Proyek</span><span class="colon">:</span><strong>${esc(projectMeta())}</strong></div>
-        <div class="rap-print-kpis">
-          <div class="rap-print-kpi"><div>Total Proyek</div><strong>${esc(count)}</strong></div>
-          <div class="rap-print-kpi"><div>Total RAP</div><strong>${esc(kpiValue('rapBiayaKpiRap'))}</strong></div>
-          <div class="rap-print-kpi"><div>Realisasi</div><strong>${esc(kpiValue('rapBiayaKpiReal'))}</strong></div>
-          <div class="rap-print-kpi"><div>RAP Tersisa</div><strong>${esc(kpiValue('rapBiayaKpiSisa'))}</strong></div>
-          <div class="rap-print-kpi"><div>Avg Progress</div><strong>${esc(kpiValue('rapBiayaKpiProgress'))}</strong></div>
-        </div>
-      </header>`;
+    return `<header class="rap-print-header">
+      <div class="rap-print-brand">SiKoyek V1.0</div>
+      <div class="rap-print-title">Laporan RAP &amp; Biaya</div>
+      <div class="rap-print-meta"><span class="label">Periode</span><span class="colon">:</span><strong>${esc(periodText())}</strong></div>
+      <div class="rap-print-kpis">
+        <div class="rap-print-kpi"><div>Total Proyek</div><strong>${esc(projectCount())}</strong></div>
+        <div class="rap-print-kpi"><div>Total RAP</div><strong>${esc(kpiValue('rapBiayaKpiRap'))}</strong></div>
+        <div class="rap-print-kpi"><div>Realisasi</div><strong>${esc(kpiValue('rapBiayaKpiReal'))}</strong></div>
+        <div class="rap-print-kpi"><div>RAP Tersisa</div><strong>${esc(kpiValue('rapBiayaKpiSisa'))}</strong></div>
+        <div class="rap-print-kpi"><div>Avg Progress</div><strong>${esc(kpiValue('rapBiayaKpiProgress'))}</strong></div>
+      </div>
+    </header>`;
+  }
+
+  function removeWithCard(clone,selector){
+    clone.querySelectorAll(selector).forEach(el=>el.closest('.card')?.remove());
+    clone.querySelectorAll(selector).forEach(el=>el.remove());
   }
 
   function clean(){
     const content=document.getElementById('reportContent');
     if(!content)return '';
     const clone=content.cloneNode(true);
-    clone.querySelectorAll('.rap-biaya-filter').forEach(el=>el.closest('.card')?.remove());
-    clone.querySelectorAll('.rap-biaya-kpis').forEach(el=>el.closest('.card')?.remove());
+    removeWithCard(clone,'.rap-biaya-filter');
+    removeWithCard(clone,'.rap-biaya-kpis');
+    // Hide any legacy period/filter block that may still be rendered by the unified report module.
+    removeWithCard(clone,'.extra-period-grid');
+    removeWithCard(clone,'.filters');
+    removeWithCard(clone,'.finance-toolbar');
+    removeWithCard(clone,'.progress-project-toolbar');
+    removeWithCard(clone,'.extra-kpis');
     clone.querySelectorAll('.note-card,.extra-note').forEach(el=>el.remove());
     return clone.innerHTML;
   }
@@ -85,7 +81,6 @@
       .rap-print-title{font-size:13.5pt;font-weight:800;line-height:1.05;margin:0 0 1.2mm}
       .rap-print-meta{display:flex;align-items:baseline;font-size:8.5pt;line-height:1.2;margin:0 0 .5mm;white-space:nowrap}
       .rap-print-meta .label{width:17mm}.rap-print-meta .colon{width:4mm;text-align:center}
-      .rap-print-meta.extra-project:has(strong:empty){display:none}
       .rap-print-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3.2mm;margin-top:4mm}
       .rap-print-kpi{border:1px solid #222;min-height:10mm;padding:2.3mm 2.5mm 2.2mm;display:flex;flex-direction:column;justify-content:center;text-align:center;overflow:hidden}
       .rap-print-kpi div{font-size:8.3pt;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -111,15 +106,13 @@
 
   function bind(){
     const button=document.getElementById('laporanPrintV1');
-    if(!button||button.dataset.rapPrintOverride==='1')return !!button;
-    button.dataset.rapPrintOverride='1';
+    if(!button||button.dataset.rapPrintOverrideV2==='1')return !!button;
+    button.dataset.rapPrintOverrideV2='1';
     button.addEventListener('click',e=>{
       const root=document.querySelector('.laporan-v3');
       const active=root?.querySelector('.report-tabs button.active');
       if(active?.dataset?.report!=='rap')return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      printRap();
+      e.preventDefault();e.stopImmediatePropagation();printRap();
     },true);
     return true;
   }
@@ -131,6 +124,5 @@
     const target=document.body||document.documentElement;
     if(target)new MutationObserver(bind).observe(target,{childList:true,subtree:true});
   }
-
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
