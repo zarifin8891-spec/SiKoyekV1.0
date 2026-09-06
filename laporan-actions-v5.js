@@ -78,7 +78,7 @@
       kpis=readKpis('#reportContent .kinerja-toolbar .kinerja-kpi');
       if(!kpis.length)kpis=readKpis('#reportContent .kinerja-toolbar .kpi');
     }
-    return `<header class="print-header print-header-${escHtml(id||'report')}
+    return `<header class="print-header print-header-${escHtml(id||'report')}">
       <div class="print-brand">SiKoyek V1.0</div>
       <div class="print-title">${escHtml(title)}</div>
       ${meta?`<div class="print-meta-block">${meta}</div>`:''}
@@ -89,7 +89,6 @@
   function cleanContent(content,id){
     const clone=content.cloneNode(true);
     const remove=sel=>clone.querySelectorAll(sel).forEach(el=>el.remove());
-    // Remove the complete on-screen control/KPI blocks. They are already rebuilt into the print header.
     remove('.report-actions-v1,.report-tabs,.filters,.finance-toolbar,.finance-summary,.progress-project-toolbar,.rap-biaya-filter,.rap-biaya-kpis,.extra-period-grid,.extra-kpis,.kinerja-toolbar');
     remove('.kpis');
     remove('[id^="sumKpi"]');
