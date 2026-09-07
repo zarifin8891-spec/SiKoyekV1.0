@@ -4,6 +4,24 @@
   if(window.__SIKOYEK_AUTH_LOGIN_FIX_V2__) return;
   window.__SIKOYEK_AUTH_LOGIN_FIX_V2__=true;
 
+  function applyLoginFontSize(){
+    if(document.getElementById('sikoyekLoginFontSizeV1')) return;
+    const style=document.createElement('style');
+    style.id='sikoyekLoginFontSizeV1';
+    style.textContent=`
+      .login .loginbox .field label{font-size:14px!important}
+      .login .loginbox .field input,
+      .login .loginbox .field select,
+      .login .loginbox .field textarea{font-size:17px!important}
+      @media(max-width:520px){
+        .login .loginbox .field input,
+        .login .loginbox .field select,
+        .login .loginbox .field textarea{font-size:17px!important}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   function getClient(){
     if(window.sb?.auth) return window.sb;
     if(!window.supabase?.createClient) return null;
@@ -18,6 +36,7 @@
   }
 
   function bind(){
+    applyLoginFontSize();
     const btn=document.getElementById('loginBtn');
     const emailEl=document.getElementById('email');
     const passwordEl=document.getElementById('password');
