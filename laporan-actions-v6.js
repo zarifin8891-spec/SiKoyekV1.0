@@ -15,13 +15,14 @@
   function periodText(prefixes){for(const p of prefixes){const from=formatDate(valueById(p+'From')),to=formatDate(valueById(p+'To'));if(from||to)return `${from||'...'}     s/d     ${to||'...'}`}return 'Semua Periode'}
   function selectedProject(ids){for(const id of ids){const el=document.getElementById(id);if(!el)continue;const txt=el.options?.[el.selectedIndex]?.textContent?.trim()||'';if(txt&&!/semua proyek|pilih proyek/i.test(txt))return txt}return ''}
   function readKpis(selector,exclude=[]){const root=document.querySelector(selector);if(!root)return [];return [...root.children].map(node=>({label:node.querySelector('.label,small')?.textContent?.trim()||'',value:node.querySelector('.value,strong')?.textContent?.trim()||''})).filter(x=>x.label&&!exclude.some(v=>x.label.toUpperCase()===v.toUpperCase()))}
+  function progressKpis(){return [['Total Item','progKpiItems'],['Sedang Berjalan','progKpiStarted'],['Selesai','progKpiDone'],['Avg Progress','progKpiAvg']].map(([label,id])=>({label,value:textById(id)}));}
   const kpiHtml=x=>`<div class="print-kpi"><div class="print-kpi-label">${escHtml(x.label)}</div><div class="print-kpi-value">${escHtml(x.value)}</div></div>`;
   const metaHtml=(l,v)=>`<div class="print-meta-row"><span class="print-meta-label">${escHtml(l)}</span><span class="print-meta-colon">:</span><strong>${escHtml(v)}</strong></div>`;
 
   function buildHeader(root,id,title){
     let meta='',kpis=[];
     if(id==='summary'){meta=metaHtml('Periode',periodText(['sum']));kpis=readKpis('#reportContent .kpis')}
-    else if(id==='progress'){meta=metaHtml('Proyek',selectedProject(['progProject'])||'-');kpis=readKpis('#reportContent .progress-project-toolbar .kpi',['PROJECT PROGRESS']).map((x,i)=>({...x,label:['Total Item','Sedang Berjalan','Selesai','Avg Progress'][i]||x.label})).slice(0,4)}
+    else if(id==='progress'){meta=metaHtml('Proyek',selectedProject(['progProject'])||'-');kpis=progressKpis()}
     else if(id==='rap'){meta=metaHtml('Periode',periodText(['rap','rapBiaya']));kpis=readKpis('#reportContent .rap-biaya-kpis');if(kpis.length===5)kpis.unshift({label:'TOTAL PROYEK',value:textById('rapBiayaKpiProjects')||textById('rapKpiProject')||''})}
     else if(id==='finance'){meta=metaHtml('Periode',periodText(['finance']));const p=selectedProject(['financeProject']);if(p)meta+=metaHtml('Proyek',p);kpis=readKpis('#reportContent .finance-summary')}
     else if(id==='kinerja'){kpis=readKpis('#reportContent .kinerja-toolbar .kinerja-kpi');if(!kpis.length)kpis=readKpis('#reportContent .kinerja-toolbar .kpi')}
