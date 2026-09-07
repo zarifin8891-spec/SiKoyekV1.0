@@ -7,11 +7,17 @@
   function loadKinerjaModule(){
     return new Promise((resolve,reject)=>{
       if(typeof window.__SIKOYEK_LAPORAN_KINERJA_OPEN==='function')return resolve(true);
-      try{delete window.__SIKOYEK_LAPORAN_KINERJA_PROYEK_V1__;}catch(_){window.__SIKOYEK_LAPORAN_KINERJA_PROYEK_V1__=undefined;}
+      const src='./laporan-kinerja-bootstrap-v1.js?v=2&reload='+Date.now();
       const s=document.createElement('script');
-      s.src='./laporan-kinerja-proyek-v1.js?v=99&reload='+Date.now();
-      s.async=false;
-      s.onload=()=>resolve(typeof window.__SIKOYEK_LAPORAN_KINERJA_OPEN==='function');
+      s.src=src;s.async=false;
+      s.onload=()=>{
+        if(typeof window.__SIKOYEK_LAPORAN_KINERJA_OPEN==='function')return resolve(true);
+        if(typeof window.__SIKOYEK_KINERJA_BOOTSTRAP_OPEN==='function'){
+          window.__SIKOYEK_KINERJA_BOOTSTRAP_OPEN().then(()=>resolve(typeof window.__SIKOYEK_LAPORAN_KINERJA_OPEN==='function')).catch(reject);
+          return;
+        }
+        resolve(false);
+      };
       s.onerror=()=>reject(new Error('Gagal memuat modul Kinerja Proyek.'));
       document.head.appendChild(s);
     });
