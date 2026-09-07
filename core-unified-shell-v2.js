@@ -39,7 +39,7 @@
     await loadScript('./laporan-period-standard-v1.js?v=1','__SIKOYEK_LAPORAN_PERIOD_STANDARD_V1__');
     await loadScript('./laporan-finance-period-fix-v1.js?v=1','__SIKOYEK_FINANCE_PERIOD_FIX_V1__');
     await loadScript('./laporan-tab-overrides-v1.js?v=1','__SIKOYEK_LAPORAN_TAB_OVERRIDES_V1__');
-    await loadScript('./laporan-actions-v6.js?v=1','__SIKOYEK_LAPORAN_ACTIONS_V6__');
+    await loadScript('./laporan-actions-v6.js?v=2','__SIKOYEK_LAPORAN_ACTIONS_V6__');
     await loadScript('./laporan-print-rap-v3.js?v=1','__SIKOYEK_LAPORAN_PRINT_RAP_V3__');
   }
 
