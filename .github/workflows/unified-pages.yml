@@ -102,6 +102,7 @@ jobs:
           if master_url not in h or master_key not in h:
               raise SystemExit('Expected MASTER Supabase configuration was not found in source artifact.')
           h=h.replace(master_url,konstruva_url).replace(master_key,konstruva_key)
+          kh.write_text(h,encoding='utf-8')
 
           # master-data-v1.js builds these two modal buttons dynamically, so replacing
           # onclick text in index.html cannot fix them. Override the two public opener
@@ -136,7 +137,6 @@ jobs:
               if 'sikoyek-master-data-save-fix-v3' not in x:
                   x=x.replace('</body>',save_fix+'</body>')
               p.write_text(x,encoding='utf-8')
-          kh.write_text(h,encoding='utf-8')
 
           launcher='''<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SiKoyek V1.0</title><style>body{font-family:Arial,sans-serif;margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f7fb;color:#17304f}main{background:#fff;padding:36px 42px;border-radius:18px;box-shadow:0 12px 40px rgba(20,50,90,.12);text-align:center;max-width:520px;width:calc(100% - 40px);box-sizing:border-box}h1{margin:0 0 8px;font-size:28px}p{margin:0 0 24px;color:#617089}a{display:block;margin:10px 0;padding:13px 16px;border-radius:10px;background:#173b67;color:#fff;text-decoration:none;font-weight:700}</style></head><body><main><h1>SiKoyek V1.0</h1><p>Pilih lingkungan aplikasi:</p><a href="./Master/">SiKoyek MASTER</a><a href="./konstruva/">SiKoyek KONSTRUVА</a></main></body></html>'''
           (site/'index.html').write_text(launcher,encoding='utf-8')
