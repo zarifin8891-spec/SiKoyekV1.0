@@ -19,6 +19,7 @@ Run SQL in this order:
 - [ ] `04_reporting_views.sql`
 - [ ] `05_seed_system.sql`
 - [ ] `06_seed_rbac.sql`
+- [ ] `07_security_hardening.sql`
 
 Expected initial data:
 
@@ -83,3 +84,4 @@ Do NOT label the customer deployment `DISTRIBUTION READY` until:
 - [ ] Canonical Pages workflow is green.
 - [ ] Customer smoke test is green.
 - [ ] Deployment package version is frozen.
+- [ ] Anonymous public table/view privileges are revoked by `07_security_hardening.sql`.
