@@ -13,9 +13,12 @@
 | `01_schema.sql` | 15-table PostgreSQL schema, constraints and indexes |
 | `02_functions_triggers.sql` | Core functions and triggers |
 | `03_rls_policies.sql` | RLS enablement and authenticated policies |
-| `04_reporting_views.sql` | `project_summary` and `project_cost_control` |
+| `04_reporting_views.sql` | `project_summary` and `project_cost_control`, security-invoker reporting views |
 | `05_seed_system.sql` | Generic health configuration |
 | `06_seed_rbac.sql` | Roles, permissions and mappings |
+| `07_security_hardening.sql` | Anonymous privilege revocation and application grants |
+| `tests/deployment_verification.sql` | Fresh-deployment structural/security verification |
+| `tests/README.md` | Deployment test procedure and release gate |
 | `edge-functions/user-management/index.ts` | Admin user-management Edge Function |
 | `edge-functions/user-management/deno.json` | Edge Function runtime config |
 | `INSTALLATION_CHECKLIST.md` | Repeatable customer installation and smoke test |
@@ -33,13 +36,19 @@
 
 - GAP >= 0 pp → `SEHAT`
 - -5 pp <= GAP < 0 pp → `AWASI`
-- GAP < -5 pp → `RISIKO`
+- GAP < -5 pp → `BERISIKO`
 
 Cost Ratio remains a separate KPI.
 
 ## Data isolation
 
 The package contains no Konstruva business records. Customer deployments must receive a clean database and a newly created ADMIN account.
+
+## Security baseline
+
+- Reporting views use `security_invoker=true` so underlying table RLS remains effective for the invoking user.
+- `anon` receives no public table, sequence, or reporting-view privileges through `07_security_hardening.sql`.
+- `authenticated` access remains governed by RLS and the application RBAC layer.
 
 ## Release gate still open
 
