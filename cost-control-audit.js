@@ -1,82 +1,17 @@
 (function(){
-  if(window.__SIKOYEK_COST_CONTROL_V5__)return;
-  window.__SIKOYEK_COST_CONTROL_V5__=true;
-  const STYLE_ID='cost-control-v5-style',HOST_ID='cost-control-v5';
+  if(window.__SIKOYEK_COST_CONTROL_V6__)return;
+  window.__SIKOYEK_COST_CONTROL_V6__=true;
+  const STYLE_ID='cost-control-v6-style',HOST_ID='cost-control-v6';
   const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
   const pct=n=>Number(n||0).toFixed(2)+'%';
   const esc=v=>String(v??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
   const num=v=>{const n=Number(String(v??'').replace(/[^0-9.-]/g,''));return Number.isFinite(n)?n:0;};
   function progressOf(o){if(!o||typeof o!=='object')return null;for(const k of ['progress','progress_pct','progressPercent','current_progress','actual_progress','real_progress','realisasi_progress','persentase','percentage']){if(o[k]!==null&&o[k]!==undefined&&o[k]!==''){const n=num(o[k]);if(Number.isFinite(n))return n<=1?n*100:n;}}return null;}
   function weightOf(o){if(!o||typeof o!=='object')return null;for(const k of ['bobot','weight','weight_pct','weightPercent','persentase_bobot','percentage_weight']){if(o[k]!==null&&o[k]!==undefined&&o[k]!==''){const n=num(o[k]);if(Number.isFinite(n))return n<=1?n*100:n;}}return null;}
-  function getProgress(d){
-    const direct=progressOf(d);
-    if(direct!==null&&direct>0)return Math.max(0,Math.min(100,direct));
-    const items=Array.isArray(d?.items)?d.items:[];
-    const records=Array.isArray(d?.progress)?d.progress:[];
-    if(records.length&&items.length){
-      const weights=new Map(items.map(x=>[String(x.id),weightOf(x)]));
-      const latest=new Map();
-      for(const r of records){
-        const key=String(r.work_item_id??r.item_id??r.workItemId??'');
-        if(!key)continue;
-        const stamp=String(r.progress_date??r.date??r.created_at??r.updated_at??'');
-        const prev=latest.get(key);
-        if(!prev||stamp>=prev._stamp)latest.set(key,{...r,_stamp:stamp});
-      }
-      let sum=0,wSum=0;
-      for(const [key,r] of latest){
-        const p=progressOf(r),w=weights.get(key);
-        if(p!==null&&w!==null&&w>0){sum+=p*w;wSum+=w;}
-      }
-      if(wSum)return Math.max(0,Math.min(100,sum/wSum));
-    }
-    for(const k of ['items','work_items','workItems','pekerjaan','items_pekerjaan','itemPekerjaan']){
-      const a=d?.[k];
-      if(!Array.isArray(a)||!a.length)continue;
-      let sum=0,wSum=0;
-      for(const x of a){
-        const p=progressOf(x),w=weightOf(x);
-        if(p!==null&&w!==null){sum+=p*w;wSum+=w;}
-      }
-      if(wSum){
-        const weighted=Math.max(0,Math.min(100,sum/wSum));
-        if(weighted>0)return weighted;
-      }
-    }
-    const page=document.getElementById('page');
-    if(page){
-      const candidates=[...page.querySelectorAll('*')].filter(el=>String(el.textContent||'').trim().toUpperCase()==='PROGRESS');
-      for(const label of candidates){
-        let node=label;
-        for(let i=0;i<5&&node;i++,node=node.parentElement){
-          const text=String(node.textContent||'');
-          const matches=[...text.matchAll(/(\d+(?:\.\d+)?)\s*%/g)];
-          if(matches.length){
-            const n=Number(matches[matches.length-1][1]);
-            if(Number.isFinite(n))return Math.max(0,Math.min(100,n));
-          }
-        }
-      }
-      const cards=[...page.querySelectorAll('.detailgrid .card')];
-      for(const card of cards){
-        const label=String(card.querySelector('.label')?.textContent||'').trim().toUpperCase();
-        if(label==='PROGRESS'){
-          const n=num(card.textContent.match(/(\d+(?:\.\d+)?)\s*%/)?.[1]);
-          if(Number.isFinite(n))return Math.max(0,Math.min(100,n));
-        }
-      }
-    }
-    return direct!==null?Math.max(0,Math.min(100,direct)):0;
-  }
+  function getProgress(d){const direct=progressOf(d);if(direct!==null&&direct>0)return Math.max(0,Math.min(100,direct));const items=Array.isArray(d?.items)?d.items:[],records=Array.isArray(d?.progress)?d.progress:[];if(records.length&&items.length){const weights=new Map(items.map(x=>[String(x.id),weightOf(x)])),latest=new Map();for(const r of records){const key=String(r.work_item_id??r.item_id??r.workItemId??'');if(!key)continue;const stamp=String(r.progress_date??r.date??r.created_at??r.updated_at??'');const prev=latest.get(key);if(!prev||stamp>=prev._stamp)latest.set(key,{...r,_stamp:stamp});}let sum=0,wSum=0;for(const [key,r] of latest){const p=progressOf(r),w=weights.get(key);if(p!==null&&w!==null&&w>0){sum+=p*w;wSum+=w;}}if(wSum)return Math.max(0,Math.min(100,sum/wSum));}return direct!==null?Math.max(0,Math.min(100,direct)):0;}
   function rapVal(r,keys){for(const k of keys){const n=num(r?.[k]);if(Number.isFinite(n)&&n!==0)return n;}return 0;}
   function firstNumber(objs,keys){for(const o of objs){if(!o||typeof o!=='object')continue;for(const k of keys){if(o[k]!==null&&o[k]!==undefined&&o[k]!==''){const n=num(o[k]);if(n!==0)return n;}}}return 0;}
-  function contractOf(d){const keys=['contract','contract_value','contract_amount','nilai_kontrak','nilaiKontrak','nilai_contract','nilaiKontrakProyek','project_value','projectValue','harga_kontrak','hargaKontrak','total_contract','totalContract'];const sources=[d,d?.project,d?.selected,d?.data,d?.header,d?.summary];const direct=firstNumber(sources,keys);if(direct)return direct;if(Array.isArray(d?.projects)){const n=firstNumber(d.projects,keys);if(n)return n;}return 0;}
-  function addStyle(){if(document.getElementById(STYLE_ID))return;const s=document.createElement('style');s.id=STYLE_ID;s.textContent=`#${HOST_ID}{display:grid;gap:10px;margin-top:2px}#${HOST_ID} .ccv5-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}#${HOST_ID} .ccv5-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px;min-width:0}#${HOST_ID} .ccv5-label{font-size:10px;color:var(--muted);font-weight:650;text-transform:uppercase;letter-spacing:.02em}#${HOST_ID} .ccv5-value{font-size:20px;line-height:1.08;font-weight:600;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#${HOST_ID} .ccv5-gap-line{display:flex;align-items:center;gap:8px;margin-top:4px;min-width:0}#${HOST_ID} .ccv5-gap-line .ccv5-value{margin-top:0}#${HOST_ID} .ccv5-gap-line .ccv5-status{margin-top:0;flex:0 0 auto}#${HOST_ID} .ccv5-gap-pos{color:var(--green)}#${HOST_ID} .ccv5-gap-neg{color:var(--red)}#${HOST_ID} .ccv5-status{display:inline-flex;padding:3px 7px;border-radius:999px;font-size:9px;font-weight:650}#${HOST_ID} .ok{background:var(--green2);color:var(--green)}#${HOST_ID} .warn{background:var(--amber2);color:var(--amber)}#${HOST_ID} .risk{background:var(--red2);color:var(--red)}#${HOST_ID} .ccv5-panel{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}#${HOST_ID} .ccv5-head{padding:10px 14px 7px}#${HOST_ID} .ccv5-head h3{margin:0;font-size:15px}#${HOST_ID} .ccv5-head p{margin:3px 0 0;color:var(--muted);font-size:11px}#${HOST_ID} table{width:100%;border-collapse:collapse;table-layout:fixed}#${HOST_ID} th,#${HOST_ID} td{padding:5px 8px;border-top:1px solid var(--line);font-size:11px;line-height:1.15;white-space:nowrap;text-align:left}#${HOST_ID} tbody tr:nth-child(odd){background:var(--card)}#${HOST_ID} tbody tr:nth-child(even){background:#f7f9fc}#${HOST_ID} th{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;background:#fafbfd}#${HOST_ID} th:nth-child(1),#${HOST_ID} td:nth-child(1){width:20%}#${HOST_ID} th:nth-child(2),#${HOST_ID} td:nth-child(2){width:11%}#${HOST_ID} th:nth-child(3),#${HOST_ID} td:nth-child(3){width:12%}#${HOST_ID} th:nth-child(4),#${HOST_ID} td:nth-child(4){width:12%}#${HOST_ID} th:nth-child(5),#${HOST_ID} td:nth-child(5){width:45%}#${HOST_ID} td:nth-child(n+2){text-align:right}#${HOST_ID} .bar{height:4px;background:#edf1f6;border-radius:99px;overflow:hidden;margin-top:3px}#${HOST_ID} .bar i{display:block;height:100%;background:var(--blue);border-radius:99px}@media(max-width:1050px){#${HOST_ID} .ccv5-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:700px){#${HOST_ID} .ccv5-kpis{grid-template-columns:repeat(2,1fr)}#${HOST_ID} .ccv5-panel{overflow:auto}#${HOST_ID} table{min-width:760px}}@media(max-width:480px){#${HOST_ID} .ccv5-kpis{grid-template-columns:1fr}}`;document.head.appendChild(s);}
-  function normalizeCostTabLabels(root){if(!root)return;[...root.querySelectorAll('.tabs button')].forEach(el=>{const t=String(el.textContent||'').trim();if(t==='Cost Control'||t==='Cost control'||t==='COST CONTROL')el.textContent='Kontrol Biaya';});}
-  function hideLegacyAfterTabs(tabs,root){const parent=tabs.parentElement;if(!parent)return;let after=false;[...parent.children].forEach(el=>{if(el===tabs){after=true;return;}if(after&&el!==root)el.style.display='none';});}
-  function render(){if(typeof state==='undefined'||state.page!=='detail'||state.detailTab!=='cost'||!state.selected)return;const host=document.getElementById('page'),d=state.detail;if(!host||!d||!d.fin)return;const tabs=host.querySelector('.tabs');if(!tabs)return;normalizeCostTabLabels(host);let root=host.querySelector('#'+HOST_ID);if(!root){root=document.createElement('div');root.id=HOST_ID;tabs.parentElement.appendChild(root);}hideLegacyAfterTabs(tabs,root);const fin=d.fin||[];const cashOut=fin.filter(x=>String(x.transaction_type||'').toUpperCase()==='KELUAR').reduce((s,x)=>s+num(x.amount),0);const r=d.rap||{};const cats=[['material','Material'],['labor','Upah'],['equipment','Alat'],['operational','Operasional'],['subcontract','Subkon'],['other','Lain-Lain']];const rows=cats.map(([key,label])=>{const rap=rapVal(r,key==='labor'?['labor','upah']:key==='equipment'?['equipment','alat']:key==='subcontract'?['subcontract','subkon']:key==='other'?['other','lain_lain','lainlain']:[key]);const real=fin.filter(x=>String(x.transaction_type||'').toUpperCase()==='KELUAR'&&String(x.category||'').trim().toLowerCase()===label.toLowerCase()).reduce((s,x)=>s+num(x.amount),0);return{label,rap,real};});const totalRap=rows.reduce((s,x)=>s+x.rap,0)||num(r.total??r.total_rap);const progress=getProgress(d);const contract=contractOf(d);const ratio=contract>0?cashOut/contract*100:0;const rapUsed=totalRap>0?cashOut/totalRap*100:0;const gap=progress-ratio;const profit=contract-totalRap;let status='TERKONTROL',cls='ok';if(gap<-10){status='BERISIKO';cls='risk';}else if(gap<0){status='PERLU PERHATIAN';cls='warn';}root.innerHTML=`<div class="ccv5-kpis"><div class="ccv5-card"><div class="ccv5-label">Realisasi Biaya</div><div class="ccv5-value">${money(cashOut)}</div></div><div class="ccv5-card"><div class="ccv5-label">Rasio Biaya</div><div class="ccv5-value">${pct(ratio)}</div></div><div class="ccv5-card"><div class="ccv5-label">RAP Terpakai</div><div class="ccv5-value">${pct(rapUsed)}</div></div><div class="ccv5-card"><div class="ccv5-label">Gap Progress vs Biaya</div><div class="ccv5-gap-line"><div class="ccv5-value ${gap>=0?'ccv5-gap-pos':'ccv5-gap-neg'}">${gap>=0?'+':''}${pct(gap)}</div><span class="ccv5-status ${cls}">${status}</span></div></div><div class="ccv5-card"><div class="ccv5-label">Estimasi Laba</div><div class="ccv5-value">${money(profit)}</div></div></div><div class="ccv5-panel"><div class="ccv5-head"><h3>Perbandingan RAP & Realisasi</h3><p>Kontrol biaya berdasarkan anggaran dan biaya aktual per kategori.</p></div><table><thead><tr><th>Kategori</th><th>RAP</th><th>Realisasi</th><th>Sisa RAP</th><th>% RAP Terpakai</th></tr></thead><tbody>${rows.map(x=>{const used=x.rap>0?x.real/x.rap*100:0;return `<tr><td>${esc(x.label)}</td><td>${money(x.rap)}</td><td>${money(x.real)}</td><td>${money(x.rap-x.real)}</td><td>${pct(used)}<div class="bar"><i style="width:${Math.max(0,Math.min(100,used))}%"></i></div></td></tr>`}).join('')}</tbody></table></div>`;}
-  addStyle();
-  const observeLabels=()=>{const h=document.getElementById('page');if(h)normalizeCostTabLabels(h);};
-  if(document.body){new MutationObserver(observeLabels).observe(document.body,{subtree:true,childList:true,characterData:true});}
-  let lastHost=null;setInterval(()=>{const h=document.getElementById('page');if(h!==lastHost){lastHost=h;render();}else if(typeof state!=='undefined'&&state.page==='detail'&&state.detailTab==='cost'&&!h?.querySelector('#'+HOST_ID))render();else if(typeof state!=='undefined'&&state.page==='detail'&&state.detailTab==='cost'){const t=h?.querySelector('.tabs'),r=h?.querySelector('#'+HOST_ID);if(t&&r){normalizeCostTabLabels(h);hideLegacyAfterTabs(t,r);}}},1200);render();
+  function contractOf(d){const keys=['contract','contract_value','contract_amount','nilai_kontrak','nilaiKontrak','nilai_contract','nilaiKontrakProyek','project_value','projectValue','harga_kontrak','hargaKontrak','total_contract','totalContract'];return firstNumber([d,d?.project,d?.selected,d?.data,d?.header,d?.summary],keys);}
+  function render(){if(typeof state==='undefined'||state.page!=='detail'||state.detailTab!=='cost'||!state.selected)return;const host=document.getElementById('page'),d=state.detail;if(!host||!d||!d.fin)return;const tabs=host.querySelector('.tabs');if(!tabs)return;let root=host.querySelector('#'+HOST_ID);if(!root){root=document.createElement('div');root.id=HOST_ID;tabs.parentElement.appendChild(root);}const fin=d.fin||[],cashOut=fin.filter(x=>String(x.transaction_type||'').toUpperCase()==='KELUAR').reduce((s,x)=>s+num(x.amount),0),r=d.rap||{},cats=[['material','Material'],['labor','Upah'],['equipment','Alat'],['operational','Operasional'],['subcontract','Subkon'],['other','Lain-Lain']];const rows=cats.map(([key,label])=>{const rap=rapVal(r,key==='labor'?['labor','upah']:key==='equipment'?['equipment','alat']:key==='subcontract'?['subcontract','subkon']:key==='other'?['other','lain_lain','lainlain']:[key]);const real=fin.filter(x=>String(x.transaction_type||'').toUpperCase()==='KELUAR'&&String(x.category||'').trim().toLowerCase()===label.toLowerCase()).reduce((s,x)=>s+num(x.amount),0);return{label,rap,real};});const totalRap=rows.reduce((s,x)=>s+x.rap,0)||num(r.total??r.total_rap),progress=getProgress(d),contract=contractOf(d),ratio=contract>0?cashOut/contract*100:0,rapUsed=totalRap>0?cashOut/totalRap*100:0,healthGap=progress-rapUsed;let status='SEHAT',cls='ok';if(healthGap<-5){status='BERISIKO';cls='risk';}else if(healthGap<0){status='AWASI';cls='warn';}root.innerHTML=`<div class="ccv6-kpis"><div class="ccv6-card"><div class="ccv6-label">Realisasi Biaya</div><div class="ccv6-value">${money(cashOut)}</div></div><div class="ccv6-card"><div class="ccv6-label">Rasio Biaya</div><div class="ccv6-value">${pct(ratio)}</div></div><div class="ccv6-card"><div class="ccv6-label">RAP Terpakai</div><div class="ccv6-value">${pct(rapUsed)}</div></div><div class="ccv6-card"><div class="ccv6-label">GAP HEALTH</div><div class="ccv6-value ${healthGap>=0?'pos':healthGap>=-5?'warn':'neg'}">${healthGap>=0?'+':''}${pct(healthGap)} <span class="ccv6-status ${cls}">${status}</span></div></div><div class="ccv6-card"><div class="ccv6-label">Sisa RAP</div><div class="ccv6-value">${money(totalRap-cashOut)}</div></div></div><div class="ccv6-panel"><div class="ccv6-head"><h3>Perbandingan RAP & Realisasi</h3><p>Realisasi biaya aktual dibandingkan RAP per kategori.</p></div><table><thead><tr><th>Kategori</th><th>RAP</th><th>Realisasi</th><th>Sisa RAP</th><th>% RAP Terpakai</th></tr></thead><tbody>${rows.map(x=>{const used=x.rap>0?x.real/x.rap*100:0;return `<tr><td>${esc(x.label)}</td><td>${money(x.rap)}</td><td>${money(x.real)}</td><td>${money(x.rap-x.real)}</td><td>${pct(used)}<div class="bar"><i style="width:${Math.max(0,Math.min(100,used))}%"></i></div></td></tr>`}).join('')}</tbody></table></div>`;}
+  const s=document.createElement('style');s.id=STYLE_ID;s.textContent=`#${HOST_ID}{display:grid;gap:10px;margin-top:2px}#${HOST_ID} .ccv6-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}#${HOST_ID} .ccv6-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px}.ccv6-label{font-size:10px;color:var(--muted);font-weight:650}.ccv6-value{font-size:19px;font-weight:650;margin-top:4px}.ccv6-value.pos{color:var(--green)}.ccv6-value.warn{color:var(--amber)}.ccv6-value.neg{color:var(--red)}.ccv6-status{font-size:9px;padding:3px 6px;border-radius:999px}.ccv6-status.ok{background:var(--green2);color:var(--green)}.ccv6-status.warn{background:var(--amber2);color:var(--amber)}.ccv6-status.risk{background:var(--red2);color:var(--red)}#${HOST_ID} .ccv6-panel{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}#${HOST_ID} .ccv6-head{padding:10px 14px 7px}#${HOST_ID} .ccv6-head h3{margin:0;font-size:15px}#${HOST_ID} .ccv6-head p{margin:3px 0 0;color:var(--muted);font-size:11px}#${HOST_ID} table{width:100%;border-collapse:collapse}#${HOST_ID} th,#${HOST_ID} td{padding:6px 8px;border-top:1px solid var(--line);font-size:11px}#${HOST_ID} th{font-size:9px;color:var(--muted);text-transform:uppercase}#${HOST_ID} td:not(:first-child),#${HOST_ID} th:not(:first-child){text-align:right}#${HOST_ID} .bar{height:4px;background:#edf1f6;border-radius:99px;overflow:hidden;margin-top:3px}#${HOST_ID} .bar i{display:block;height:100%;background:var(--blue)}@media(max-width:900px){#${HOST_ID} .ccv6-kpis{grid-template-columns:repeat(3,1fr)}}@media(max-width:600px){#${HOST_ID} .ccv6-kpis{grid-template-columns:repeat(2,1fr)}#${HOST_ID} .ccv6-panel{overflow:auto}#${HOST_ID} table{min-width:700px}}`;document.head.appendChild(s);let last=null;setInterval(()=>{const h=document.getElementById('page');if(h!==last){last=h;render()}else render()},1500);render();
 })();
