@@ -18,11 +18,14 @@ This package deploys **structure and system configuration only**. Customer busin
 3. Functions and triggers for status/progress integrity.
 4. RLS and authenticated policies.
 5. Reporting views: `project_summary` and `project_cost_control`.
-6. Health logic: `Progress - RAP Consumption` with SEHAT / AWASI / RISIKO thresholds.
-7. Generic `health_rules` seed.
-8. RBAC seed: 5 roles, 26 permissions, 58 mappings, using generated UUIDs and name-based joins.
-9. `user-management` Edge Function source.
-10. Customer installation checklist and configuration template.
+6. Security-invoker reporting views so underlying RLS remains effective.
+7. Health logic: `Progress - RAP Consumption` with SEHAT / AWASI / BERISIKO thresholds.
+8. Generic `health_rules` seed.
+9. RBAC seed: 5 roles, 26 permissions, 58 mappings, using generated UUIDs and name-based joins.
+10. Anonymous privilege hardening via `07_security_hardening.sql`.
+11. Deployment verification tests.
+12. `user-management` Edge Function source.
+13. Customer installation checklist and configuration template.
 
 ## Intentionally empty after installation
 
@@ -51,6 +54,9 @@ System tables/configuration that are seeded:
 - Frontend uses the customer project's publishable/anon key.
 - `user-management` requires JWT and performs privileged Auth operations server-side.
 - Customer Supabase project must be isolated from MASTER.
+- Reporting views use `security_invoker=true`.
+- `07_security_hardening.sql` removes anonymous public table/sequence/view privileges.
+- Role-specific business authorization remains enforced through RLS and the application RBAC layer; the hardening script does not claim database-level per-role GRANT enforcement.
 
 ## Installation order
 
@@ -60,10 +66,12 @@ System tables/configuration that are seeded:
 4. `04_reporting_views.sql`
 5. `05_seed_system.sql`
 6. `06_seed_rbac.sql`
-7. Deploy `edge-functions/user-management`
-8. Create the customer's first ADMIN Auth user and matching profile.
-9. Configure frontend URL/key.
-10. Run the smoke-test checklist.
+7. `07_security_hardening.sql`
+8. Deploy `edge-functions/user-management`
+9. Create the customer's first ADMIN Auth user and matching profile.
+10. Run `tests/deployment_verification.sql` on a fresh deployment.
+11. Configure frontend URL/key.
+12. Run the smoke-test checklist.
 
 ## Important release note
 
