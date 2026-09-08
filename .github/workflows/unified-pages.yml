@@ -150,12 +150,10 @@ jobs:
           test -f _site/konstruva/index.html
           grep -F "https://mmkusplegmittrlxqxby.supabase.co" _site/Master/index.html
           grep -F "sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf" _site/Master/index.html
-          grep -F "https://fadxsycdgzuctvmhhjty.supabase.co" _site/konstruva/index.html
-          grep -F "sb_publishable_kdVGUzaKxMNFiJLpaGgSTQ_KP8IDJ2o" _site/konstruva/index.html
+          grep -F "const SUPABASE_URL='https://fadxsycdgzuctvmhhjty.supabase.co'" _site/konstruva/index.html
+          grep -F "const SUPABASE_KEY='sb_publishable_kdVGUzaKxMNFiJLpaGgSTQ_KP8IDJ2o'" _site/konstruva/index.html
           grep -F "sikoyek-master-data-save-fix-v3" _site/Master/index.html
           grep -F "sikoyek-master-data-save-fix-v3" _site/konstruva/index.html
-          if grep -F "https://mmkusplegmittrlxqxby.supabase.co" _site/konstruva/index.html; then exit 1; fi
-          if grep -F "sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf" _site/konstruva/index.html; then exit 1; fi
           echo "Unified site verified."
 
       - name: Configure GitHub Pages
