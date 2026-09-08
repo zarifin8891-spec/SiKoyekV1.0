@@ -1,7 +1,10 @@
 -- SiKoyek V1.0 reporting views
 -- Health source of truth: Progress - RAP Consumption.
+-- Reporting views are read-only and use security_invoker so RLS of the
+-- underlying application tables remains effective for the calling user.
 
-create or replace view public.project_summary as
+create or replace view public.project_summary
+with (security_invoker = true) as
 with progress_totals as (
   select pwi.project_id,
          coalesce(sum(pwi.weight * least(1::numeric, coalesce(prt.progress_total,0))) * 100,0) as progress_total
@@ -36,30 +39,42 @@ base as (
   left join progress_totals pt on pt.project_id=p.id
   left join financial_totals ft on ft.project_id=p.id
   left join rap_totals rt on rt.project_id=p.id
+),
+metrics as (
+  select *,
+    case when contract_value>0 then (cash_out/contract_value)*100 else 0 end as cost_ratio_calc,
+    case when total_rap>0 then (cash_out/total_rap)*100 else 0 end as rap_consumption_calc
+  from base
+),
+health as (
+  select *, progress_total - rap_consumption_calc as health_gap_calc
+  from metrics
 )
 select project_id,project_code,project_date,project_name,owner_name,category,location,contract_value,
        start_date,end_date,project_manager,status,progress_total,cash_in,cash_out,total_rap,
        cash_out as total_realization,
        cash_in-cash_out as net_cashflow,
-       case when contract_value>0 then (cash_out/contract_value)*100 else 0 end as cost_ratio,
-       case when total_rap>0 then (cash_out/total_rap)*100 else 0 end as rap_consumption,
+       cost_ratio_calc as cost_ratio,
+       rap_consumption_calc as rap_consumption,
        contract_value-total_rap as estimated_profit,
        case when contract_value>0 then ((contract_value-total_rap)/contract_value)*100 else 0 end as estimated_margin,
+       health_gap_calc as health_gap,
        case
-         when (progress_total - case when total_rap>0 then (cash_out/total_rap)*100 else 0 end) < -5 then 'RISIKO'
-         when (progress_total - case when total_rap>0 then (cash_out/total_rap)*100 else 0 end) < 0 then 'AWASI'
+         when health_gap_calc < -5 then 'BERISIKO'
+         when health_gap_calc < 0 then 'AWASI'
          else 'SEHAT'
        end as health_status,
        case
          when total_rap<=0 then 'RAP belum tersedia untuk menilai konsumsi biaya'
-         when (progress_total - ((cash_out/total_rap)*100)) < -5 then 'Konsumsi biaya jauh lebih cepat daripada progress'
-         when (progress_total - ((cash_out/total_rap)*100)) < 0 then 'Konsumsi biaya mulai lebih cepat daripada progress'
+         when health_gap_calc < -5 then 'Konsumsi biaya jauh lebih cepat daripada progress'
+         when health_gap_calc < 0 then 'Konsumsi biaya mulai lebih cepat daripada progress'
          else 'Progress sejalan atau lebih cepat daripada konsumsi biaya'
        end as control_message,
        progress_total as project_progress
-from base;
+from health;
 
-create or replace view public.project_cost_control as
+create or replace view public.project_cost_control
+with (security_invoker = true) as
 with categories as (
   select 'Material'::text category_name,'material'::text rap_column,1 sort_order union all
   select 'Upah','labor',2 union all
@@ -73,46 +88,26 @@ realization as (
          coalesce(sum(amount) filter(where transaction_type='KELUAR'),0) as realization
   from financial_transactions
   group by project_id,category
-)
-select p.id project_id,p.project_code,p.project_name,c.category_name,
-       case c.rap_column
-         when 'material' then coalesce(r.material,0)
-         when 'labor' then coalesce(r.labor,0)
-         when 'equipment' then coalesce(r.equipment,0)
-         when 'operational' then coalesce(r.operational,0)
-         when 'subcontract' then coalesce(r.subcontract,0)
-         when 'other' then coalesce(r.other,0)
-       end as rap,
-       coalesce(x.realization,0) as realization,
-       (case c.rap_column
-         when 'material' then coalesce(r.material,0)
-         when 'labor' then coalesce(r.labor,0)
-         when 'equipment' then coalesce(r.equipment,0)
-         when 'operational' then coalesce(r.operational,0)
-         when 'subcontract' then coalesce(r.subcontract,0)
-         when 'other' then coalesce(r.other,0)
-       end - coalesce(x.realization,0)) as variance,
-       case
-         when (case c.rap_column
+),
+base as (
+  select p.id project_id,p.project_code,p.project_name,c.category_name,
+         case c.rap_column
            when 'material' then coalesce(r.material,0)
            when 'labor' then coalesce(r.labor,0)
            when 'equipment' then coalesce(r.equipment,0)
            when 'operational' then coalesce(r.operational,0)
            when 'subcontract' then coalesce(r.subcontract,0)
            when 'other' then coalesce(r.other,0)
-         end)>0 then coalesce(x.realization,0) /
-           (case c.rap_column
-             when 'material' then coalesce(r.material,0)
-             when 'labor' then coalesce(r.labor,0)
-             when 'equipment' then coalesce(r.equipment,0)
-             when 'operational' then coalesce(r.operational,0)
-             when 'subcontract' then coalesce(r.subcontract,0)
-             when 'other' then coalesce(r.other,0)
-           end)*100
-         else 0
-       end as consumption_pct,
-       c.sort_order
-from projects p
-cross join categories c
-left join project_rap r on r.project_id=p.id
-left join realization x on x.project_id=p.id and lower(trim(x.category))=lower(trim(c.category_name));
+         end as rap,
+         coalesce(x.realization,0) as realization,
+         c.sort_order
+  from projects p
+  cross join categories c
+  left join project_rap r on r.project_id=p.id
+  left join realization x on x.project_id=p.id and lower(trim(x.category))=lower(trim(c.category_name))
+)
+select project_id,project_code,project_name,category_name,rap,realization,
+       rap-realization as variance,
+       case when rap>0 then realization/rap*100 else 0 end as consumption_pct,
+       sort_order
+from base;
