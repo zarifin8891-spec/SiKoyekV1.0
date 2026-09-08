@@ -12,7 +12,7 @@
     if(key==='week'){const d=new Date(now);d.setDate(now.getDate()-((now.getDay()+6)%7));return{from:localDate(d),to:today};}
     if(key==='month')return{from:localDate(new Date(now.getFullYear(),now.getMonth(),1)),to:localDate(new Date(now.getFullYear(),now.getMonth()+1,0))};
     if(key==='quarter'){const d=new Date(now);d.setDate(now.getDate()-89);return{from:localDate(d),to:today};}
-    if(key==='year')return{from:localDate(new Date(now.getFullYear(),0,1)),to:localDate(new Date(now.getFullYear(),11,31)};
+    if(key==='year')return{from:localDate(new Date(now.getFullYear(),0,1)),to:localDate(new Date(now.getFullYear(),11,31))};
     return{from:'',to:''};
   }
   function typeOf(r){const t=String(r.transaction_type||r.type||r.category||'').toUpperCase();if(/IN|MASUK|PENERIMAAN|RECEIPT|PENDAPATAN/.test(t))return'in';if(/OUT|KELUAR|PENGELUARAN|PAYMENT|BIAYA|BELANJA/.test(t))return'out';return'other';}
@@ -29,10 +29,8 @@
     const rows=(tx||[]).filter(x=>{const d=String(x.transaction_date||'').slice(0,10);return(!r.from||d>=r.from)&&(!r.to||d<=r.to)&&(!project||String(x.project_id)===String(project));});
     let income=0,expense=0;rows.forEach(x=>{const a=Number(x.amount||0);if(typeOf(x)==='in')income+=a;else if(typeOf(x)==='out')expense+=a;});
     const byId=new Map((projects||[]).map(x=>[String(x.id),x]));
-    document.getElementById('financeKpiCount')?.replaceChildren(String(rows.length));
-    document.getElementById('financeKpiIn')?.replaceChildren(money(income));
-    document.getElementById('financeKpiOut')?.replaceChildren(money(expense));
-    document.getElementById('financeKpiNet')?.replaceChildren(money(income-expense));
+    const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+    set('financeKpiCount',rows.length);set('financeKpiIn',money(income));set('financeKpiOut',money(expense));set('financeKpiNet',money(income-expense));
     const body=document.getElementById('financeBody');if(!body)return;
     body.innerHTML=rows.length?rows.map(x=>{const q=byId.get(String(x.project_id));return `<tr><td>${esc(String(x.transaction_date||'').slice(0,10))}</td><td>${esc(q?`${q.project_code||'-'} — ${q.project_name||'-'}`:'-')}</td><td class="finance-type-${typeOf(x)}">${esc(x.transaction_type||x.type||'-')}</td><td>${esc(x.description||x.notes||x.remark||'-')}</td><td class="num">${money(x.amount)}</td></tr>`}).join(''):'<tr><td colspan="5" class="extra-empty">Tidak ada transaksi pada periode/filter ini.</td></tr>';
   }
