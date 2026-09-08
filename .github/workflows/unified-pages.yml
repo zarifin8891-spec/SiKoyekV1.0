@@ -78,7 +78,6 @@ jobs:
         run: |
           from pathlib import Path
           import shutil
-          import re
 
           source = Path('_source')
           site = Path('_site')
@@ -112,6 +111,28 @@ jobs:
           html = html.replace(master_url, konstruva_url).replace(master_key, konstruva_key)
           (konstruva / 'index.html').write_text(html, encoding='utf-8')
 
+          save_fix = r'''<script id="sikoyek-master-data-save-fix-v2">
+          window.siKoyekSaveMaster = async function(table, title){
+            const name = document.getElementById('md_name')?.value.trim();
+            const sort = Number(document.getElementById('md_sort')?.value || 0);
+            if(!name){ toast('Nama wajib diisi'); return; }
+            const {error} = await window.sb.from(table).insert({name, sort_order:sort, is_active:true});
+            if(error){ toast(error.message); return; }
+            closeModal();
+            toast(title + ' ditambahkan');
+            if(typeof window.openMasterData === 'function') window.openMasterData();
+          };
+          </script>'''
+
+          for app in (master, konstruva):
+              p = app / 'index.html'
+              h = p.read_text(encoding='utf-8')
+              h = h.replace("onclick=\"add('transaction_categories','Kategori Keuangan')\"", "onclick=\"window.siKoyekSaveMaster('transaction_categories','Kategori Keuangan')\"")
+              h = h.replace("onclick=\"add('payment_methods','Metode Pembayaran')\"", "onclick=\"window.siKoyekSaveMaster('payment_methods','Metode Pembayaran')\"")
+              if 'sikoyek-master-data-save-fix-v2' not in h:
+                  h = h.replace('</body>', save_fix + '</body>')
+              p.write_text(h, encoding='utf-8')
+
           launcher = '''<!doctype html>
           <html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SiKoyek V1.0</title>
           <style>body{font-family:Arial,sans-serif;margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f7fb;color:#17304f}main{background:#fff;padding:36px 42px;border-radius:18px;box-shadow:0 12px 40px rgba(20,50,90,.12);text-align:center;max-width:520px;width:calc(100% - 40px);box-sizing:border-box}h1{margin:0 0 8px;font-size:28px}p{margin:0 0 24px;color:#617089}a{display:block;margin:10px 0;padding:13px 16px;border-radius:10px;background:#173b67;color:#fff;text-decoration:none;font-weight:700}</style></head>
@@ -129,6 +150,8 @@ jobs:
           grep -F "sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf" _site/Master/index.html
           grep -F "https://fadxsycdgzuctvmhhjty.supabase.co" _site/konstruva/index.html
           grep -F "sb_publishable_kdVGUzaKxMNFiJLpaGgSTQ_KP8IDJ2o" _site/konstruva/index.html
+          grep -F "sikoyek-master-data-save-fix-v2" _site/Master/index.html
+          grep -F "sikoyek-master-data-save-fix-v2" _site/konstruva/index.html
           if grep -F "https://mmkusplegmittrlxqxby.supabase.co" _site/konstruva/index.html; then exit 1; fi
           if grep -F "sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf" _site/konstruva/index.html; then exit 1; fi
           echo "Unified Master/Konstruva site verified."
