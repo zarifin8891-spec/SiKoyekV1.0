@@ -104,6 +104,13 @@ jobs:
           h=h.replace(master_url,konstruva_url).replace(master_key,konstruva_key)
           kh.write_text(h,encoding='utf-8')
 
+          # Cache-bust the Cost Control V7 fix in both deployed apps.
+          for app in (master,konstruva):
+              p=app/'index.html'
+              x=p.read_text(encoding='utf-8')
+              x=x.replace('cost-control-audit.js?v=1','cost-control-audit.js?v=7')
+              p.write_text(x,encoding='utf-8')
+
           # master-data-v1.js builds these two modal buttons dynamically, so replacing
           # onclick text in index.html cannot fix them. Override the two public opener
           # functions after all application scripts are loaded.
@@ -152,6 +159,8 @@ jobs:
           grep -F "sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf" _site/Master/index.html
           grep -F "const SUPABASE_URL='https://fadxsycdgzuctvmhhjty.supabase.co'" _site/konstruva/index.html
           grep -F "const SUPABASE_KEY='sb_publishable_kdVGUzaKxMNFiJLpaGgSTQ_KP8IDJ2o'" _site/konstruva/index.html
+          grep -F "cost-control-audit.js?v=7" _site/Master/index.html
+          grep -F "cost-control-audit.js?v=7" _site/konstruva/index.html
           grep -F "sikoyek-master-data-save-fix-v3" _site/Master/index.html
           grep -F "sikoyek-master-data-save-fix-v3" _site/konstruva/index.html
           echo "Unified site verified."
