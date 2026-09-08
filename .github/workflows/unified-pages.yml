@@ -91,10 +91,6 @@ jobs:
           copy_tree(master)
           copy_tree(konstruva)
 
-          # Fix the two reference-master save buttons. The original master-data
-          # script keeps its generic add() helper inside an IIFE, while the modal
-          # uses an inline onclick that expects a global function. Expose a safe
-          # Pages-side handler and point only these two buttons at it.
           save_fix = r'''<script id="sikoyek-master-data-save-fix-v1">
           window.siKoyekSaveMaster=async function(table,title){
             const name=document.getElementById('md_name')?.value.trim();
@@ -123,27 +119,22 @@ jobs:
                   html = html.replace('</body>', save_fix + '</body>')
               html_path.write_text(html, encoding='utf-8')
 
-          konstruva_html = (konstruva / 'index.html').read_text(encoding='utf-8')
-
           master_url = 'https://mmkusplegmittrlxqxby.supabase.co'
-          master_key_marker = 'sb_publishable_'
+          master_key = 'sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf'
           konstruva_url = 'https://fadxsycdgzuctvmhhjty.supabase.co'
           konstruva_key = 'sb_publishable_kdVGUzaKxMNFiJLpaGgSTQ_KP8IDJ2o'
 
+          konstruva_html = (konstruva / 'index.html').read_text(encoding='utf-8')
           if master_url not in konstruva_html:
               raise SystemExit('Konstruva build does not contain the expected MASTER Supabase URL before transformation.')
-          if master_key_marker not in konstruva_html:
-              raise SystemExit('Konstruva build does not contain a publishable Supabase key before transformation.')
+          if master_key not in konstruva_html:
+              raise SystemExit('Konstruva build does not contain the expected MASTER publishable key before transformation.')
 
+          # The static build can contain the Supabase constants more than once
+          # (for example in inline/runtime configuration). Transform every
+          # MASTER reference in the Konstruva copy, while leaving /Master intact.
           konstruva_html = konstruva_html.replace(master_url, konstruva_url)
-          konstruva_html, replacements = re.subn(
-              r"sb_publishable_[A-Za-z0-9_-]+",
-              konstruva_key,
-              konstruva_html,
-              count=1,
-          )
-          if replacements != 1:
-              raise SystemExit(f'Expected exactly one Supabase publishable key replacement, got {replacements}.')
+          konstruva_html = konstruva_html.replace(master_key, konstruva_key)
           (konstruva / 'index.html').write_text(konstruva_html, encoding='utf-8')
 
           launcher = '''<!doctype html>
@@ -171,7 +162,6 @@ jobs:
           </html>
           '''
           (site / 'index.html').write_text(launcher, encoding='utf-8')
-
           print('Created:', master, konstruva)
 
       - name: Verify Master and Konstruva separation and master-data fix
@@ -189,7 +179,7 @@ jobs:
           grep -F "sb_publishable_kdVGUzaKxMNFiJLpaGgSTQ_KP8IDJ2o" _site/konstruva/index.html
 
           if grep -F "https://mmkusplegmittrlxqxby.supabase.co" _site/konstruva/index.html; then
-            echo "ERROR: Konstruva still points to MASTER Supabase URL."
+            echo "ERROR: Konstruva still contains the MASTER Supabase URL."
             exit 1
           fi
           if grep -F "sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf" _site/konstruva/index.html; then
@@ -201,7 +191,6 @@ jobs:
           grep -F "sikoyek-master-data-save-fix-v1" _site/konstruva/index.html
           grep -F "window.siKoyekSaveMaster('transaction_categories','Kategori Keuangan')" _site/konstruva/index.html
           grep -F "window.siKoyekSaveMaster('payment_methods','Metode Pembayaran')" _site/konstruva/index.html
-
           echo "Master/Konstruva separation and master-data save fix verified."
 
       - name: Verify relative local assets
@@ -209,25 +198,21 @@ jobs:
         run: |
           from pathlib import Path
           import re
-
           for file in (Path('_site/Master/index.html'), Path('_site/konstruva/index.html')):
               html = file.read_text(encoding='utf-8')
               bad = re.findall(r'(?:src|href)=["\']/(?!/)[^"\']+', html, flags=re.I)
               if bad:
                   print(f'Potential root-absolute local asset references in {file}:')
-                  for item in bad[:20]:
-                      print(item)
+                  for item in bad[:20]: print(item)
                   raise SystemExit(1)
           print('No root-absolute local asset references detected in the two app entry points.')
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-
       - name: Upload unified Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-
       - name: Deploy unified Pages site
         id: deployment
         uses: actions/deploy-pages@v4
