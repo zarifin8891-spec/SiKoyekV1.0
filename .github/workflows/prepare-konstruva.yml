@@ -1,0 +1,42 @@
+name: Prepare SiKoyek Konstruva
+
+on:
+  push:
+    branches: [ deploy/konstruva-v1 ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout deployment branch
+        uses: actions/checkout@v4
+
+      - name: Verify Konstruva deployment script
+        shell: bash
+        run: |
+          test -f deployment/prepare-konstruva.js
+          test -f deployment/config.konstruva.js
+          node --check deployment/prepare-konstruva.js
+          echo "Konstruva deployment files verified."
+
+      - name: Prepare Konstruva static artifact
+        run: node deployment/prepare-konstruva.js
+
+      - name: Verify artifact
+        shell: bash
+        run: |
+          test -f dist-konstruva/index.html
+          grep -F "https://fadxsycdgzuctvmhhjty.supabase.co" dist-konstruva/index.html
+          grep -F "sb_publishable_" dist-konstruva/index.html
+          echo "Konstruva artifact verified."
+
+      - name: Upload Konstruva artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sikoyek-konstruva-static
+          path: dist-konstruva
+          if-no-files-found: error
