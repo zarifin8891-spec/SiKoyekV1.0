@@ -1,19 +1,18 @@
+/* SiKoyek V1.0 — Single Source Health Engine */
 (function(){
-  const ENGINE_VERSION='1.0';
+  const ENGINE_VERSION='2.0';
   function evaluate(row){
     const progress=Number(row?.project_progress||0);
-    const cost=Number(row?.cost_ratio||0);
     const rap=Number(row?.rap_consumption||0);
-    const costGap=cost-progress;
-    const rapGap=rap-progress;
+    const gap=progress-rap;
     let status='SEHAT';
     let level='green';
-    if(costGap>=15 || rapGap>=20){
+    if(gap < -5){
       status='BERISIKO'; level='red';
-    }else if(costGap>=5 || rapGap>=10 || (progress<=0.01 && (cost>0.01 || rap>0.01))){
-      status='PERLU PENGAWASAN'; level='amber';
+    }else if(gap < 0){
+      status='AWASI'; level='amber';
     }
-    return {status,level,progress,cost,rap,costGap,rapGap,engineVersion:ENGINE_VERSION};
+    return {status,level,progress,rap,gap,engineVersion:ENGINE_VERSION};
   }
   window.SiKoyekHealthEngine={evaluate};
 })();
