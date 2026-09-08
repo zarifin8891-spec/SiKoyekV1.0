@@ -68,6 +68,7 @@ jobs:
         run: |
           from pathlib import Path
           import shutil
+          import re
 
           source = Path('_master')
           site = Path('_site')
@@ -90,7 +91,6 @@ jobs:
           copy_tree(master)
           copy_tree(konstruva)
 
-          master_html = (master / 'index.html').read_text(encoding='utf-8')
           konstruva_html = (konstruva / 'index.html').read_text(encoding='utf-8')
 
           master_url = 'https://mmkusplegmittrlxqxby.supabase.co'
@@ -104,8 +104,6 @@ jobs:
               raise SystemExit('Konstruva build does not contain a publishable Supabase key before transformation.')
 
           konstruva_html = konstruva_html.replace(master_url, konstruva_url)
-          # Replace the current publishable key while leaving every other app asset untouched.
-          import re
           konstruva_html, replacements = re.subn(
               r"sb_publishable_[A-Za-z0-9_-]+",
               konstruva_key,
@@ -170,16 +168,20 @@ jobs:
           echo "Master and Konstruva frontend configurations are separated."
 
       - name: Verify relative local assets
-        shell: bash
+        shell: python
         run: |
-          set -euo pipefail
-          for f in _site/Master/index.html _site/konstruva/index.html; do
-            if grep -Eq '(src|href)=["'"']/(?!/)' "$f" 2>/dev/null; then
-              echo "Potential root-absolute local asset reference found in $f"
-              exit 1
-            fi
-          done
-          echo "No root-absolute local asset references detected in the two app entry points."
+          from pathlib import Path
+          import re
+
+          for file in (Path('_site/Master/index.html'), Path('_site/konstruva/index.html')):
+              html = file.read_text(encoding='utf-8')
+              bad = re.findall(r'(?:src|href)=["\']/(?!/)[^"\']+', html, flags=re.I)
+              if bad:
+                  print(f'Potential root-absolute local asset references in {file}:')
+                  for item in bad[:20]:
+                      print(item)
+                  raise SystemExit(1)
+          print('No root-absolute local asset references detected in the two app entry points.')
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
