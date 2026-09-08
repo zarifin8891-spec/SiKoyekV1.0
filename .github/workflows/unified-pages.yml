@@ -91,6 +91,38 @@ jobs:
           copy_tree(master)
           copy_tree(konstruva)
 
+          # Fix the two reference-master save buttons. The original master-data
+          # script keeps its generic add() helper inside an IIFE, while the modal
+          # uses an inline onclick that expects a global function. Expose a safe
+          # Pages-side handler and point only these two buttons at it.
+          save_fix = r'''<script id="sikoyek-master-data-save-fix-v1">
+          window.siKoyekSaveMaster=async function(table,title){
+            const name=document.getElementById('md_name')?.value.trim();
+            const sort=Number(document.getElementById('md_sort')?.value||0);
+            if(!name){toast('Nama wajib diisi');return}
+            const {error}=await window.sb.from(table).insert({name,sort_order:sort,is_active:true});
+            if(error){toast(error.message);return}
+            closeModal();
+            toast(title+' ditambahkan');
+            if(typeof window.openMasterData==='function') window.openMasterData();
+          };
+          </script>'''
+
+          for app in (master, konstruva):
+              html_path = app / 'index.html'
+              html = html_path.read_text(encoding='utf-8')
+              html = html.replace(
+                  "onclick=\"add('transaction_categories','Kategori Keuangan')\"",
+                  "onclick=\"window.siKoyekSaveMaster('transaction_categories','Kategori Keuangan')\""
+              )
+              html = html.replace(
+                  "onclick=\"add('payment_methods','Metode Pembayaran')\"",
+                  "onclick=\"window.siKoyekSaveMaster('payment_methods','Metode Pembayaran')\""
+              )
+              if 'sikoyek-master-data-save-fix-v1' not in html:
+                  html = html.replace('</body>', save_fix + '</body>')
+              html_path.write_text(html, encoding='utf-8')
+
           konstruva_html = (konstruva / 'index.html').read_text(encoding='utf-8')
 
           master_url = 'https://mmkusplegmittrlxqxby.supabase.co'
@@ -142,7 +174,7 @@ jobs:
 
           print('Created:', master, konstruva)
 
-      - name: Verify Master and Konstruva separation
+      - name: Verify Master and Konstruva separation and master-data fix
         shell: bash
         run: |
           set -euo pipefail
@@ -165,7 +197,12 @@ jobs:
             exit 1
           fi
 
-          echo "Master and Konstruva frontend configurations are separated."
+          grep -F "sikoyek-master-data-save-fix-v1" _site/Master/index.html
+          grep -F "sikoyek-master-data-save-fix-v1" _site/konstruva/index.html
+          grep -F "window.siKoyekSaveMaster('transaction_categories','Kategori Keuangan')" _site/konstruva/index.html
+          grep -F "window.siKoyekSaveMaster('payment_methods','Metode Pembayaran')" _site/konstruva/index.html
+
+          echo "Master/Konstruva separation and master-data save fix verified."
 
       - name: Verify relative local assets
         shell: python
