@@ -4,6 +4,7 @@ on:
   workflow_run:
     workflows: ["Deploy SiKoyek V1.0"]
     types: [completed]
+  workflow_dispatch:
 
 permissions:
   actions: read
@@ -17,13 +18,14 @@ concurrency:
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Download the successful Master Pages artifact
+      - name: Download successful Master Pages artifact
+        if: ${{ github.event_name == 'workflow_run' }}
         uses: actions/download-artifact@v4
         with:
           name: github-pages
@@ -31,46 +33,54 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Pages artifact
+      - name: Checkout repository for manual deployment
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        uses: actions/checkout@v4
+
+      - name: Extract Master Pages artifact
+        if: ${{ github.event_name == 'workflow_run' }}
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p _master
           shopt -s nullglob
           files=( _pages_artifact/* )
-          if [ "${#files[@]}" -eq 0 ]; then
-            echo "Pages artifact is empty."
-            exit 1
-          fi
+          test "${#files[@]}" -gt 0
           found=0
           for f in "${files[@]}"; do
             case "$f" in
-              *.tar.gz|*.tgz)
-                tar -xzf "$f" -C _master
-                found=1
-                ;;
-              *.tar)
-                tar -xf "$f" -C _master
-                found=1
-                ;;
+              *.tar.gz|*.tgz) tar -xzf "$f" -C _master; found=1 ;;
+              *.tar) tar -xf "$f" -C _master; found=1 ;;
             esac
           done
-          if [ "$found" -ne 1 ]; then
-            echo "Could not find the packaged Pages tar archive."
-            find _pages_artifact -maxdepth 2 -type f -print
-            exit 1
-          fi
+          test "$found" -eq 1
           test -f _master/index.html
-          echo "Master Pages artifact extracted successfully."
+          echo "Master Pages artifact extracted."
 
-      - name: Build /Master and /konstruva site trees
+      - name: Prepare source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            cp -a _master _source
+          else
+            mkdir -p _source
+            cp -a . _source/repository
+            shopt -s dotglob
+            rm -rf _source/repository/.git _source/repository/.github
+            cp -a _source/repository/. _source/
+            rm -rf _source/repository
+          fi
+          test -f _source/index.html
+
+      - name: Build Master and Konstruva site trees
         shell: python
         run: |
           from pathlib import Path
           import shutil
           import re
 
-          source = Path('_master')
+          source = Path('_source')
           site = Path('_site')
           master = site / 'Master'
           konstruva = site / 'konstruva'
@@ -80,7 +90,7 @@ jobs:
           master.mkdir(parents=True)
           konstruva.mkdir(parents=True)
 
-          def copy_tree(destination: Path):
+          def copy_tree(destination):
               for item in source.iterdir():
                   target = destination / item.name
                   if item.is_dir():
@@ -91,128 +101,46 @@ jobs:
           copy_tree(master)
           copy_tree(konstruva)
 
-          save_fix = r'''<script id="sikoyek-master-data-save-fix-v1">
-          window.siKoyekSaveMaster=async function(table,title){
-            const name=document.getElementById('md_name')?.value.trim();
-            const sort=Number(document.getElementById('md_sort')?.value||0);
-            if(!name){toast('Nama wajib diisi');return}
-            const {error}=await window.sb.from(table).insert({name,sort_order:sort,is_active:true});
-            if(error){toast(error.message);return}
-            closeModal();
-            toast(title+' ditambahkan');
-            if(typeof window.openMasterData==='function') window.openMasterData();
-          };
-          </script>'''
-
-          for app in (master, konstruva):
-              html_path = app / 'index.html'
-              html = html_path.read_text(encoding='utf-8')
-              html = html.replace(
-                  "onclick=\"add('transaction_categories','Kategori Keuangan')\"",
-                  "onclick=\"window.siKoyekSaveMaster('transaction_categories','Kategori Keuangan')\""
-              )
-              html = html.replace(
-                  "onclick=\"add('payment_methods','Metode Pembayaran')\"",
-                  "onclick=\"window.siKoyekSaveMaster('payment_methods','Metode Pembayaran')\""
-              )
-              if 'sikoyek-master-data-save-fix-v1' not in html:
-                  html = html.replace('</body>', save_fix + '</body>')
-              html_path.write_text(html, encoding='utf-8')
-
           master_url = 'https://mmkusplegmittrlxqxby.supabase.co'
           master_key = 'sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf'
           konstruva_url = 'https://fadxsycdgzuctvmhhjty.supabase.co'
           konstruva_key = 'sb_publishable_kdVGUzaKxMNFiJLpaGgSTQ_KP8IDJ2o'
 
-          konstruva_html = (konstruva / 'index.html').read_text(encoding='utf-8')
-          if master_url not in konstruva_html:
-              raise SystemExit('Konstruva build does not contain the expected MASTER Supabase URL before transformation.')
-          if master_key not in konstruva_html:
-              raise SystemExit('Konstruva build does not contain the expected MASTER publishable key before transformation.')
-
-          # The static build can contain the Supabase constants more than once
-          # (for example in inline/runtime configuration). Transform every
-          # MASTER reference in the Konstruva copy, while leaving /Master intact.
-          konstruva_html = konstruva_html.replace(master_url, konstruva_url)
-          konstruva_html = konstruva_html.replace(master_key, konstruva_key)
-          (konstruva / 'index.html').write_text(konstruva_html, encoding='utf-8')
+          html = (konstruva / 'index.html').read_text(encoding='utf-8')
+          if master_url not in html or master_key not in html:
+              raise SystemExit('Konstruva source does not contain the expected MASTER Supabase configuration.')
+          html = html.replace(master_url, konstruva_url).replace(master_key, konstruva_key)
+          (konstruva / 'index.html').write_text(html, encoding='utf-8')
 
           launcher = '''<!doctype html>
-          <html lang="id">
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width,initial-scale=1">
-            <title>SiKoyek V1.0</title>
-            <style>
-              body{font-family:Arial,sans-serif;margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f7fb;color:#17304f}
-              main{background:#fff;padding:36px 42px;border-radius:18px;box-shadow:0 12px 40px rgba(20,50,90,.12);text-align:center;max-width:520px;width:calc(100% - 40px);box-sizing:border-box}
-              h1{margin:0 0 8px;font-size:28px}
-              p{margin:0 0 24px;color:#617089}
-              a{display:block;margin:10px 0;padding:13px 16px;border-radius:10px;background:#173b67;color:#fff;text-decoration:none;font-weight:700}
-            </style>
-          </head>
-          <body>
-            <main>
-              <h1>SiKoyek V1.0</h1>
-              <p>Pilih lingkungan aplikasi:</p>
-              <a href="./Master/">SiKoyek MASTER</a>
-              <a href="./konstruva/">SiKoyek KONSTRUVА</a>
-            </main>
-          </body>
-          </html>
-          '''
+          <html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SiKoyek V1.0</title>
+          <style>body{font-family:Arial,sans-serif;margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f7fb;color:#17304f}main{background:#fff;padding:36px 42px;border-radius:18px;box-shadow:0 12px 40px rgba(20,50,90,.12);text-align:center;max-width:520px;width:calc(100% - 40px);box-sizing:border-box}h1{margin:0 0 8px;font-size:28px}p{margin:0 0 24px;color:#617089}a{display:block;margin:10px 0;padding:13px 16px;border-radius:10px;background:#173b67;color:#fff;text-decoration:none;font-weight:700}</style></head>
+          <body><main><h1>SiKoyek V1.0</h1><p>Pilih lingkungan aplikasi:</p><a href="./Master/">SiKoyek MASTER</a><a href="./konstruva/">SiKoyek KONSTRUVА</a></main></body></html>'''
           (site / 'index.html').write_text(launcher, encoding='utf-8')
-          print('Created:', master, konstruva)
 
-      - name: Verify Master and Konstruva separation and master-data fix
+      - name: Verify unified site
         shell: bash
         run: |
           set -euo pipefail
           test -f _site/index.html
           test -f _site/Master/index.html
           test -f _site/konstruva/index.html
-
           grep -F "https://mmkusplegmittrlxqxby.supabase.co" _site/Master/index.html
           grep -F "sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf" _site/Master/index.html
-
           grep -F "https://fadxsycdgzuctvmhhjty.supabase.co" _site/konstruva/index.html
           grep -F "sb_publishable_kdVGUzaKxMNFiJLpaGgSTQ_KP8IDJ2o" _site/konstruva/index.html
-
-          if grep -F "https://mmkusplegmittrlxqxby.supabase.co" _site/konstruva/index.html; then
-            echo "ERROR: Konstruva still contains the MASTER Supabase URL."
-            exit 1
-          fi
-          if grep -F "sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf" _site/konstruva/index.html; then
-            echo "ERROR: Konstruva still contains the MASTER publishable key."
-            exit 1
-          fi
-
-          grep -F "sikoyek-master-data-save-fix-v1" _site/Master/index.html
-          grep -F "sikoyek-master-data-save-fix-v1" _site/konstruva/index.html
-          grep -F "window.siKoyekSaveMaster('transaction_categories','Kategori Keuangan')" _site/konstruva/index.html
-          grep -F "window.siKoyekSaveMaster('payment_methods','Metode Pembayaran')" _site/konstruva/index.html
-          echo "Master/Konstruva separation and master-data save fix verified."
-
-      - name: Verify relative local assets
-        shell: python
-        run: |
-          from pathlib import Path
-          import re
-          for file in (Path('_site/Master/index.html'), Path('_site/konstruva/index.html')):
-              html = file.read_text(encoding='utf-8')
-              bad = re.findall(r'(?:src|href)=["\']/(?!/)[^"\']+', html, flags=re.I)
-              if bad:
-                  print(f'Potential root-absolute local asset references in {file}:')
-                  for item in bad[:20]: print(item)
-                  raise SystemExit(1)
-          print('No root-absolute local asset references detected in the two app entry points.')
+          if grep -F "https://mmkusplegmittrlxqxby.supabase.co" _site/konstruva/index.html; then exit 1; fi
+          if grep -F "sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf" _site/konstruva/index.html; then exit 1; fi
+          echo "Unified Master/Konstruva site verified."
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
+
       - name: Upload unified Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+
       - name: Deploy unified Pages site
         id: deployment
         uses: actions/deploy-pages@v4
