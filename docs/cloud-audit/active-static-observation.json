@@ -1,0 +1,146 @@
+[
+  {
+    "environment": "Master",
+    "file": "index.html",
+    "bytes": 50599,
+    "sha256": "aa10e8141c304bdf366a2852aaf89c857855a7d9a5a753f5c5a52169d3e808f8",
+    "matchesMain": false,
+    "matchesClosed": false
+  },
+  {
+    "environment": "Master",
+    "file": "project-health-engine-v1.js",
+    "bytes": 541,
+    "sha256": "19db6d75a955b45695f8292cffe7d9ed8f850d241916f105afb6888519769fd7",
+    "matchesMain": true,
+    "matchesClosed": false
+  },
+  {
+    "environment": "Master",
+    "file": "health-dashboard-integration-v1.js",
+    "bytes": 6825,
+    "sha256": "f5266ad663baa71f56d5f7f828150fca2c0beb4b12322c6b1fdafa25757b1d61",
+    "matchesMain": true,
+    "matchesClosed": false
+  },
+  {
+    "environment": "Master",
+    "file": "cost-control-audit.js",
+    "bytes": 6819,
+    "sha256": "33bf13f5e10b0cc9010ff6e98f51412259042e99713e5cd2b8bf37ba2ad71c63",
+    "matchesMain": true,
+    "matchesClosed": false
+  },
+  {
+    "environment": "Master",
+    "file": "core-unified-shell-v2.js",
+    "bytes": 7038,
+    "sha256": "e94e7f1577406773bb4d98303c5e048ffc34082e7aeac027a7320d5bfe28f5df",
+    "matchesMain": true,
+    "matchesClosed": false
+  },
+  {
+    "environment": "Master",
+    "file": "cashflow-decision-dashboard-v1.js",
+    "bytes": 4171,
+    "sha256": "323f6cda5f030cce8340bded3e1499a10b50b43d914e3148d2c21f3fff57be50",
+    "matchesMain": true,
+    "matchesClosed": false
+  },
+  {
+    "environment": "Master",
+    "file": "dashboard-data-fallback-v1.js",
+    "bytes": 3554,
+    "sha256": "1a3f7878bcaac21401656b9fe9b1ad8e54610153211d56ebf151b9f8bb742c88",
+    "matchesMain": true,
+    "matchesClosed": false
+  },
+  {
+    "environment": "Master",
+    "file": "laporan-finance-period-fix-v1.js",
+    "bytes": 4262,
+    "sha256": "0d32a0919b651ef7a490ee19206b7f8f73bbd4b706e90accfe6c31130549ffbb",
+    "matchesMain": true,
+    "matchesClosed": false
+  },
+  {
+    "environment": "Master",
+    "file": "laporan-finance-period-fix-v2.js",
+    "bytes": 4184,
+    "sha256": "563b8be77049f43eb4d1ad0daa40f33d7f189d98215c580ea0290b1305458084",
+    "matchesMain": true,
+    "matchesClosed": false
+  },
+  {
+    "environment": "konstruva",
+    "file": "index.html",
+    "bytes": 50599,
+    "sha256": "6f2facba10c43d8ad1fdf7434670f936f31767fccb67ffb12ae6e13f6a44e844",
+    "matchesMain": false,
+    "matchesClosed": false
+  },
+  {
+    "environment": "konstruva",
+    "file": "project-health-engine-v1.js",
+    "bytes": 541,
+    "sha256": "19db6d75a955b45695f8292cffe7d9ed8f850d241916f105afb6888519769fd7",
+    "matchesMain": true,
+    "matchesClosed": false
+  },
+  {
+    "environment": "konstruva",
+    "file": "health-dashboard-integration-v1.js",
+    "bytes": 6825,
+    "sha256": "f5266ad663baa71f56d5f7f828150fca2c0beb4b12322c6b1fdafa25757b1d61",
+    "matchesMain": true,
+    "matchesClosed": false
+  },
+  {
+    "environment": "konstruva",
+    "file": "cost-control-audit.js",
+    "bytes": 6819,
+    "sha256": "33bf13f5e10b0cc9010ff6e98f51412259042e99713e5cd2b8bf37ba2ad71c63",
+    "matchesMain": true,
+    "matchesClosed": false
+  },
+  {
+    "environment": "konstruva",
+    "file": "core-unified-shell-v2.js",
+    "bytes": 7038,
+    "sha256": "e94e7f1577406773bb4d98303c5e048ffc34082e7aeac027a7320d5bfe28f5df",
+    "matchesMain": true,
+    "matchesClosed": false
+  },
+  {
+    "environment": "konstruva",
+    "file": "cashflow-decision-dashboard-v1.js",
+    "bytes": 4171,
+    "sha256": "323f6cda5f030cce8340bded3e1499a10b50b43d914e3148d2c21f3fff57be50",
+    "matchesMain": true,
+    "matchesClosed": false
+  },
+  {
+    "environment": "konstruva",
+    "file": "dashboard-data-fallback-v1.js",
+    "bytes": 3554,
+    "sha256": "1a3f7878bcaac21401656b9fe9b1ad8e54610153211d56ebf151b9f8bb742c88",
+    "matchesMain": true,
+    "matchesClosed": false
+  },
+  {
+    "environment": "konstruva",
+    "file": "laporan-finance-period-fix-v1.js",
+    "bytes": 4262,
+    "sha256": "0d32a0919b651ef7a490ee19206b7f8f73bbd4b706e90accfe6c31130549ffbb",
+    "matchesMain": true,
+    "matchesClosed": false
+  },
+  {
+    "environment": "konstruva",
+    "file": "laporan-finance-period-fix-v2.js",
+    "bytes": 4184,
+    "sha256": "563b8be77049f43eb4d1ad0daa40f33d7f189d98215c580ea0290b1305458084",
+    "matchesMain": true,
+    "matchesClosed": false
+  }
+]

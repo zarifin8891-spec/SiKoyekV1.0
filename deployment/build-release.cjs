@@ -12,22 +12,31 @@ function buildRelease({sourceRoot,outRoot,tenants,preview=false}){
   if(fs.existsSync(outRoot)&&fs.readdirSync(outRoot).length)throw new Error('Direktori output harus kosong');
   const ids=new Set(),directories=new Set();for(const config of tenants){validate(config,sourceRoot);const directory=config.directory||config.id;if(!/^[A-Za-z][A-Za-z0-9-]{0,63}$/.test(directory))throw new Error('Direktori lingkungan tidak valid');if(ids.has(config.id)||directories.has(directory))throw new Error('ID/direktori lingkungan duplikat');ids.add(config.id);directories.add(directory);if(preview&&config.backend!=='preview'||!preview&&config.backend!=='cloud')throw new Error('Mode paket dan backend berbeda')}
   const files=[];
-  for(const entry of fs.readdirSync(sourceRoot,{withFileTypes:true}))if(entry.isFile()&&/\.(html|js|css)$/.test(entry.name)&&entry.name!=='environment.js')files.push(entry.name);
+  for(const entry of fs.readdirSync(sourceRoot,{withFileTypes:true}))if(entry.isFile()&&/\.(html|js|css|png|jpe?g|svg|webp|gif|ico|woff2?)$/.test(entry.name)&&entry.name!=='environment.js')files.push(entry.name);
   for(const entry of fs.readdirSync(path.join(sourceRoot,'foundation')))if(/\.(js|css|json)$/.test(entry))files.push('foundation/'+entry);
   files.sort();const hashes=Object.fromEntries(files.map(file=>[file,digest(fs.readFileSync(path.join(sourceRoot,file)))]));
   const applicationRevision=digest(JSON.stringify(hashes));
   fs.mkdirSync(outRoot,{recursive:true});
-  const manifest={applicationRevision,mode:preview?'preview':'cloud',tenants:[],sourceFiles:hashes};
+  const manifest={applicationRevision,mode:preview?'preview':'cloud',tenants:[],sourceFiles:hashes,packageFiles:{}};
   const policy="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'none'; frame-src 'none'; worker-src 'none'; object-src 'none'; form-action 'none'; base-uri 'self'";
   for(const config of tenants){
     const directory=config.directory||config.id,destination=path.join(outRoot,directory);fs.mkdirSync(destination,{recursive:true});
     for(const file of files){const out=path.join(destination,file);fs.mkdirSync(path.dirname(out),{recursive:true});let bytes=fs.readFileSync(path.join(sourceRoot,file));
       if(preview&&file.endsWith('.html')){let html=bytes.toString();html=html.replace(/<script src="https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase\/supabase-js@2"><\/script>/g,'<script src="./preview/seed.js"></script><script src="./preview/backend.js"></script>');html=html.replace(/<head(?:\s[^>]*)?>/i,match=>match+'<meta http-equiv="Content-Security-Policy" content="'+policy+'">');bytes=Buffer.from(html)}
+      // Stable tenant paths must never load scripts/styles cached from the prior release.
+      if(file.endsWith('.html')||file.endsWith('.js')){
+        const text=bytes.toString().replace(/(["'])(\.\/[^"'\s?]+\.(?:js|css))(?:\?v=[^"'\s]*)?\1/g,(match,quote,asset)=>{
+          const relative=path.posix.normalize(path.posix.join(path.posix.dirname(file),asset));
+          return relative==='environment.js'||files.includes(relative)?quote+asset+'?v='+applicationRevision+quote:match;
+        });bytes=Buffer.from(text);
+      }
+      manifest.packageFiles[file]=digest(bytes);
       fs.writeFileSync(out,bytes);
     }
-    fs.writeFileSync(path.join(destination,'environment.js'),'window.SIKOYEK_CONFIG = '+JSON.stringify(config,null,2)+';\n');
+    const environment='window.SIKOYEK_CONFIG = '+JSON.stringify(config,null,2)+';\n';
+    fs.writeFileSync(path.join(destination,'environment.js'),environment);
     if(preview){fs.cpSync(path.join(sourceRoot,'preview'),path.join(destination,'preview'),{recursive:true});}
-    manifest.tenants.push({id:config.id,name:config.name,applicationRevision,entry:directory+'/index.html'});
+    manifest.tenants.push({id:config.id,name:config.name,applicationRevision,configurationHash:digest(environment),entry:directory+'/index.html'});
   }
   fs.writeFileSync(path.join(outRoot,'release-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
   if(preview){for(const name of ['index.html','portal.css','portal.js'])fs.copyFileSync(path.join(sourceRoot,'preview',name),path.join(outRoot,name));}

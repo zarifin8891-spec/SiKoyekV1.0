@@ -32,4 +32,10 @@ Preview berisi MASTER, KONSTRUVA dan Klien Baru dengan endpoint `.invalid`, tanp
 
 Portal preview dapat masuk langsung sebagai lima role contoh. Setelah Keluar, gunakan `admin@preview.invalid` / `Preview123!`, atau email `nama-role@preview.invalid`. Akun yang dibuat di preview memakai password uji yang dimasukkan. Tidak ada email atau database nyata.
 
-Preview menguji pengalaman UI dan kontrak adapter, bukan RLS, trigger, multiuser atau latensi Supabase nyata. Hitungan ringkasan adalah simulasi lokal; engine Health/Decision/Cashflow tetap memakai file Closed yang sama. LAN tetap dijeda.
+Preview menguji pengalaman UI dan kontrak adapter, bukan RLS, trigger, multiuser atau latensi Supabase nyata. Hitungan ringkasan adalah simulasi lokal; engine Health/Decision/Cashflow kini identik dengan Main Cloud aktif setelah rekonsiliasi. Bukti audit Closed sebelumnya tetap disimpan sebagai sejarah. LAN tetap dijeda.
+
+## Kandidat rollout yang sudah direkonsiliasi
+
+Lihat `docs/cloud-audit/ROLLOUT-READINESS.md` untuk keputusan terhadap seluruh perubahan sesudah Closed dan bukti validasi terhadap Cloud aktif. Jalankan `node deployment/verify-release.cjs /absolute/release-output` setelah build. Verifier memeriksa hash paket, kesamaan file antar pelanggan, konfigurasi dan referensi aset tanpa koneksi database.
+
+Workflow `prepare-foundation-release.yml` menghasilkan artifact CI tanpa publikasi. `production-pages.yml.template` adalah resep manual yang belum aktif, memerlukan full SHA sumber dan fingerprint aplikasi yang direview. Jangan mengaktifkannya bersamaan dengan dua publisher lama. Cadangan Cloud sebelum Foundation dapat direproduksi offline dengan `python deployment/prepare-active-backup.py /absolute/empty-backup` (PyYAML diperlukan); kedua HTML harus cocok dengan hash sumber aktif yang diamati. Semua resep ini memproses frontend saja.

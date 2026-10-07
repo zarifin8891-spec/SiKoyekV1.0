@@ -31,7 +31,7 @@
     const health=root.querySelector('.health');
     if(health){
       const green=rows.filter(r=>r.health_status==='SEHAT').length;
-      const amber=rows.filter(r=>r.health_status==='PERLU PENGAWASAN').length;
+      const amber=rows.filter(r=>r.health_status==='AWASI'||r.health_status==='PERLU PENGAWASAN').length;
       const red=rows.filter(r=>r.health_status==='BERISIKO').length;
       const boxes=[...health.querySelectorAll('.box .big')];
       setText(boxes[0],String(green));setText(boxes[1],String(amber));setText(boxes[2],String(red));

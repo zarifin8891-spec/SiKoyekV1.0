@@ -1,0 +1,178 @@
+name: Deploy SiKoyek Unified Pages
+
+on:
+  workflow_run:
+    workflows: ["Deploy SiKoyek V1.0"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-unified
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download successful Master Pages artifact
+        if: ${{ github.event_name == 'workflow_run' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          path: _pages_artifact
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout repository for manual deployment
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        uses: actions/checkout@v4
+
+      - name: Extract Master Pages artifact
+        if: ${{ github.event_name == 'workflow_run' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _master
+          shopt -s nullglob
+          found=0
+          for f in _pages_artifact/*; do
+            case "$f" in
+              *.tar.gz|*.tgz) tar -xzf "$f" -C _master; found=1 ;;
+              *.tar) tar -xf "$f" -C _master; found=1 ;;
+            esac
+          done
+          test "$found" -eq 1
+          test -f _master/index.html
+
+      - name: Prepare source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            cp -a _master _source
+          else
+            mkdir -p _source
+            cp -a . _source/repository
+            shopt -s dotglob
+            rm -rf _source/repository/.git _source/repository/.github
+            cp -a _source/repository/. _source/
+            rm -rf _source/repository
+          fi
+          test -f _source/index.html
+
+      - name: Build unified Master and Konstruva site
+        shell: python
+        run: |
+          from pathlib import Path
+          import shutil
+
+          source=Path('_source')
+          site=Path('_site')
+          master=site/'Master'
+          konstruva=site/'konstruva'
+          if site.exists(): shutil.rmtree(site)
+          master.mkdir(parents=True)
+          konstruva.mkdir(parents=True)
+
+          def copy_tree(dst):
+              for item in source.iterdir():
+                  target=dst/item.name
+                  if item.is_dir(): shutil.copytree(item,target)
+                  else: shutil.copy2(item,target)
+          copy_tree(master)
+          copy_tree(konstruva)
+
+          master_url='https://mmkusplegmittrlxqxby.supabase.co'
+          master_key='sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf'
+          konstruva_url='https://fadxsycdgzuctvmhhjty.supabase.co'
+          konstruva_key='sb_publishable_kdVGUzaKxMNFiJLpaGgSTQ_KP8IDJ2o'
+
+          kh=konstruva/'index.html'
+          h=kh.read_text(encoding='utf-8')
+          if master_url not in h or master_key not in h:
+              raise SystemExit('Expected MASTER Supabase configuration was not found in source artifact.')
+          h=h.replace(master_url,konstruva_url).replace(master_key,konstruva_key)
+          kh.write_text(h,encoding='utf-8')
+
+          # Cache-bust the Cost Control V7 fix in both deployed apps.
+          for app in (master,konstruva):
+              p=app/'index.html'
+              x=p.read_text(encoding='utf-8')
+              x=x.replace('cost-control-audit.js?v=1','cost-control-audit.js?v=7')
+              p.write_text(x,encoding='utf-8')
+
+          # master-data-v1.js builds these two modal buttons dynamically, so replacing
+          # onclick text in index.html cannot fix them. Override the two public opener
+          # functions after all application scripts are loaded.
+          save_fix=r'''<script id="sikoyek-master-data-save-fix-v3">
+          (function(){
+            function q(id){return document.getElementById(id)}
+            function save(table,title){
+              const name=q('md_name')?.value.trim();
+              const sort=Number(q('md_sort')?.value||0);
+              if(!name){toast('Nama wajib diisi');return}
+              window.sb.from(table).insert({name,sort_order:sort,is_active:true}).then(function(r){
+                if(r.error){toast(r.error.message);return}
+                if(typeof closeModal==='function') closeModal();
+                toast(title+' ditambahkan');
+                if(typeof window.openMasterData==='function') window.openMasterData();
+              });
+            }
+            window.mdAddFinanceCategory=function(){
+              modal('Tambah Kategori Keuangan',`<div class="field"><label>Nama Kategori *</label><input id="md_name" placeholder="Contoh: Material"></div><div class="field"><label>Urutan</label><input id="md_sort" type="number" value="1"></div><div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn primary" onclick="window.__siKoyekSaveFinance()">Simpan</button></div>`)
+            };
+            window.mdAddPaymentMethod=function(){
+              modal('Tambah Metode Pembayaran',`<div class="field"><label>Nama Metode *</label><input id="md_name" placeholder="Contoh: Transfer"></div><div class="field"><label>Urutan</label><input id="md_sort" type="number" value="1"></div><div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn primary" onclick="window.__siKoyekSavePayment()">Simpan</button></div>`)
+            };
+            window.__siKoyekSaveFinance=function(){save('transaction_categories','Kategori Keuangan')};
+            window.__siKoyekSavePayment=function(){save('payment_methods','Metode Pembayaran')};
+          })();
+          </script>'''
+          for app in (master,konstruva):
+              p=app/'index.html'
+              x=p.read_text(encoding='utf-8')
+              if 'sikoyek-master-data-save-fix-v3' not in x:
+                  x=x.replace('</body>',save_fix+'</body>')
+              p.write_text(x,encoding='utf-8')
+
+          launcher='''<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SiKoyek V1.0</title><style>body{font-family:Arial,sans-serif;margin:0;min-height:100vh;display:grid;place-items:center;background:#f4f7fb;color:#17304f}main{background:#fff;padding:36px 42px;border-radius:18px;box-shadow:0 12px 40px rgba(20,50,90,.12);text-align:center;max-width:520px;width:calc(100% - 40px);box-sizing:border-box}h1{margin:0 0 8px;font-size:28px}p{margin:0 0 24px;color:#617089}a{display:block;margin:10px 0;padding:13px 16px;border-radius:10px;background:#173b67;color:#fff;text-decoration:none;font-weight:700}</style></head><body><main><h1>SiKoyek V1.0</h1><p>Pilih lingkungan aplikasi:</p><a href="./Master/">SiKoyek MASTER</a><a href="./konstruva/">SiKoyek KONSTRUVА</a></main></body></html>'''
+          (site/'index.html').write_text(launcher,encoding='utf-8')
+
+      - name: Verify unified site
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f _site/index.html
+          test -f _site/Master/index.html
+          test -f _site/konstruva/index.html
+          grep -F "https://mmkusplegmittrlxqxby.supabase.co" _site/Master/index.html
+          grep -F "sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf" _site/Master/index.html
+          grep -F "const SUPABASE_URL='https://fadxsycdgzuctvmhhjty.supabase.co'" _site/konstruva/index.html
+          grep -F "const SUPABASE_KEY='sb_publishable_kdVGUzaKxMNFiJLpaGgSTQ_KP8IDJ2o'" _site/konstruva/index.html
+          grep -F "cost-control-audit.js?v=7" _site/Master/index.html
+          grep -F "cost-control-audit.js?v=7" _site/konstruva/index.html
+          grep -F "sikoyek-master-data-save-fix-v3" _site/Master/index.html
+          grep -F "sikoyek-master-data-save-fix-v3" _site/konstruva/index.html
+          echo "Unified site verified."
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload unified Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy unified Pages site
+        id: deployment
+        uses: actions/deploy-pages@v4

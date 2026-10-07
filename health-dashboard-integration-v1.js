@@ -1,5 +1,5 @@
 (function(){
-  const ENGINE_URL='./project-health-engine-v1.js';
+  const ENGINE_URL='./project-health-engine-v1.js?v=4';
   let healthClient=null,lastSignature='',busy=false;
 
   function esc(s){return String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
@@ -99,7 +99,7 @@
 
   function render(rows){
     const dashboard=dashboardEl();const card=dashboard?.querySelector('#dashboard-health-panel');if(!card)return;
-    const priority=[...rows].sort((a,b)=>{const rank={red:3,amber:2,green:1};return rank[b.health.level]-rank[a.health.level]||b.health.costGap-a.health.costGap}).slice(0,5);
+    const priority=[...rows].sort((a,b)=>{const rank={red:3,amber:2,green:1};return rank[b.health.level]-rank[a.health.level]||b.project_progress-a.project_progress}).slice(0,5);
     card.dataset.renderer='health';
     card.innerHTML=`<div class="sectiontitle"><h2>Kondisi Proyek</h2><span class="note">Progress vs Rasio Biaya & RAP Terpakai</span></div><div class="card tablecard"><div class="scroll"><table class="table"><colgroup><col style="width:45%"><col style="width:12%"><col style="width:13%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr><th>Proyek</th><th>Progress</th><th>Rasio<br>Biaya</th><th>RAP<br>Terpakai</th><th>Status</th></tr></thead><tbody>${priority.map(r=>`<tr><td><strong>${esc(r.project_code)}</strong> — ${esc(r.project_name)}</td><td>${r.project_progress.toFixed(2)}%</td><td>${r.cost_ratio.toFixed(2)}%</td><td>${r.rap_consumption.toFixed(2)}%</td><td><span class="pill ${r.health.level}">${r.health.status}</span></td></tr>`).join('')||'<tr><td colspan="5" class="empty">Belum ada data proyek.</td></tr>'}</tbody></table></div></div>`;
     syncDashboardLayout();
@@ -107,7 +107,7 @@
 
   function boot(){
     installPeriodPresetFix();
-    const s=document.createElement('script');s.src=ENGINE_URL+'?v=3';s.onload=load;document.body.appendChild(s);
+    const s=document.createElement('script');s.src=ENGINE_URL;s.onload=load;document.body.appendChild(s);
     const obs=new window.SiKoyekFoundation.Observer(()=>{window.clearTimeout(window.__heTimer);window.__heTimer=setTimeout(()=>{installPeriodPresetFix();load()},250)});
     obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
     window.addEventListener('sikoyek:dashboard-panel-request',load);

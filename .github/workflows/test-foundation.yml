@@ -1,4 +1,4 @@
-name: Test isolated Closed Foundation
+name: Test isolated Cloud Foundation
 
 on:
   push:
@@ -22,6 +22,7 @@ jobs:
           test ! -e .github/workflows/pages.yml
           test ! -e .github/workflows/fix-cost-gap.yml
           test ! -e .github/workflows/load-cost-control-v6.yml
+          test ! -e .github/workflows/unified-pages.yml
       - name: Check Foundation syntax
         run: |
           for source_file in foundation/*.js; do node --check "$source_file" || exit 1; done

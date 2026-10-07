@@ -1,8 +1,8 @@
-/* SiKoyek V1.0 — Finance period filter fix v1 (compatibility) */
+/* SiKoyek V1.0 — Finance period filter fix v2 */
 (function(){
   'use strict';
-  if(window.__SIKOYEK_FINANCE_PERIOD_FIX_V1__)return;
-  window.__SIKOYEK_FINANCE_PERIOD_FIX_V1__=true;
+  if(window.__SIKOYEK_FINANCE_PERIOD_FIX_V2__)return;
+  window.__SIKOYEK_FINANCE_PERIOD_FIX_V2__=true;
   const money=n=>window.SiKoyekFoundation.money(n);
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
   const localDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -11,7 +11,7 @@
     if(key==='today')return{from:today,to:today};
     if(key==='week'){const d=new Date(now);d.setDate(now.getDate()-((now.getDay()+6)%7));return{from:localDate(d),to:today};}
     if(key==='month')return{from:localDate(new Date(now.getFullYear(),now.getMonth(),1)),to:localDate(new Date(now.getFullYear(),now.getMonth()+1,0))};
-    if(key==='quarter')return{from:localDate(new Date(now.getTime()-89*86400000)),to:today};
+    if(key==='quarter'){const d=new Date(now);d.setDate(now.getDate()-89);return{from:localDate(d),to:today};}
     if(key==='year')return{from:localDate(new Date(now.getFullYear(),0,1)),to:localDate(new Date(now.getFullYear(),11,31))};
     return{from:'',to:''};
   }
@@ -29,12 +29,12 @@
     const rows=(tx||[]).filter(x=>{const d=String(x.transaction_date||'').slice(0,10);return(!r.from||d>=r.from)&&(!r.to||d<=r.to)&&(!project||String(x.project_id)===String(project));});
     let income=0,expense=0;rows.forEach(x=>{const a=Number(x.amount||0);if(typeOf(x)==='in')income+=a;else if(typeOf(x)==='out')expense+=a;});
     const byId=new Map((projects||[]).map(x=>[String(x.id),x]));
-    const body=document.getElementById('financeBody'),kCount=document.getElementById('financeKpiCount'),kIn=document.getElementById('financeKpiIn'),kOut=document.getElementById('financeKpiOut'),kNet=document.getElementById('financeKpiNet');
-    if(kCount)kCount.textContent=rows.length;if(kIn)kIn.textContent=money(income);if(kOut)kOut.textContent=money(expense);if(kNet)kNet.textContent=money(income-expense);
-    if(body)body.innerHTML=rows.length?rows.map(x=>{const q=byId.get(String(x.project_id));return `<tr><td>${esc(String(x.transaction_date||'').slice(0,10))}</td><td>${esc(q?`${q.project_code||'-'} — ${q.project_name||'-'}`:'-')}</td><td class="finance-type-${typeOf(x)}">${esc(x.transaction_type||x.type||'-')}</td><td>${esc(x.description||x.notes||x.remark||'-')}</td><td class="num">${money(x.amount)}</td></tr>`}).join(''):'<tr><td colspan="5" class="extra-empty">Tidak ada transaksi pada periode/filter ini.</td></tr>';
+    const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+    set('financeKpiCount',rows.length);set('financeKpiIn',money(income));set('financeKpiOut',money(expense));set('financeKpiNet',money(income-expense));
+    const body=document.getElementById('financeBody');if(!body)return;
+    body.innerHTML=rows.length?rows.map(x=>{const q=byId.get(String(x.project_id));return `<tr><td>${esc(String(x.transaction_date||'').slice(0,10))}</td><td>${esc(q?`${q.project_code||'-'} — ${q.project_name||'-'}`:'-')}</td><td class="finance-type-${typeOf(x)}">${esc(x.transaction_type||x.type||'-')}</td><td>${esc(x.description||x.notes||x.remark||'-')}</td><td class="num">${money(x.amount)}</td></tr>`}).join(''):'<tr><td colspan="5" class="extra-empty">Tidak ada transaksi pada periode/filter ini.</td></tr>';
   }
-  function bind(){const p=document.getElementById('financePeriod');if(!p||p.dataset.financePeriodFixV1==='1')return;p.dataset.financePeriodFixV1='1';p.addEventListener('change',e=>{e.preventDefault();e.stopImmediatePropagation();setTimeout(()=>refresh().catch(()=>{}),0)},true);['financeFrom','financeTo','financeProject'].forEach(id=>document.getElementById(id)?.addEventListener('change',()=>refresh().catch(()=>{})));refresh().catch(()=>{});}
-  function scan(){bind()}
-  const boot=()=>{scan();let n=0;const tick=()=>{scan();if(++n<80)setTimeout(tick,100)};tick();};
+  function bind(){const p=document.getElementById('financePeriod');if(!p||p.dataset.financePeriodFixV2==='1')return;p.dataset.financePeriodFixV2='1';p.addEventListener('change',()=>setTimeout(()=>refresh().catch(e=>console.warn('Finance period filter:',e)),0),true);['financeFrom','financeTo','financeProject'].forEach(id=>document.getElementById(id)?.addEventListener('change',()=>refresh().catch(e=>console.warn('Finance period filter:',e))));refresh().catch(e=>console.warn('Finance period filter:',e));}
+  function boot(){bind();new window.SiKoyekFoundation.Observer(bind).observe(document.body,{childList:true,subtree:true});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

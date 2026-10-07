@@ -29,3 +29,5 @@ Repository sudah disiapkan untuk GitHub Pages melalui workflow:
 `.github/workflows/pages.yml`
 
 GitHub Pages harus menggunakan source **GitHub Actions** pada repository settings.
+
+<!-- unified-pages deployment trigger -->

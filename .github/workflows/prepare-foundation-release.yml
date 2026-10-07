@@ -1,0 +1,33 @@
+name: Prepare SiKoyek common release
+
+on:
+  push:
+    branches: [refactor/cloud-foundation-2026-10-07]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Verify contracts
+        run: |
+          node --test tests/foundation/*.test.cjs
+          for test_file in tests/*.test.js; do node "$test_file" || exit 1; done
+      - name: Build both Cloud environments from this commit
+        run: node deployment/build-release.cjs "$RUNNER_TEMP/sikoyek-release"
+      - name: Verify immutable package and tenant routing
+        run: node deployment/verify-release.cjs "$RUNNER_TEMP/sikoyek-release"
+      - name: Record source commit
+        run: echo "$GITHUB_SHA" > "$RUNNER_TEMP/sikoyek-release/SOURCE_COMMIT.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sikoyek-common-cloud-${{ github.sha }}
+          path: ${{ runner.temp }}/sikoyek-release
+          retention-days: 30

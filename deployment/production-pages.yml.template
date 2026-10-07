@@ -1,0 +1,87 @@
+# Inactive recipe. Activate only after production rollout is explicitly authorized.
+# Retire both old pages.yml and unified-pages.yml before enabling this recipe.
+name: Publish reviewed SiKoyek common release
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_commit:
+        description: Full reviewed Foundation commit SHA
+        required: true
+      application_revision:
+        description: Reviewed applicationRevision from prepared artifact
+        required: true
+      mode:
+        description: Publish common release or restore observed Cloud
+        type: choice
+        options: [release, restore-cloud-2026-10-07]
+        default: release
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Validate reviewed identifiers
+        env:
+          SOURCE_COMMIT: ${{ inputs.source_commit }}
+          APP_REVISION: ${{ inputs.application_revision }}
+        run: |
+          [[ "$SOURCE_COMMIT" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$APP_REVISION" =~ ^[a-f0-9]{64}$ ]]
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_commit }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Verify source and contracts
+        env:
+          SOURCE_COMMIT: ${{ inputs.source_commit }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
+          node --test tests/foundation/*.test.cjs
+          for test_file in tests/*.test.js; do node "$test_file" || exit 1; done
+      - name: Build reviewed common release
+        env:
+          APP_REVISION: ${{ inputs.application_revision }}
+        run: |
+          node deployment/build-release.cjs "$RUNNER_TEMP/common-release"
+          node deployment/verify-release.cjs "$RUNNER_TEMP/common-release"
+          node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/common-release/release-manifest.json"));if(m.applicationRevision!==process.env.APP_REVISION)throw Error("Unreviewed application revision")'
+      - name: Prepare static rollback
+        run: |
+          python -m pip install PyYAML==6.0.2
+          python deployment/prepare-active-backup.py "$RUNNER_TEMP/cloud-backup"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sikoyek-before-foundation-${{ github.run_id }}
+          path: ${{ runner.temp }}/cloud-backup
+          retention-days: 90
+      - name: Select reviewed artifact
+        env:
+          PUBLISH_MODE: ${{ inputs.mode }}
+        run: |
+          if [ "$PUBLISH_MODE" = "release" ]; then
+            echo "PUBLISH_PATH=$RUNNER_TEMP/common-release" >> "$GITHUB_ENV"
+          else
+            echo "PUBLISH_PATH=$RUNNER_TEMP/cloud-backup" >> "$GITHUB_ENV"
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.PUBLISH_PATH }}
+      - uses: actions/deploy-pages@v4
+        id: deployment
