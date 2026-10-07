@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Verify this branch cannot publish
+      - name: Verify retired duplicate publishers are absent
         run: |
           test ! -e .github/workflows/pages.yml
           test ! -e .github/workflows/fix-cost-gap.yml

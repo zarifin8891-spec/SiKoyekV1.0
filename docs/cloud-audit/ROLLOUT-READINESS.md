@@ -1,6 +1,6 @@
 # Kandidat rollout bersama — 07 Oktober 2026
 
-Cloud aktif dan database MASTER/KONSTRUVA belum diubah. Kandidat berada pada cabang Foundation, berasal dari audit Closed dan sekarang menggabungkan sejarah Main `543df154885d017b0632832d5f2c19cda1a5ff6a`. LAN tetap dijeda.
+Dokumen ini merekam kandidat sebelum rollout: Cloud aktif dan database MASTER/KONSTRUVA tidak diubah selama persiapan. Kandidat berasal dari audit Closed dan menggabungkan sejarah Main `543df154885d017b0632832d5f2c19cda1a5ff6a`. LAN tetap dijeda.
 
 ## Rekonsiliasi produksi
 
@@ -47,3 +47,7 @@ Preview adalah simulasi lokal. RLS, trigger, Edge Function, posting produksi, mu
 5. Verifikasi artifact/deployment GitHub Pages selesai dan file statis kedua path memilih konfigurasi yang benar. Pengujian akun/data nyata mengikuti izin terpisah pengguna; jangan membuat transaksi uji produksi secara otomatis.
 
 Jika frontend perlu dikembalikan, jalankan workflow manual yang sama dengan mode `restore-cloud-2026-10-07`. Builder cadangan memakai Main SHA yang dipatok dan memeriksa hash HTML terhadap sumber Cloud yang diamati. Pemulihan ini hanya mengembalikan frontend, tidak mengembalikan atau mengubah data backend. Untuk rilis setelah Foundation, simpan dan gunakan artifact rilis sebelumnya yang tepat.
+
+## Persetujuan rollout
+
+Pada 07 Oktober 2026 pengguna menjawab “Kalau sudah oke, boleh” atas permintaan izin deployment frontend MASTER dan KONSTRUVA tanpa perubahan database. Publisher `pages-common.yml` dipersiapkan untuk Main dengan fingerprint pada `release-lock.json`; daftar `configFiles` menentukan seluruh pelanggan dalam satu build. Perubahan dokumentasi audit tidak memicu publikasi ulang. Hasil deployment dicatat terpisah setelah status GitHub Pages dan file statis aktif diverifikasi.

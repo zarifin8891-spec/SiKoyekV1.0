@@ -48,6 +48,9 @@ if(require.main===module){
   const args=process.argv.slice(2);const preview=args[0]==='--preview';if(preview)args.shift();
   if(args.length<1)throw new Error('node deployment/build-release.cjs [--preview] /absolute/output [config.json ...]');
   const root=path.resolve(__dirname,'..');
-  const tenants=preview?['master','konstruva','klien-baru'].map(id=>({id,name:id==='master'?'MASTER':id==='konstruva'?'KONSTRUVA':'KLIEN BARU',backend:'preview',url:'https://'+id+'.invalid',key:'preview-only'})):(args.slice(1).length?args.slice(1):['deployment/environments/master.json','deployment/environments/konstruva.json']).map(file=>JSON.parse(fs.readFileSync(file,'utf8')));
+  const releaseLock=path.join(root,'deployment/release-lock.json');
+  const configFiles=fs.existsSync(releaseLock)?JSON.parse(fs.readFileSync(releaseLock,'utf8')).configFiles:['deployment/environments/master.json','deployment/environments/konstruva.json'];
+  if(!preview&&(!Array.isArray(configFiles)||!configFiles.length))throw new Error('Daftar konfigurasi rilis harus diisi');
+  const tenants=preview?['master','konstruva','klien-baru'].map(id=>({id,name:id==='master'?'MASTER':id==='konstruva'?'KONSTRUVA':'KLIEN BARU',backend:'preview',url:'https://'+id+'.invalid',key:'preview-only'})):(args.slice(1).length?args.slice(1):configFiles).map(file=>JSON.parse(fs.readFileSync(file,'utf8')));
   const result=buildRelease({sourceRoot:root,outRoot:args[0],tenants,preview});console.log(JSON.stringify({applicationRevision:result.applicationRevision,mode:result.mode,tenants:result.tenants},null,2));
 }

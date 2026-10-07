@@ -39,3 +39,9 @@ Preview menguji pengalaman UI dan kontrak adapter, bukan RLS, trigger, multiuser
 Lihat `docs/cloud-audit/ROLLOUT-READINESS.md` untuk keputusan terhadap seluruh perubahan sesudah Closed dan bukti validasi terhadap Cloud aktif. Jalankan `node deployment/verify-release.cjs /absolute/release-output` setelah build. Verifier memeriksa hash paket, kesamaan file antar pelanggan, konfigurasi dan referensi aset tanpa koneksi database.
 
 Workflow `prepare-foundation-release.yml` menghasilkan artifact CI tanpa publikasi. `production-pages.yml.template` adalah resep manual yang belum aktif, memerlukan full SHA sumber dan fingerprint aplikasi yang direview. Jangan mengaktifkannya bersamaan dengan dua publisher lama. Cadangan Cloud sebelum Foundation dapat direproduksi offline dengan `python deployment/prepare-active-backup.py /absolute/empty-backup` (PyYAML diperlukan); kedua HTML harus cocok dengan hash sumber aktif yang diamati. Semua resep ini memproses frontend saja.
+
+## Publisher produksi yang diizinkan
+
+Pada 07 Oktober 2026 pengguna mengizinkan rollout frontend bersama. `pages-common.yml` menjadi satu publisher pada push Main dan dispatch manual. Dua publisher lama tetap diarsipkan. `release-lock.json` mencatat fingerprint aplikasi yang sudah diuji; perubahan aplikasi dengan fingerprint berbeda gagal sebelum publikasi sampai lock diperbarui setelah validasi. Workflow selalu menjalankan tes/verifikasi dan menyimpan cadangan sebelum memublikasikan.
+
+Daftar pelanggan yang ikut rilis berada pada `release-lock.json.configFiles`. Untuk pelanggan baru, tambahkan konfigurasi backend miliknya ke daftar ini; builder dan publisher otomatis menyertakan pelanggan tersebut dalam paket dari sumber aplikasi yang sama. Jangan memakai preview sebagai konfigurasi produksi. Provisioning backend tetap proses terpisah; pipeline ini tidak mengubah database.

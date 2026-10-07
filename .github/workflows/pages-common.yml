@@ -1,0 +1,102 @@
+# One Pages publisher, authorized 07 October 2026. No backend operations.
+name: Publish reviewed SiKoyek common release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*.html'
+      - '*.js'
+      - '*.css'
+      - '*.jpg'
+      - '*.png'
+      - '*.svg'
+      - '*.webp'
+      - '*.gif'
+      - '*.ico'
+      - '*.woff*'
+      - foundation/**
+      - deployment/**
+      - .github/workflows/pages-common.yml
+  workflow_dispatch:
+    inputs:
+      source_commit:
+        description: Full reviewed Foundation commit SHA
+        required: false
+      application_revision:
+        description: Reviewed applicationRevision (blank uses release lock)
+        required: false
+      mode:
+        description: Publish common release or restore observed Cloud
+        type: choice
+        options: [release, restore-cloud-2026-10-07]
+        default: release
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    env:
+      SOURCE_COMMIT: ${{ inputs.source_commit || github.sha }}
+      REQUESTED_REVISION: ${{ inputs.application_revision }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Validate reviewed identifiers
+        run: |
+          [[ "$SOURCE_COMMIT" =~ ^[a-f0-9]{40}$ ]]
+          if [ -n "$REQUESTED_REVISION" ]; then [[ "$REQUESTED_REVISION" =~ ^[a-f0-9]{64}$ ]]; fi
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SOURCE_COMMIT }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Resolve reviewed application revision
+        run: |
+          node -e 'const fs=require("fs");const lock=fs.existsSync("deployment/release-lock.json")?JSON.parse(fs.readFileSync("deployment/release-lock.json")):{};const revision=process.env.REQUESTED_REVISION||lock.applicationRevision;if(!/^[a-f0-9]{64}$/.test(revision))throw Error("Invalid release revision");fs.appendFileSync(process.env.GITHUB_ENV,"APP_REVISION="+revision+"\n")'
+      - name: Verify source and contracts
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_COMMIT"
+          node --test tests/foundation/*.test.cjs
+          for test_file in tests/*.test.js; do node "$test_file" || exit 1; done
+      - name: Build reviewed common release
+        run: |
+          node deployment/build-release.cjs "$RUNNER_TEMP/common-release"
+          node deployment/verify-release.cjs "$RUNNER_TEMP/common-release"
+          echo "$SOURCE_COMMIT" > "$RUNNER_TEMP/common-release/SOURCE_COMMIT.txt"
+          node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/common-release/release-manifest.json"));if(m.applicationRevision!==process.env.APP_REVISION)throw Error("Unreviewed application revision")'
+      - name: Prepare static rollback
+        run: |
+          python -m pip install PyYAML==6.0.2
+          python deployment/prepare-active-backup.py "$RUNNER_TEMP/cloud-backup"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sikoyek-before-foundation-${{ github.run_id }}
+          path: ${{ runner.temp }}/cloud-backup
+          retention-days: 90
+      - name: Select reviewed artifact
+        env:
+          PUBLISH_MODE: ${{ inputs.mode || 'release' }}
+        run: |
+          if [ "$PUBLISH_MODE" = "release" ]; then
+            echo "PUBLISH_PATH=$RUNNER_TEMP/common-release" >> "$GITHUB_ENV"
+          else
+            echo "PUBLISH_PATH=$RUNNER_TEMP/cloud-backup" >> "$GITHUB_ENV"
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.PUBLISH_PATH }}
+      - uses: actions/deploy-pages@v4
+        id: deployment
