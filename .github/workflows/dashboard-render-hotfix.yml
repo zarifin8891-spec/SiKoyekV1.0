@@ -8,4 +8,5 @@ jobs:
   retired:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Retired: Dashboard rendering is deployed only by pages.yml."
+      - run: |
+          echo "Retired: Dashboard rendering is deployed only by pages.yml."

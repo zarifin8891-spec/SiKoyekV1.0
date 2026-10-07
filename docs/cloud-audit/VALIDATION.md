@@ -1,6 +1,6 @@
 # Hasil Global Foundation — 07 Oktober 2026
 
-Audit selesai pada commit `1f46e13` sebelum implementasi. Implementasi memakai Closed `dcd50d137c26cb62aeb91292b46c3de56fe05a2a` pada cabang `refactor/cloud-foundation-2026-10-07`. Perubahan bisnis Main sesudah Closed tidak diimpor.
+Audit selesai pada commit lokal `1f46e13` sebelum implementasi. Saat publikasi melalui koneksi GitHub, audit menjadi commit `203616008eaf56458d55c73b505af6b424905503` dan implementasi menjadi `ff43af58d4b56f292833732d5fc44073c48b0064`; tree keduanya identik dengan commit lokal yang diuji. Implementasi memakai Closed `dcd50d137c26cb62aeb91292b46c3de56fe05a2a` pada cabang `refactor/cloud-foundation-2026-10-07`. Perubahan bisnis Main sesudah Closed tidak diimpor.
 
 ## Hasil ukur lokal
 
@@ -62,3 +62,7 @@ node tests/foundation/contracts.cjs /tmp/sikoyek-closed-baseline .
 ```
 
 Harness melarang permintaan eksternal dan memakai fixture SDK sebelum halaman dimuat. Tidak memerlukan kredensial atau akses MASTER. Tanggal aplikasi dibekukan; timer nyata tetap berjalan. Jumlah callback dapat berubah sedikit menurut penjadwalan browser; hasil query/observer dan kontrak UI adalah pemeriksaan utama.
+
+## Verifikasi publikasi GitHub
+
+Cabang diterbitkan tanpa merge atau deployment. CI Foundation pada implementasi `ff43af5` lulus: https://github.com/zarifin8891-spec/SiKoyekV1.0/actions/runs/37577050835. GitHub menemukan tiga workflow Closed yang sudah retired tetapi YAML-nya tidak valid karena tanda titik dua pada nilai `run` tanpa block scalar. Perbaikan lanjutan hanya mengubah penulisan YAML tiga workflow tersebut; trigger manual dan echo tetap sama. Seluruh YAML workflow aktif dapat diparse. Main dan baseline Closed tetap pada SHA yang dicatat dalam audit.

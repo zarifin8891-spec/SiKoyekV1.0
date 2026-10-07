@@ -8,4 +8,5 @@ jobs:
   retired:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Retired: canonical Dashboard changes belong in source files."
+      - run: |
+          echo "Retired: canonical Dashboard changes belong in source files."
