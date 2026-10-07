@@ -1,13 +1,11 @@
 (function(){
-  const SUPABASE_URL='https://mmkusplegmittrlxqxby.supabase.co';
-  const SUPABASE_KEY='sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf';
   let client=null,lastSignature='',busy=false;
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
   function dashboardEl(){return [...document.querySelectorAll('.content')].find(x=>x.querySelector('.top h1')?.textContent.trim()==='Dashboard')}
   async function load(){
     if(busy||document.querySelector('#page .md-page')||!window.SiKoyekHealthEngine||!window.SiKoyekDecisionEngine||!window.supabase)return;
     const app=document.getElementById('app');const dashboard=app&&dashboardEl();if(!dashboard)return;
-    if(!client)client=window.SiKoyekBackend.getClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    if(!client)client=window.SiKoyekBackend.getClient();
     busy=true;
     try{
       const {data,error}=await client.from('project_summary').select('project_code,project_name,project_progress,cost_ratio,rap_consumption').order('project_code');

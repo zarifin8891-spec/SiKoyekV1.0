@@ -8,7 +8,7 @@
     const app=document.getElementById('app');
     const dashboard=app&&[...app.querySelectorAll('.content')].find(x=>x.querySelector('.top h1'));
     if(!dashboard)return;
-    if(!client)client=window.SiKoyekBackend.getClient('https://mmkusplegmittrlxqxby.supabase.co','sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    if(!client)client=window.SiKoyekBackend.getClient();
     const {data,error}=await client.from('project_summary').select('project_code,project_name,cash_in,cash_out,net_cashflow').order('project_code');
     if(error||!data)return;
     const rows=data.map(r=>{const d=window.SiKoyekCashflowDecisionEngine.evaluate(r);return {...r,decision:d}});

@@ -20,14 +20,14 @@
 
 <link rel="stylesheet" href="./foundation/tokens.css">
 <link rel="stylesheet" href="./foundation/dashboard.css">
+<script src="./environment.js"></script>
+<script src="./foundation/config.js"></script>
 <script src="./foundation/runtime.js"></script>
 <script src="./foundation/backend.js"></script>
 <script src="./foundation/repository.js"></script>
 </head>
 <body><div id="app"></div><script>
-const SUPABASE_URL='https://mmkusplegmittrlxqxby.supabase.co';
-const SUPABASE_KEY='sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf';
-const sb=window.sb=window.SiKoyekBackend.getClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.sessionStorage}});
+const sb=window.sb=window.SiKoyekBackend.getClient();
 const money=n=>window.SiKoyekFoundation.money(n);
 const moneyPlain=n=>window.SiKoyekFoundation.moneyPlain(n);
 const pct=n=>Number(n||0).toFixed(2)+'%';

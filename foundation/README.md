@@ -1,7 +1,8 @@
 # Common SiKoyek Foundation
 
-The reference is Closed `dcd50d1`, not current Main. This branch does not deploy. Cloud and LAN should consume this same UI source once LAN resumes.
+The reference is Closed `dcd50d1`, not current Main. This branch does not deploy production Cloud. A separate private synthetic preview is available. Cloud and LAN should consume this same UI source once LAN resumes.
 
+- `config.js` and `../environment.js`: one validated environment configuration for every module and secondary entry. No fallback to MASTER for missing client settings. `../deployment/build-release.cjs` generates identical UI bundles for all clients, differing only in configuration.
 - `tokens.css`: central Closed colors and typography values.
 - `dashboard.css`: original static cascade consolidated in its original order. Secondary pages reuse identical cascades; `styles-manifest.json` records the original inputs. Legacy files still used by dynamic modal/report loaders are retained. Do not append a new version of CSS for each screen adjustment.
 - `runtime.js`: reusable currency formatters, URL-based asset registry with load/error promises, single-flight tasks, idempotent style updates and one native DOM observer shared by legacy subscribers. Native browser prototypes are not overwritten.

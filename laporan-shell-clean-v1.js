@@ -27,9 +27,8 @@
       if(!client?.auth?.getSession)return;
       const {data:{session}}=await client.auth.getSession();
       if(!session)return;
-      /* Workspace uses Supabase's default persisted storage. The legacy Dashboard
-         login used sessionStorage, so bridge the current session before leaving Laporan. */
-      localStorage.setItem('sb-mmkusplegmittrlxqxby-auth-token',JSON.stringify(session));
+      /* Every page uses the configured project key in tab-scoped storage. */
+      sessionStorage.setItem(window.SiKoyekConfig.storageKey,JSON.stringify(session));
     }catch(e){console.warn('SiKoyek workspace session bridge:',e)}
   }
 

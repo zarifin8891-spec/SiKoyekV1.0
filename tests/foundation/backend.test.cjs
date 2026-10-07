@@ -11,3 +11,11 @@ test('filters and auth changes cannot share a read',async()=>{const s=setup(),a=
 test('writes execute separately; invocation invalidates pending reads',async()=>{const s=setup(),a=Promise.resolve(s.client.from('projects').insert({id:'p1'})),b=Promise.resolve(s.client.from('projects').insert({id:'p1'}));await tick();assert.equal(s.counts().writes,2);s.flush();await Promise.all([a,b]);const read=Promise.resolve(s.client.from('projects').select('*'));await tick();await s.client.functions.invoke('user-management',{body:{action:'update'}});const second=Promise.resolve(s.client.from('projects').select('*'));await tick();assert.equal(s.counts().reads,2);s.flush();await Promise.all([read,second]);assert.equal(s.counts().writes,3)});
 test('abort signals use independent reads',async()=>{const s=setup(),signal=new AbortController().signal,a=Promise.resolve(s.client.from('projects').select('*').abortSignal(signal)),b=Promise.resolve(s.client.from('projects').select('*').abortSignal(signal));await tick();assert.equal(s.counts().reads,2);s.flush();await Promise.all([a,b])});
 test('backend selection is fixed after initialization',()=>{const s=setup();assert.throws(()=>s.backend.registerBackend(()=>{}),/initialized/);assert.equal(s.backend.getClient('https://fixture.invalid','publishable'),s.client)});
+test('configured client resolves the tenant and rejects explicit access to another backend',()=>{
+ let captured;const raw={auth:{onAuthStateChange(){}},from(){}};
+ const config={url:'https://tenant-fixture.supabase.co',key:'sb_publishable_fixture',storageKey:'sb-tenant-fixture-auth-token'};
+ const window={SiKoyekConfig:config,sessionStorage:{},supabase:{createClient(...args){captured=args;return raw}}};
+ vm.runInNewContext(fs.readFileSync('foundation/backend.js','utf8'),{window,structuredClone});
+ window.SiKoyekBackend.getClient();assert.equal(captured[0],config.url);assert.equal(captured[1],config.key);assert.equal(captured[2].auth.storageKey,config.storageKey);assert.equal(captured[2].auth.storage,window.sessionStorage);
+ assert.throws(()=>window.SiKoyekBackend.getClient('https://different.supabase.co',config.key),/lingkungan aktif/);
+});

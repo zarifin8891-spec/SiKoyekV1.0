@@ -26,7 +26,7 @@ jobs:
         run: |
           for source_file in foundation/*.js; do node --check "$source_file" || exit 1; done
       - name: Run backend and repository contracts
-        run: node --test tests/foundation/backend.test.cjs tests/foundation/repository.test.cjs
+        run: node --test tests/foundation/*.test.cjs
       - name: Run Closed engine and UI suites
         run: |
           for test_file in tests/*.test.js; do node "$test_file" || exit 1; done

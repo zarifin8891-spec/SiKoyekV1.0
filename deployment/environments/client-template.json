@@ -1,0 +1,7 @@
+{
+  "id": "klien-baru",
+  "name": "Nama Klien",
+  "backend": "cloud",
+  "url": "https://PROJECT_REF.supabase.co",
+  "key": "REPLACE_WITH_PUBLISHABLE_KEY"
+}

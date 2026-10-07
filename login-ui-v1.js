@@ -10,7 +10,7 @@
     if(window.__siKoyekAuthClient?.auth) return window.__siKoyekAuthClient;
     if(!window.supabase?.createClient) return null;
     if(!window.__siKoyekAuthClient){
-      window.__siKoyekAuthClient=window.SiKoyekBackend.getClient('https://mmkusplegmittrlxqxby.supabase.co','sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+      window.__siKoyekAuthClient=window.SiKoyekBackend.getClient();
     }
     return window.__siKoyekAuthClient;
   }

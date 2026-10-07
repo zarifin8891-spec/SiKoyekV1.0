@@ -9,12 +9,14 @@
 
 <link rel="stylesheet" href="./foundation/tokens.css">
 <link rel="stylesheet" href="./foundation/workspace.css">
+<script src="./environment.js"></script>
+<script src="./foundation/config.js"></script>
 <script src="./foundation/runtime.js"></script>
 <script src="./foundation/backend.js"></script>
 <script src="./foundation/repository.js"></script>
 </head>
 <body><div id="app"></div><script>
-const sb=window.SiKoyekBackend.getClient('https://mmkusplegmittrlxqxby.supabase.co','sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const sb=window.SiKoyekBackend.getClient();
 const money=n=>window.SiKoyekFoundation.money(n);
 const pct=n=>Number(n||0).toFixed(2)+'%';
 const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));

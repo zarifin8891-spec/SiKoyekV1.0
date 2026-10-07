@@ -1,7 +1,5 @@
 (function(){
   const ENGINE_URL='./project-health-engine-v1.js';
-  const SUPABASE_URL='https://mmkusplegmittrlxqxby.supabase.co';
-  const SUPABASE_KEY='sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf';
   let healthClient=null,lastSignature='',busy=false;
 
   function esc(s){return String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
@@ -85,7 +83,7 @@
     if(busy||!window.SiKoyekHealthEngine||!window.supabase)return;
     const app=document.getElementById('app');if(!app||!app.querySelector('.shell'))return;
     const dashboard=dashboardEl();if(!dashboard)return;
-    if(!healthClient)healthClient=window.SiKoyekBackend.getClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    if(!healthClient)healthClient=window.SiKoyekBackend.getClient();
     busy=true;
     try{
       const {data,error}=await healthClient.from('project_summary').select('project_code,project_name,project_progress,cost_ratio,rap_consumption').order('project_code');

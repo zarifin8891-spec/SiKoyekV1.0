@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "scope": "SDK fixture only; zero production database requests",
+  "results": [
+    {
+      "tenant": "master",
+      "expectedUrl": "https://mmkusplegmittrlxqxby.supabase.co",
+      "passed": true,
+      "errors": [],
+      "external": []
+    },
+    {
+      "tenant": "konstruva",
+      "expectedUrl": "https://fadxsycdgzuctvmhhjty.supabase.co",
+      "passed": true,
+      "errors": [],
+      "external": []
+    }
+  ]
+}

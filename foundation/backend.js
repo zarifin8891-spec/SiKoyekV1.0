@@ -48,6 +48,13 @@
       if(name==='rpc')return (...args)=>query(target.rpc(...args),'rpc:'+args[0],[['rpc',args]],true);if(name==='invalidateReads')return invalidate;const value=target[name];return typeof value==='function'?value.bind(target):value}});
   }
   function getClient(url,key,options={}){
+    if(url===undefined&&key===undefined){
+      const config=global.SiKoyekConfig;
+      if(!config)throw new Error('Konfigurasi SiKoyek belum dimuat');
+      url=config.url;key=config.key;
+      options={...options,auth:{...options.auth,storageKey:config.storageKey}};
+    }
+    if(global.SiKoyekConfig&&(url!==global.SiKoyekConfig.url||key!==global.SiKoyekConfig.key))throw new Error('Client harus memakai backend lingkungan aktif');
     const id=url+'|'+key;
     if(!clients.has(id))clients.set(id,wrapClient(factory(url,key,{...options,auth:{...options.auth,persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:global.sessionStorage}})));
     return clients.get(id);

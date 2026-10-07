@@ -1,6 +1,4 @@
 (function(){
-  const SUPABASE_URL='https://mmkusplegmittrlxqxby.supabase.co';
-  const SUPABASE_KEY='sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf';
   let busy=false;
   const money=n=>window.SiKoyekFoundation.money(n);
   const pct=n=>{const v=Number(n||0);const normalized=(Math.abs(v)>0&&Math.abs(v)<=1)?v*100:v;return normalized.toFixed(2)+'%'};
@@ -53,7 +51,7 @@
     if(!window.supabase)return;
     busy=true;
     try{
-      const client=window.SiKoyekBackend.getClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+      const client=window.SiKoyekBackend.getClient();
       const {data,error}=await client.from('project_summary').select('*').order('project_code');
       if(error)throw error;
       repair(root,data||[]);
