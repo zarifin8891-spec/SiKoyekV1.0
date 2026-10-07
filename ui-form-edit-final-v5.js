@@ -21,16 +21,7 @@
 @media(max-width:560px){#modal .ui-final-head{height:70px;padding:10px 14px}.ui-final-head h3{font-size:20px!important}.ui-final-grid{grid-template-columns:1fr!important}.span2,.span6{grid-column:1/-1}.ui-final-row3{grid-template-columns:1fr}.ui-final-actions{padding:7px 12px}.ui-final-actions button{min-width:0!important;flex:1}}
 `;document.head.appendChild(s)
   }
-  async function getProjectInfo(id){
-    const [{data:project,error:e1},{count:progressCount,error:e2},{count:txCount,error:e3}]=await Promise.all([
-      sb.from('projects').select('*').eq('id',id).single(),
-      sb.from('progress_records').select('id',{count:'exact',head:true}).eq('project_id',id),
-      sb.from('financial_transactions').select('id',{count:'exact',head:true}).eq('project_id',id)
-    ]);
-    if(e1||e2||e3){toast('Tidak bisa memeriksa status proyek');return null}
-    const started=String(project?.status||'').toUpperCase()!=='RENCANA'||Number(project?.project_progress||0)>0||Number(progressCount||0)>0||Number(txCount||0)>0;
-    return {project,started};
-  }
+  async function getProjectInfo(id){try{return await window.SiKoyekRepository.lifecycle(sb,id)}catch(error){toast('Tidak bisa memeriksa status proyek');return null}}
   async function getCategories(current){
     try{const {data,error}=await sb.from('project_categories').select('name,is_active,sort_order').order('sort_order',{ascending:true}).order('name',{ascending:true});if(error)throw error;const rows=(data||[]).filter(x=>x.is_active!==false);if(rows.length)return rows}catch(_){ }
     return current?[{name:current,is_active:true,sort_order:1}]:[{name:'Renovasi',is_active:true,sort_order:1}];

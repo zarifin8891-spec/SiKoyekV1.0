@@ -41,5 +41,5 @@
   }
   function boot(){addStyle();normalize()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  const obs=new MutationObserver(()=>{clearTimeout(window.__progressFinalTimer);window.__progressFinalTimer=setTimeout(boot,30)});obs.observe(document.body,{childList:true,subtree:true});
+  const obs=new window.SiKoyekFoundation.Observer(()=>{clearTimeout(window.__progressFinalTimer);window.__progressFinalTimer=setTimeout(boot,30)});obs.observe(document.body,{childList:true,subtree:true});
 })();

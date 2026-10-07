@@ -46,6 +46,6 @@
     const parent=document.getElementById('modal');if(parent){parent.style.setProperty('padding','0','important');parent.style.setProperty('overflow','hidden','important')}
     const cat=box.querySelector('#tx_cat');const method=box.querySelector('#tx_method');if(cat&&!method.dataset.masterLoaded){loadOptions();if(method)method.dataset.masterLoaded='1'}
   }
-  function boot(){addStyle();normalize();const obs=new MutationObserver(()=>{clearTimeout(window.__txCompactTimerV3);window.__txCompactTimerV3=setTimeout(normalize,30)});obs.observe(document.body,{childList:true,subtree:true})}
+  function boot(){addStyle();normalize();const obs=new window.SiKoyekFoundation.Observer(()=>{clearTimeout(window.__txCompactTimerV3);window.__txCompactTimerV3=setTimeout(normalize,30)});obs.observe(document.body,{childList:true,subtree:true})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();

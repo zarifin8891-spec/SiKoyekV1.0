@@ -3,7 +3,7 @@
   'use strict';
   if(window.__SIKOYEK_LAPORAN_UNIFIED_V3__)return;
   window.__SIKOYEK_LAPORAN_UNIFIED_V3__=true;
-  const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
+  const money=n=>window.SiKoyekFoundation.money(n);
   const pct=n=>Number(n||0).toFixed(2)+'%';
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
   const localDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;

@@ -33,6 +33,6 @@
   function markUrutan(box){box.querySelectorAll('.field').forEach(f=>{const label=(f.querySelector('label')?.textContent||'').trim().toLowerCase();if(label==='urutan')f.setAttribute('data-master-field','urutan')})}
   function isMasterCrud(box){const title=(box?.querySelector('.modalhead h3')?.textContent||'').trim().toLowerCase();return /^(edit|hapus|tambah)\b/.test(title)&&/kategori proyek|project manager|kategori keuangan|metode pembayaran/.test(title)}
   function decorate(){const box=document.querySelector('#modal .modalbox');if(!isMasterCrud(box))return;addStyle();markUrutan(box);box.classList.add(BOX_CLASS);box.style.setProperty('width','576px','important');box.style.setProperty('min-width','576px','important');box.style.setProperty('max-width','576px','important');box.style.setProperty('height','auto','important');box.style.setProperty('padding','0','important');box.style.setProperty('overflow','hidden','important')}
-  function boot(){addStyle();decorate();new MutationObserver(()=>{clearTimeout(window.__sikoyekMasterCompactTimer);window.__sikoyekMasterCompactTimer=setTimeout(decorate,20)}).observe(document.body,{childList:true,subtree:true})}
+  function boot(){addStyle();decorate();new window.SiKoyekFoundation.Observer(()=>{clearTimeout(window.__sikoyekMasterCompactTimer);window.__sikoyekMasterCompactTimer=setTimeout(decorate,20)}).observe(document.body,{childList:true,subtree:true})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();

@@ -98,6 +98,6 @@
     const {error}=await sb.from('financial_transactions').update({transaction_date:date,transaction_type:type,category:category||null,description,amount,payment_method:method||null}).eq('id',id);if(error){toast(error.message);return}closeModal();await refresh('keuangan');toast('Transaksi diperbarui');
   };
   window.sikoyekDeleteTransactionFinal=async function(id){if(!confirm('Hapus transaksi ini?'))return;const {error}=await sb.from('financial_transactions').delete().eq('id',id);if(error){toast(error.message);return}closeModal();await refresh('keuangan');toast('Transaksi dihapus')};
-  function boot(){addStyle();decorate();const obs=new MutationObserver(()=>{clearTimeout(window.__opCrudFinalTimer);window.__opCrudFinalTimer=setTimeout(decorate,80)});obs.observe(document.body,{childList:true,subtree:true})}
+  function boot(){addStyle();decorate();const obs=new window.SiKoyekFoundation.Observer(()=>{clearTimeout(window.__opCrudFinalTimer);window.__opCrudFinalTimer=setTimeout(decorate,80)});obs.observe(document.body,{childList:true,subtree:true})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();

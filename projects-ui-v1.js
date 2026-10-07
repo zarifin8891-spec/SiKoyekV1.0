@@ -144,7 +144,7 @@
     observe();
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  const obs=new MutationObserver(()=>{
+  const obs=new window.SiKoyekFoundation.Observer(()=>{
     clearTimeout(window.__projectsUiV2Timer);
     window.__projectsUiV2Timer=setTimeout(observe,80);
   });

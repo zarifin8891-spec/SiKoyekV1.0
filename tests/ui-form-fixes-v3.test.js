@@ -2,7 +2,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const js=fs.readFileSync('ui-form-fixes-v3.js','utf8');
 const css=fs.readFileSync('ui-form-fixes-v3.css','utf8');
-const deploy=fs.readFileSync('.github/workflows/pages.yml','utf8');
+const deploy=fs.readFileSync('docs/cloud-audit/closed-workflows/pages.yml','utf8');
 assert.ok(js.includes("removeAttribute('onclick')"),'Wizard navigation binding missing');
 assert.ok(js.includes("['Renovasi','Bangun Baru','Interior','Instalasi','Pemeliharaan','Lainnya']"),'Category fallback options missing');
 assert.ok(js.includes("project_categories"),'Project category master table integration missing');

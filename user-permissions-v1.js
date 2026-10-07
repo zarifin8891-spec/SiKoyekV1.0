@@ -16,7 +16,9 @@
   .ump-perm td{height:38px}
   `;
   function inject(){if(q('ump-styles'))return;const s=document.createElement('style');s.id='ump-styles';s.textContent=css;document.head.appendChild(s)}
-  async function loadData(){
+  const loadData=window.SiKoyekFoundation.singleFlight(loadDataImpl);
+  async function loadDataImpl(){
+    if(!document.querySelector('.um-grid'))return;
     const client=window.sb;
     if(!client?.from)return;
     const [{data:r,error:re},{data:p,error:pe},{data:rp,error:rpe}]=await Promise.all([

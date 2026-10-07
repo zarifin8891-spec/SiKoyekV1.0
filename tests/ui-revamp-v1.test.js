@@ -2,7 +2,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const js=fs.readFileSync('ui-form-fixes-v3.js','utf8');
 const css=fs.readFileSync('ui-form-fixes-v3.css','utf8');
-const page=fs.readFileSync('index.html','utf8');
+const page=fs.readFileSync('index.html','utf8')+fs.readFileSync('foundation/styles-manifest.json','utf8');
 const migration=fs.readFileSync('supabase/migrations/20260825045000_project_category_master.sql','utf8');
 assert.ok(js.includes('window.nextProjectStep'),'Project wizard next handler must be globally reachable');
 assert.ok(js.includes('window.prevProjectStep'),'Project wizard back handler must be globally reachable');

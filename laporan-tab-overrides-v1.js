@@ -19,6 +19,6 @@
     },true);
     return true;
   }
-  function boot(){let n=0;const tick=()=>{if(start()||++n>=120)return;setTimeout(tick,100)};tick();const t=document.body||document.documentElement;if(t)new MutationObserver(()=>start()).observe(t,{childList:true,subtree:true})}
+  function boot(){let n=0;const tick=()=>{if(start()||++n>=120)return;setTimeout(tick,100)};tick();const t=document.body||document.documentElement;if(t)new window.SiKoyekFoundation.Observer(()=>start()).observe(t,{childList:true,subtree:true})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

@@ -2,7 +2,7 @@
   const months=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
   const fmtDate=d=>{if(!d)return '-';const [y,m,day]=String(d).slice(0,10).split('-');return y&&m&&day?`${day.padStart(2,'0')}-${months[Number(m)-1]}-${y}`:'-'};
-  const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
+  const money=n=>window.SiKoyekFoundation.money(n);
   let categoryAll=[];
 
   function centerAndNormalizeWizard(){
@@ -107,21 +107,7 @@
     const snap=window.__p5ProjectSnapshot;delete window.__p5ProjectSnapshot;closeModal();if(snap)reopenProjectForm(snap);
   };
 
-  function isProjectStarted(project,progressCount,txCount){
-    const status=String(project?.status||'').toUpperCase();
-    const progress=Number(project?.project_progress||0);
-    return status!=='RENCANA'||progress>0||progressCount>0||txCount>0;
-  }
-
-  async function projectLifecycle(id){
-    const [{data:project,error:e1},{count:progressCount,error:e2},{count:txCount,error:e3}]=await Promise.all([
-      sb.from('projects').select('*').eq('id',id).single(),
-      sb.from('progress_records').select('id',{count:'exact',head:true}).eq('project_id',id),
-      sb.from('financial_transactions').select('id',{count:'exact',head:true}).eq('project_id',id)
-    ]);
-    if(e1||e2||e3){toast('Tidak bisa memeriksa status proyek');return null}
-    return {project,progressCount:progressCount||0,txCount:txCount||0,started:isProjectStarted(project,progressCount||0,txCount||0)};
-  }
+  async function projectLifecycle(id){try{return await window.SiKoyekRepository.lifecycle(sb,id)}catch(error){toast('Tidak bisa memeriksa status proyek');return null}}
 
   async function editProjectForm(id){
     const info=await projectLifecycle(id);if(!info)return;if(info.started){toast('Proyek sudah dimulai. Edit data proyek dasar dikunci.');return}
@@ -155,13 +141,15 @@
     const head=table.querySelector('thead tr');if(!head)return;
     const th=document.createElement('th');th.textContent='Aksi';head.appendChild(th);
     const rows=[...table.querySelectorAll('tbody tr')];
+    const ids=rows.map(tr=>tr.querySelector('button.linkbtn')?.getAttribute('onclick')?.match(/openProject\('([^']+)'\)/)?.[1]).filter(Boolean);
+    const lifecycleTask=window.SiKoyekRepository.lifecycleList(sb,ids).catch(error=>{toast(error.message||'Tidak bisa memeriksa status proyek');return new Map()});
     for(const tr of rows){
       const openBtn=tr.querySelector('button.linkbtn');
       if(!openBtn)return;
       const m=openBtn.getAttribute('onclick')?.match(/openProject\('([^']+)'\)/);const id=m?.[1];if(!id)continue;
       const td=document.createElement('td');td.className='p5-actions-cell';td.innerHTML='<div class="p5-toolbar"><button class="p5-action primary" type="button" data-p5-edit>Edit</button><button class="p5-action danger" type="button" data-p5-delete>Hapus</button></div><span class="p5-lock-note">Memeriksa status proyek...</span>';tr.appendChild(td);
       td.querySelector('[data-p5-edit]').addEventListener('click',()=>p5EditProject(id));td.querySelector('[data-p5-delete]').addEventListener('click',()=>p5DeleteProject(id));
-      projectLifecycle(id).then(info=>{const edit=td.querySelector('[data-p5-edit]'),del=td.querySelector('[data-p5-delete]'),note=td.querySelector('.p5-lock-note');if(!info)return;if(info.started){edit.disabled=true;del.disabled=true;note.textContent='Terkunci: proyek sudah dimulai';}else{note.textContent='Edit/Hapus tersedia sebelum proyek dimulai';}});
+      lifecycleTask.then(results=>{const info=results.get(id);const edit=td.querySelector('[data-p5-edit]'),del=td.querySelector('[data-p5-delete]'),note=td.querySelector('.p5-lock-note');if(!info){edit.disabled=true;del.disabled=true;return}if(info.started){edit.disabled=true;del.disabled=true;note.textContent='Terkunci: proyek sudah dimulai';}else{note.textContent='Edit/Hapus tersedia sebelum proyek dimulai';}});
     }
     table.dataset.p5Decorated='1';
   }
@@ -172,11 +160,12 @@
     const edit=document.createElement('button');edit.className='btn primary';edit.textContent='Edit Proyek';edit.dataset.p5DetailEdit='1';
     const del=document.createElement('button');del.className='btn danger';del.textContent='Hapus Proyek';
     actions.insertBefore(edit,actions.firstChild);actions.insertBefore(del,edit.nextSibling);
-    projectLifecycle(state.selected).then(info=>{if(info?.started){edit.disabled=true;del.disabled=true;edit.title='Proyek sudah dimulai';del.title='Proyek sudah dimulai'}});
+    const rendered=window.SiKoyekRepository.lifecycleFromDetail(state.detail);
+    (rendered&&rendered.project.id===state.selected?Promise.resolve(rendered):projectLifecycle(state.selected)).then(info=>{if(!info||info.started){edit.disabled=true;del.disabled=true;edit.title='Proyek sudah dimulai';del.title='Proyek sudah dimulai'}});
     edit.addEventListener('click',()=>p5EditProject(state.selected));del.addEventListener('click',()=>p5DeleteProject(state.selected));
   }
 
   const observe=()=>{centerAndNormalizeWizard();decorateProjectTable();decorateDetailActions()};
   const boot=()=>setTimeout(observe,80);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  const obs=new MutationObserver(()=>{clearTimeout(window.__p5Timer);window.__p5Timer=setTimeout(observe,100)});obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
+  const obs=new window.SiKoyekFoundation.Observer(()=>{clearTimeout(window.__p5Timer);window.__p5Timer=setTimeout(observe,100)});obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
 })();

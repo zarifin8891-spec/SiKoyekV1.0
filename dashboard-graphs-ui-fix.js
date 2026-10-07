@@ -196,8 +196,8 @@
     return true;
   }
 
-  const obs=new MutationObserver(()=>install());
+  const obs=new window.SiKoyekFoundation.Observer(()=>install());
   obs.observe(document.body,{childList:true,subtree:true});
   let tries=0;
-  const timer=setInterval(()=>{if(install()||++tries>30)clearInterval(timer)},500);
+
 })();

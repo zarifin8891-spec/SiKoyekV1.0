@@ -4,7 +4,7 @@
   if(window.__SIKOYEK_LAPORAN_KINERJA_PROYEK_V2__)return;
   window.__SIKOYEK_LAPORAN_KINERJA_PROYEK_V2__=true;
 
-  const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
+  const money=n=>window.SiKoyekFoundation.money(n);
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
   const txType=r=>String(r?.transaction_type||r?.type||'').trim().toUpperCase();
   const txDate=r=>String(r?.transaction_date||'').slice(0,10);

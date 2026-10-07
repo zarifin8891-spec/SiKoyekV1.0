@@ -35,5 +35,5 @@
   function syncDateInputs(){const select=document.getElementById('periodPreset');if(!select||typeof state==='undefined')return;const row=select.closest('.periodrow')||select.parentElement?.parentElement;if(!row)return;const fields=[...row.querySelectorAll('input[type="date"]')];if(fields[0])fields[0].value=state.period?.from||'';if(fields[1])fields[1].value=state.period?.to||'';}
   function syncPreset(){const select=document.getElementById('periodPreset');if(select)select.value=selectedPreset();syncDateInputs();}
   function install(){addStyle();if(typeof window.applyPreset==='function'&&window.applyPreset!==applyPresetFixed)window.applyPreset=applyPresetFixed;syncPreset();}
-  const observer=new MutationObserver(()=>setTimeout(install,0));observer.observe(document.body,{childList:true,subtree:true});addStyle();setTimeout(install,0);setInterval(()=>{if(document.querySelector('.dashboard-view,.dashboard-head,.dashboard-top'))install()},500);
+  const observer=new window.SiKoyekFoundation.Observer(()=>setTimeout(install,0));observer.observe(document.body,{childList:true,subtree:true});addStyle();setTimeout(install,0);
 })();

@@ -85,7 +85,7 @@
     if(busy||!window.SiKoyekHealthEngine||!window.supabase)return;
     const app=document.getElementById('app');if(!app||!app.querySelector('.shell'))return;
     const dashboard=dashboardEl();if(!dashboard)return;
-    if(!healthClient)healthClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    if(!healthClient)healthClient=window.SiKoyekBackend.getClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
     busy=true;
     try{
       const {data,error}=await healthClient.from('project_summary').select('project_code,project_name,project_progress,cost_ratio,rap_consumption').order('project_code');
@@ -110,7 +110,7 @@
   function boot(){
     installPeriodPresetFix();
     const s=document.createElement('script');s.src=ENGINE_URL+'?v=3';s.onload=load;document.body.appendChild(s);
-    const obs=new MutationObserver(()=>{window.clearTimeout(window.__heTimer);window.__heTimer=setTimeout(()=>{installPeriodPresetFix();load()},250)});
+    const obs=new window.SiKoyekFoundation.Observer(()=>{window.clearTimeout(window.__heTimer);window.__heTimer=setTimeout(()=>{installPeriodPresetFix();load()},250)});
     obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
     window.addEventListener('sikoyek:dashboard-panel-request',load);
     window.addEventListener('sikoyek:dashboard-panel-ready',syncDashboardLayout);

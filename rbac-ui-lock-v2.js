@@ -108,6 +108,6 @@
   };
   const boot=()=>{loadAndApply();setTimeout(loadAndApply,180);setTimeout(loadAndApply,500);setTimeout(loadAndApply,1000)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  const obs=new MutationObserver(()=>{clearTimeout(window.__rbacUiLockV2Timer);window.__rbacUiLockV2Timer=setTimeout(()=>{const p=window.__SIKOYEK_RBAC_PERMISSIONS_V2__;if(p)applyNested(p)},70)});
+  const obs=new window.SiKoyekFoundation.Observer(()=>{clearTimeout(window.__rbacUiLockV2Timer);window.__rbacUiLockV2Timer=setTimeout(()=>{const p=window.__SIKOYEK_RBAC_PERMISSIONS_V2__;if(p)applyNested(p)},70)});
   obs.observe(document.body,{childList:true,subtree:true});
 })();

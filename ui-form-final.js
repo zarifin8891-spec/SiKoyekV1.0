@@ -1,7 +1,7 @@
 /* FINAL project form renderer: one authoritative 2-stage form. */
 (function(){
   const today=()=>new Date().toISOString().slice(0,10);
-  const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
+  const money=n=>window.SiKoyekFoundation.money(n);
   const fmtDate=d=>{if(!d)return '-';const [y,m,day]=String(d).slice(0,10).split('-');return day&&m&&y?`${day}-${['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][Number(m)-1]}-${y}`:'-'};
   let step=1;
   function css(){if(document.getElementById('ui-form-final-css'))return;const s=document.createElement('style');s.id='ui-form-final-css';s.textContent=`

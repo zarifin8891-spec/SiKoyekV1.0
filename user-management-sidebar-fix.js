@@ -10,5 +10,5 @@
     window.applyRBACNav?.();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',clean,{once:true});else clean();
-  new MutationObserver(()=>{clearTimeout(window.__sikoyekUserNavCleanTimer);window.__sikoyekUserNavCleanTimer=setTimeout(clean,40)}).observe(document.body,{childList:true,subtree:true});
+  new window.SiKoyekFoundation.Observer(()=>{clearTimeout(window.__sikoyekUserNavCleanTimer);window.__sikoyekUserNavCleanTimer=setTimeout(clean,40)}).observe(document.body,{childList:true,subtree:true});
 })();

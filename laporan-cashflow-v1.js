@@ -4,7 +4,7 @@
   if(window.__SIKOYEK_LAPORAN_CASHFLOW_V4__)return;
   window.__SIKOYEK_LAPORAN_CASHFLOW_V4__=true;
 
-  const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
+  const money=n=>window.SiKoyekFoundation.money(n);
   const esc=s=>String(s??'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[m]));
   const localDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   const txType=r=>String(r?.transaction_type||'').trim().toUpperCase();

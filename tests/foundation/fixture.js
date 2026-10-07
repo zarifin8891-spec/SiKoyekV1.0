@@ -1,4 +1,5 @@
 (() => {
+const ActualDate=Date;const epoch=ActualDate.parse('2026-10-07T04:44:34Z');window.Date=class extends ActualDate{constructor(...args){super(...(args.length?args:[epoch+performance.now()]))}static now(){return epoch+performance.now()}};
 const role=window.__testRole||'admin', uid='00000000-0000-4000-8000-000000000001';
 const user={id:uid,email:'audit@example.invalid',user_metadata:{full_name:'Pengguna Uji'}};
 const summary=Array.from({length:6},(_,i)=>({project_id:'p'+i,project_code:'P26'+String(i+1).padStart(3,'0'),project_name:'Proyek Uji '+(i+1),contract_value:100000000+i*10000000,total_rap:80000000,project_progress:20+i*10,cost_ratio:10+i*12,rap_consumption:15+i*15,health_status:i<2?'SEHAT':i<4?'WASPADA':'BERISIKO',estimated_profit:20000000,cash_in:50000000,cash_out:30000000,net_cashflow:20000000,project_date:'2026-09-01',start_date:'2026-09-01',end_date:'2026-12-31',status:'JALAN'}));

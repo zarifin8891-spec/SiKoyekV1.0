@@ -4,7 +4,7 @@
   if(window.__SIKOYEK_LAPORAN_V4__)return;
   window.__SIKOYEK_LAPORAN_V4__=true;
 
-  const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
+  const money=n=>window.SiKoyekFoundation.money(n);
   const pct=n=>Number(n||0).toFixed(2)+'%';
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
   let projects=[];

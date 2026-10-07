@@ -158,5 +158,5 @@
   };
 
   const boot=()=>setTimeout(improveProjectWizard,20);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  const obs=new MutationObserver(()=>{clearTimeout(window.__formFixTimer);window.__formFixTimer=setTimeout(improveProjectWizard,100)});obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
+  const obs=new window.SiKoyekFoundation.Observer(()=>{clearTimeout(window.__formFixTimer);window.__formFixTimer=setTimeout(improveProjectWizard,100)});obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
 })();
