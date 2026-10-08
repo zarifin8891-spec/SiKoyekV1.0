@@ -105,6 +105,6 @@
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
   setTimeout(install,100);
-  const obs=new MutationObserver(()=>{clearTimeout(window.__p7t);window.__p7t=setTimeout(install,40)});
+  const obs=new window.SiKoyekFoundation.Observer(()=>{clearTimeout(window.__p7t);window.__p7t=setTimeout(install,40)});
   obs.observe(document.body,{childList:true,subtree:true});
 })();

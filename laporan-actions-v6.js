@@ -50,6 +50,6 @@
   }
   function tableToRows(t){return [...t.rows].map(r=>[...r.cells].map(c=>c.innerText.trim().replace(/\s+/g,' ')))}
   function exportCsv(){const root=document.querySelector('.laporan-v3'),content=root?.querySelector('#reportContent');if(!content)return;const tables=[...content.querySelectorAll('table')];if(!tables.length){alert('Tidak ada tabel yang dapat diekspor pada laporan ini.');return}const title=activeName(root).replace(/[^a-z0-9\-_]+/gi,'_').replace(/^_+|_+$/g,'').toLowerCase()||'laporan';const blocks=[];tables.forEach((t,i)=>{if(i)blocks.push(['']);blocks.push(...tableToRows(t))});const csv='\ufeff'+blocks.map(r=>r.map(csvCell).join(';')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`${title}.csv`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url)}
-  function boot(){let n=0;const tick=()=>{if(inject()||++n>=80)return;setTimeout(tick,100)};tick();const target=document.body||document.documentElement;if(target)new MutationObserver(()=>inject()).observe(target,{childList:true,subtree:true})}
+  function boot(){let n=0;const tick=()=>{if(inject()||++n>=80)return;setTimeout(tick,100)};tick();const target=document.body||document.documentElement;if(target)new window.SiKoyekFoundation.Observer(()=>inject()).observe(target,{childList:true,subtree:true})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

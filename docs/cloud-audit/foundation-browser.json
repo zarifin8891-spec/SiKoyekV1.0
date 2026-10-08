@@ -1,0 +1,1631 @@
+{
+  "baseline": "dcd50d137c26cb62aeb91292b46c3de56fe05a2a",
+  "fixture": "six synthetic projects; external network blocked; Chromium 153; frozen application date; 20ms simulated reads",
+  "before": [
+    {
+      "role": "admin",
+      "scenario": "dashboard",
+      "queries": 19,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 474,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ],
+      "idle": {
+        "callbacks": 0,
+        "queries": 0
+      }
+    },
+    {
+      "role": "admin",
+      "scenario": "projects",
+      "queries": 39,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 918,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "detail-overview",
+      "queries": 47,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 1036,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "detail-pekerjaan",
+      "queries": 50,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 1191,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "detail-progress",
+      "queries": 53,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 1346,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "detail-rap",
+      "queries": 56,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 1464,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "detail-keuangan",
+      "queries": 59,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 1619,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "detail-cost",
+      "queries": 62,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 1774,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "project-form",
+      "queries": 65,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 1929,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "project-required-validation",
+      "queries": 65,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 1960,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "project-confirm",
+      "queries": 65,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 2022,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "master",
+      "queries": 73,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 2201,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "category-add",
+      "queries": 73,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 3844,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "category-edit",
+      "queries": 74,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 5611,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "manager-add",
+      "queries": 74,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 7564,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "manager-edit",
+      "queries": 75,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 9362,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "finance-category-add",
+      "queries": 75,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 10974,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "payment-add",
+      "queries": 75,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 12710,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "users",
+      "queries": 79,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 12920,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "user-role-permissions",
+      "queries": 82,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 12994,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "user-add",
+      "queries": 82,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 13025,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "user-required-validation",
+      "queries": 82,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 13056,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "user-edit",
+      "queries": 82,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 13118,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "reports",
+      "queries": 86,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 13327,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "report-summary",
+      "queries": 86,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 39,
+      "nativeCallbacks": 13396,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "report-progress",
+      "queries": 89,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 39,
+      "nativeCallbacks": 13507,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "report-rap",
+      "queries": 92,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 39,
+      "nativeCallbacks": 13613,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "report-finance",
+      "queries": 92,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 39,
+      "nativeCallbacks": 13682,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "report-kinerja",
+      "queries": 96,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 39,
+      "nativeCallbacks": 13793,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "dashboard-mobile",
+      "queries": 102,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 39,
+      "nativeCallbacks": 13981,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "project-form-mobile",
+      "queries": 105,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 39,
+      "nativeCallbacks": 14136,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "users-secondary",
+      "queries": 6,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 2,
+      "intervals": []
+    },
+    {
+      "role": "admin",
+      "scenario": "reports-secondary",
+      "queries": 7,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 3,
+      "intervals": []
+    },
+    {
+      "role": "admin",
+      "scenario": "master-secondary",
+      "queries": 10,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 2,
+      "nativeCallbacks": 11,
+      "intervals": []
+    },
+    {
+      "role": "admin",
+      "scenario": "login",
+      "queries": 11,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 278,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "direktur",
+      "scenario": "dashboard",
+      "queries": 25,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 512,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ],
+      "idle": {
+        "callbacks": 0,
+        "queries": 0
+      }
+    },
+    {
+      "role": "direktur",
+      "scenario": "users-secondary",
+      "queries": 6,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 2,
+      "intervals": []
+    },
+    {
+      "role": "direktur",
+      "scenario": "reports-secondary",
+      "queries": 7,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 3,
+      "intervals": []
+    },
+    {
+      "role": "direktur",
+      "scenario": "master-secondary",
+      "queries": 10,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 2,
+      "nativeCallbacks": 11,
+      "intervals": []
+    },
+    {
+      "role": "direktur",
+      "scenario": "login",
+      "queries": 15,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 278,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "keuangan",
+      "scenario": "dashboard",
+      "queries": 25,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 474,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ],
+      "idle": {
+        "callbacks": 0,
+        "queries": 0
+      }
+    },
+    {
+      "role": "keuangan",
+      "scenario": "users-secondary",
+      "queries": 6,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 2,
+      "intervals": []
+    },
+    {
+      "role": "keuangan",
+      "scenario": "reports-secondary",
+      "queries": 7,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 3,
+      "intervals": []
+    },
+    {
+      "role": "keuangan",
+      "scenario": "master-secondary",
+      "queries": 10,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 2,
+      "nativeCallbacks": 11,
+      "intervals": []
+    },
+    {
+      "role": "keuangan",
+      "scenario": "login",
+      "queries": 15,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 278,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "marketing",
+      "scenario": "dashboard",
+      "queries": 25,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 566,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ],
+      "idle": {
+        "callbacks": 0,
+        "queries": 0
+      }
+    },
+    {
+      "role": "marketing",
+      "scenario": "users-secondary",
+      "queries": 6,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 2,
+      "intervals": []
+    },
+    {
+      "role": "marketing",
+      "scenario": "reports-secondary",
+      "queries": 7,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 3,
+      "intervals": []
+    },
+    {
+      "role": "marketing",
+      "scenario": "master-secondary",
+      "queries": 10,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 2,
+      "nativeCallbacks": 11,
+      "intervals": []
+    },
+    {
+      "role": "marketing",
+      "scenario": "login",
+      "queries": 15,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 278,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    },
+    {
+      "role": "pelaksana",
+      "scenario": "dashboard",
+      "queries": 25,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 507,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ],
+      "idle": {
+        "callbacks": 0,
+        "queries": 0
+      }
+    },
+    {
+      "role": "pelaksana",
+      "scenario": "users-secondary",
+      "queries": 6,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 2,
+      "intervals": []
+    },
+    {
+      "role": "pelaksana",
+      "scenario": "reports-secondary",
+      "queries": 7,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 3,
+      "intervals": []
+    },
+    {
+      "role": "pelaksana",
+      "scenario": "master-secondary",
+      "queries": 10,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 2,
+      "nativeCallbacks": 11,
+      "intervals": []
+    },
+    {
+      "role": "pelaksana",
+      "scenario": "login",
+      "queries": 15,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 38,
+      "nativeCallbacks": 278,
+      "intervals": [
+        1000,
+        500,
+        500,
+        1000,
+        1200,
+        15000,
+        15000,
+        1000
+      ]
+    }
+  ],
+  "after": [
+    {
+      "role": "admin",
+      "scenario": "dashboard",
+      "queries": 8,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 75,
+      "intervals": [
+        15000,
+        15000
+      ],
+      "idle": {
+        "callbacks": 0,
+        "queries": 0
+      }
+    },
+    {
+      "role": "admin",
+      "scenario": "projects",
+      "queries": 13,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 82,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "detail-overview",
+      "queries": 18,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 86,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "detail-pekerjaan",
+      "queries": 18,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 91,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "detail-progress",
+      "queries": 18,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 96,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "detail-rap",
+      "queries": 18,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 100,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "detail-keuangan",
+      "queries": 18,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 105,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "detail-cost",
+      "queries": 18,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 109,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "project-form",
+      "queries": 21,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 114,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "project-required-validation",
+      "queries": 21,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 115,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "project-confirm",
+      "queries": 21,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 117,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "master",
+      "queries": 29,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 122,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "category-add",
+      "queries": 29,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 125,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "category-edit",
+      "queries": 30,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 129,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "manager-add",
+      "queries": 30,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 132,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "manager-edit",
+      "queries": 31,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 135,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "finance-category-add",
+      "queries": 31,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 139,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "payment-add",
+      "queries": 31,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 143,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "users",
+      "queries": 35,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 148,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "user-role-permissions",
+      "queries": 38,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 150,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "user-add",
+      "queries": 38,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 151,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "user-required-validation",
+      "queries": 38,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 152,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "user-edit",
+      "queries": 38,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 154,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "reports",
+      "queries": 42,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 161,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "report-summary",
+      "queries": 42,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 2,
+      "nativeCallbacks": 163,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "report-progress",
+      "queries": 45,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 2,
+      "nativeCallbacks": 166,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "report-rap",
+      "queries": 48,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 2,
+      "nativeCallbacks": 169,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "report-finance",
+      "queries": 48,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 2,
+      "nativeCallbacks": 171,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "report-kinerja",
+      "queries": 52,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 2,
+      "nativeCallbacks": 174,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "dashboard-mobile",
+      "queries": 58,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 2,
+      "nativeCallbacks": 180,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "project-form-mobile",
+      "queries": 61,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 2,
+      "nativeCallbacks": 185,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "admin",
+      "scenario": "users-secondary",
+      "queries": 6,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 2,
+      "intervals": []
+    },
+    {
+      "role": "admin",
+      "scenario": "reports-secondary",
+      "queries": 7,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 3,
+      "intervals": []
+    },
+    {
+      "role": "admin",
+      "scenario": "master-secondary",
+      "queries": 10,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 8,
+      "intervals": []
+    },
+    {
+      "role": "admin",
+      "scenario": "login",
+      "queries": 1,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 67,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "direktur",
+      "scenario": "dashboard",
+      "queries": 13,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 75,
+      "intervals": [
+        15000,
+        15000
+      ],
+      "idle": {
+        "callbacks": 0,
+        "queries": 0
+      }
+    },
+    {
+      "role": "direktur",
+      "scenario": "users-secondary",
+      "queries": 6,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 2,
+      "intervals": []
+    },
+    {
+      "role": "direktur",
+      "scenario": "reports-secondary",
+      "queries": 7,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 3,
+      "intervals": []
+    },
+    {
+      "role": "direktur",
+      "scenario": "master-secondary",
+      "queries": 10,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 8,
+      "intervals": []
+    },
+    {
+      "role": "direktur",
+      "scenario": "login",
+      "queries": 3,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 67,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "keuangan",
+      "scenario": "dashboard",
+      "queries": 10,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 75,
+      "intervals": [
+        15000,
+        15000
+      ],
+      "idle": {
+        "callbacks": 0,
+        "queries": 0
+      }
+    },
+    {
+      "role": "keuangan",
+      "scenario": "users-secondary",
+      "queries": 6,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 2,
+      "intervals": []
+    },
+    {
+      "role": "keuangan",
+      "scenario": "reports-secondary",
+      "queries": 7,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 3,
+      "intervals": []
+    },
+    {
+      "role": "keuangan",
+      "scenario": "master-secondary",
+      "queries": 10,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 8,
+      "intervals": []
+    },
+    {
+      "role": "keuangan",
+      "scenario": "login",
+      "queries": 3,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 66,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "marketing",
+      "scenario": "dashboard",
+      "queries": 10,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 75,
+      "intervals": [
+        15000,
+        15000
+      ],
+      "idle": {
+        "callbacks": 0,
+        "queries": 0
+      }
+    },
+    {
+      "role": "marketing",
+      "scenario": "users-secondary",
+      "queries": 6,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 2,
+      "intervals": []
+    },
+    {
+      "role": "marketing",
+      "scenario": "reports-secondary",
+      "queries": 7,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 3,
+      "intervals": []
+    },
+    {
+      "role": "marketing",
+      "scenario": "master-secondary",
+      "queries": 10,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 8,
+      "intervals": []
+    },
+    {
+      "role": "marketing",
+      "scenario": "login",
+      "queries": 3,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 67,
+      "intervals": [
+        15000,
+        15000
+      ]
+    },
+    {
+      "role": "pelaksana",
+      "scenario": "dashboard",
+      "queries": 10,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 75,
+      "intervals": [
+        15000,
+        15000
+      ],
+      "idle": {
+        "callbacks": 0,
+        "queries": 0
+      }
+    },
+    {
+      "role": "pelaksana",
+      "scenario": "users-secondary",
+      "queries": 6,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 2,
+      "intervals": []
+    },
+    {
+      "role": "pelaksana",
+      "scenario": "reports-secondary",
+      "queries": 7,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 3,
+      "intervals": []
+    },
+    {
+      "role": "pelaksana",
+      "scenario": "master-secondary",
+      "queries": 10,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 8,
+      "intervals": []
+    },
+    {
+      "role": "pelaksana",
+      "scenario": "login",
+      "queries": 3,
+      "writes": 0,
+      "clients": 1,
+      "nativeObservers": 1,
+      "nativeCallbacks": 67,
+      "intervals": [
+        15000,
+        15000
+      ]
+    }
+  ],
+  "errors": [],
+  "missingAssets": [],
+  "externalRequests": []
+}

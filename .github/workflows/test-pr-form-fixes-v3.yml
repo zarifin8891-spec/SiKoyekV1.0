@@ -32,11 +32,15 @@ jobs:
       - name: Validate wizard and category master
         run: node tests/ui-form-fixes-v3.test.js
 
-      - name: Validate deployment workflow
+      - name: Validate isolated Foundation source
         run: |
-          test -s .github/workflows/pages.yml
-          grep -q 'ui-form-fixes-v3.js' .github/workflows/pages.yml
-          grep -q 'ui-form-fixes-v3.css' .github/workflows/pages.yml
+          test ! -e .github/workflows/pages.yml
+          test -s docs/cloud-audit/closed-workflows/pages.yml
+          test -s foundation/dashboard.css
+          test -s foundation/styles-manifest.json
+          node --check foundation/runtime.js
+          node --check foundation/backend.js
+          node --check foundation/repository.js
 
       - name: Validate category migration
         run: |

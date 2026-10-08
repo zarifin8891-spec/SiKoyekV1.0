@@ -1,5 +1,5 @@
 (function(){
-  const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
+  const money=n=>window.SiKoyekFoundation.money(n);
   const pct=n=>Number(n||0).toFixed(2)+'%';
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
   const today=()=>new Date().toISOString().slice(0,10);
@@ -171,7 +171,7 @@
       // no-op: the overridden progressView renders the action button.
     }
   }
-  const mo=new MutationObserver(()=>window.setTimeout(repaint,0));
+  const mo=new window.SiKoyekFoundation.Observer(()=>window.setTimeout(repaint,0));
   mo.observe(document.body,{childList:true,subtree:true});
   window.setTimeout(repaint,50);
 })();

@@ -1,0 +1,92 @@
+[
+  {
+    "test": "cashflow-decision-engine-stress-v1.test.js",
+    "passed": true,
+    "output": "Cash Flow Decision Engine stress: PASS (10 scenarios)",
+    "error": ""
+  },
+  {
+    "test": "cashflow-real-project-validation-v1.test.js",
+    "passed": true,
+    "output": "Current project cashflow validation: PASS (6 projects)",
+    "error": ""
+  },
+  {
+    "test": "decision-dashboard-integration-v1.test.js",
+    "passed": true,
+    "output": "Decision Dashboard Integration V1.0: PASS",
+    "error": ""
+  },
+  {
+    "test": "decision-engine-stress-v1.test.js",
+    "passed": true,
+    "output": "Decision Engine V1.0 stress test: PASS (12 scenarios)",
+    "error": ""
+  },
+  {
+    "test": "project-cashflow-decision-engine-v1.test.js",
+    "passed": true,
+    "output": "Cash Flow Decision Engine V1.0: PASS (10 scenarios)",
+    "error": ""
+  },
+  {
+    "test": "project-decision-engine-v1-1-real-projects.test.js",
+    "passed": true,
+    "output": "Unified Decision Engine V1.1 real-project validation: PASS (6/6 healthy-low)",
+    "error": ""
+  },
+  {
+    "test": "project-decision-engine-v1-1.test.js",
+    "passed": true,
+    "output": "Unified Decision Engine V1.1: PASS (7 scenarios)",
+    "error": ""
+  },
+  {
+    "test": "project-decision-engine-v1.test.js",
+    "passed": true,
+    "output": "Decision Engine V1.0: PASS",
+    "error": ""
+  },
+  {
+    "test": "project-health-engine-v1.test.js",
+    "passed": true,
+    "output": "Health Engine V1.0 tests: PASS",
+    "error": ""
+  },
+  {
+    "test": "ui-form-fixes-v3.test.js",
+    "passed": true,
+    "output": "UI Form Pass 4: navigation + category master return + dates + centered actions: PASS",
+    "error": ""
+  },
+  {
+    "test": "ui-form-pass5.test.js",
+    "passed": true,
+    "output": "UI Form Pass 5: PASS",
+    "error": ""
+  },
+  {
+    "test": "ui-form-pass6-step1.test.js",
+    "passed": true,
+    "output": "UI Form Step 1: PASS",
+    "error": ""
+  },
+  {
+    "test": "ui-form-pass6.test.js",
+    "passed": true,
+    "output": "UI Form Pass 6: PASS",
+    "error": ""
+  },
+  {
+    "test": "ui-form-pass7.test.js",
+    "passed": true,
+    "output": "UI Form Pass 7: PASS",
+    "error": ""
+  },
+  {
+    "test": "ui-revamp-v1.test.js",
+    "passed": true,
+    "output": "UI Form Fixes V3: PASS",
+    "error": ""
+  }
+]

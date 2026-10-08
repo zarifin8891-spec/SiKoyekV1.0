@@ -1,0 +1,30 @@
+{
+  "passed": true,
+  "handlers": 24,
+  "hashes": {
+    "confirmDel": "e19eab4e57582d941cc3f2038aab65f40334804907e1b4c69867c4b57e95a62f",
+    "forgotPassword": "b76d56567139999f91bf34a778f913c542b1aeaa41047af0ee4fe97f2e0ce518",
+    "login": "4f43936654085812ba45713fb04ffcae286069f19cdd5331f030968f90a454d7",
+    "logout": "6ed0b479fcc4fd3d71b978df4cdf6b847131fa250aa12ed510dd4b5d82bfffce",
+    "mdConfirmDeleteManager": "c8750d6f8af51ef51c20b8dd69b3c6f226838881996091e57c9521abba9c2a44",
+    "mdConfirmDeleteProjectCategory": "c50b11ba143b0154ba612b40f6553c87447a2ac6be6596ef0ea1c8426157c6fc",
+    "mdSaveManager": "8e35a1e3e345248a9fbbd36d7e7df2be35c16d754dc7da391e375daf55bd2945",
+    "mdSaveManagerEdit": "a4870260e959c4616ba59ec375022916cf28a6b3f69ee4485d14c3bd96cd39fd",
+    "mdSaveProjectCategory": "1d11faefeabdc594a7edce14f29cad543fb5540103c4d05ccc0ad875d8d7fbd4",
+    "mdSaveProjectCategoryEdit": "60db999e7cfb639c19c0f938fa1e9a09d30f9c052d117b4f09a6340fe70087b7",
+    "p5DeleteCategory": "921c4819b3a64fe99796949ff6245b560f67bbe2b4337a0942b670d041c6465f",
+    "p5DeleteProject": "8999625e535b416f7422152f476b027fddcdcb19a8c65015d3a3c681e53fb201",
+    "p5SaveCategory": "c139d7ca63d25af9b71ca0ecb01d69853f75b75ac28589dd8c1ead4e4a1ff393",
+    "p5SaveProjectEdit": "4014d12fa3b0b8771b2f4da7f08745d889db2466e66248dd56791cd9c8d5f28d",
+    "saveEdit": "d09abe166e5a40e22d8c94dd33483eec1cca8c7937dc168d6a36291367f019a8",
+    "saveItem": "78208d4c788fca9eab840cf8f578f2253810d8a3dc27c61a5849427fbb448631",
+    "saveItemEdit": "5baa22f2287454fd4d1a20bda982d58aa07a9b02ab686e9aa94df5da86beb401",
+    "saveProgress": "cbfbf18be5c689a989600e32b49aed756f9cb3db29089ad66941f5077b7362ff",
+    "saveProject": "329a8db480c10ae7744861058f4df12a53d519ad207612a014e71ca1368a6836",
+    "saveRap": "8e609daaaaaf75c22621bdfbfb058a2e5981914f7d1f5a1db2a93358af1029f1",
+    "saveTx": "abe175441c9e5e629783b458d4cc3190f91793fb1eaf60c3d99cc795a18c928f",
+    "umDelete": "b9e3cbf7f20562509b890816248d802db134aec866ef398ab7827ad7e4562485",
+    "umSaveAdd": "351ba3b58137836e31f66df8377cc92d14d3ad2af7c47f7a482c00905f7cebdc",
+    "umSaveEdit": "be3abfb0c023f578bdba41fda89ba99b390744af5870d2de83a3acd1b4805cf8"
+  }
+}

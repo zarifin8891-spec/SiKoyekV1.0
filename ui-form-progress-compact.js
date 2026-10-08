@@ -248,6 +248,6 @@
 
   function boot(){addStyle();normalize();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  const obs=new MutationObserver(()=>{clearTimeout(window.__progressCompactTimer);window.__progressCompactTimer=setTimeout(boot,40)});
+  const obs=new window.SiKoyekFoundation.Observer(()=>{clearTimeout(window.__progressCompactTimer);window.__progressCompactTimer=setTimeout(boot,40)});
   obs.observe(document.body,{childList:true,subtree:true});
 })();

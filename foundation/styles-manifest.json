@@ -1,0 +1,85 @@
+{
+  "index.html": {
+    "output": "foundation/dashboard.css",
+    "sources": [
+      "inline",
+      "./ui-revamp-v1.css?v=1",
+      "./ui-form-polish-v2.css?v=2",
+      "./ui-form-fixes-v3.css?v=3",
+      "./ui-form-pass5.css?v=2",
+      "./ui-form-pass6.css?v=2",
+      "./ui-form-step1.css?v=2",
+      "./ui-form-pass7.css?v=1",
+      "./ui-form-pass8.css?v=1",
+      "./master-data-v1.css?v=1",
+      "./ui-cleanup-v1.css?v=1",
+      "./dashboard-header-kpi-v1.css?v=4",
+      "./dashboard-panels.css?v=1",
+      "inline"
+    ]
+  },
+  "master-data.html": {
+    "output": "foundation/master-data.css",
+    "sources": [
+      "./app-shell.css?v=2",
+      "./locked-secondary-pages-v1.css?v=1"
+    ]
+  },
+  "user-management.html": {
+    "output": "foundation/master-data.css",
+    "sources": [
+      "./app-shell.css?v=2",
+      "./locked-secondary-pages-v1.css?v=1"
+    ]
+  },
+  "daftar-proyek.html": {
+    "output": "foundation/master-data.css",
+    "sources": [
+      "./app-shell.css?v=2",
+      "./locked-secondary-pages-v1.css?v=1"
+    ]
+  },
+  "laporan.html": {
+    "output": "foundation/laporan.css",
+    "sources": [
+      "./app-shell.css?v=2"
+    ]
+  },
+  "rap.html": {
+    "output": "foundation/laporan.css",
+    "sources": [
+      "app-shell.css"
+    ]
+  },
+  "progress.html": {
+    "output": "foundation/laporan.css",
+    "sources": [
+      "app-shell.css"
+    ]
+  },
+  "keuangan.html": {
+    "output": "foundation/keuangan.css",
+    "sources": [
+      "app-shell.css",
+      "inline"
+    ]
+  },
+  "item-pekerjaan.html": {
+    "output": "foundation/laporan.css",
+    "sources": [
+      "app-shell.css"
+    ]
+  },
+  "workspace.html": {
+    "output": "foundation/workspace.css",
+    "sources": [
+      "inline"
+    ]
+  },
+  "progress-v2.html": {
+    "output": "foundation/progress-v2.css",
+    "sources": [
+      "inline"
+    ]
+  }
+}

@@ -104,11 +104,7 @@ async function loadFinancialVisibilityRole(retry=0){
  try{
    financialClient=window.__siKoyekSupabase||window.sb||financialClient;
    if(!financialClient&&window.supabase?.createClient){
-     financialClient=window.supabase.createClient(
-       'https://mmkusplegmittrlxqxby.supabase.co',
-       'sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf',
-       {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
-     );
+     financialClient=window.SiKoyekBackend.getClient();
    }
    if(!financialClient?.auth?.getUser||!financialClient?.from){
      if(retry<10)setTimeout(()=>loadFinancialVisibilityRole(retry+1),250);
@@ -167,7 +163,7 @@ function boot(){
  addStyle();
  ensureMasterData();
  applyFinancialVisibility();
- const obs=new MutationObserver(()=>{
+ const obs=new window.SiKoyekFoundation.Observer(()=>{
    addStyle();
    ensureMasterData();
    if(financialRole)maskDashboardFinancialText();

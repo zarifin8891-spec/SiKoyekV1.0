@@ -139,7 +139,7 @@
 
   function boot(){
     apply();
-    const obs=new MutationObserver(schedule);
+    const obs=new window.SiKoyekFoundation.Observer(schedule);
     obs.observe(document.body,{childList:true,subtree:true});
   }
 

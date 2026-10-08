@@ -18,36 +18,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build isolated Dashboard preview
+      - name: Verify actual Dashboard Health wiring
         shell: python
         run: |
           from pathlib import Path
           import re
 
-          source = Path('index.html')
-          preview = Path('/tmp/sikoyek-dashboard-preview.html')
-          html = source.read_text(encoding='utf-8')
+          html = Path('index.html').read_text(encoding='utf-8')
+          integration = Path('health-dashboard-integration-v1.js').read_text(encoding='utf-8')
           if 'id="app"' not in html:
               raise SystemExit('FAIL: Dashboard app mount not found')
-          if 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2' not in html:
-              raise SystemExit('FAIL: Supabase client dependency not found')
-
-          html = re.sub(r'<script src="\\./health-dashboard-integration-v1\\.js\\?v=\\d+"></script>', '', html)
-          html = html.replace('</body>', '<script src="./health-dashboard-integration-v1.js?v=2"></script></body>', 1)
-          preview.write_text(html, encoding='utf-8')
-
-          required = [
-              'project-health-engine-v1.js',
-              'health-dashboard-integration-v1.js',
-              'project_summary',
-              'Project Health Engine'
-          ]
-          for item in required:
-              if item not in html and item not in Path('health-dashboard-integration-v1.js').read_text(encoding='utf-8'):
-                  raise SystemExit(f'FAIL: required integration marker missing: {item}')
-
-          if html.count('health-dashboard-integration-v1.js?v=2') != 1:
-              raise SystemExit('FAIL: Health integration must be injected exactly once')
-
-          print('Dashboard Health Integration smoke test: PASS')
-          print(f'Preview created: {preview}')
+          scripts = re.findall(r'<script[^>]+src="([^"]+)"', html)
+          health = [src for src in scripts if src.split('?')[0] == './health-dashboard-integration-v1.js']
+          if len(health) != 1:
+              raise SystemExit('FAIL: Health integration must be loaded exactly once')
+          health_index = scripts.index(health[0])
+          for dependency in ['./environment.js', './foundation/config.js', './foundation/runtime.js', './foundation/backend.js']:
+              if dependency not in scripts or scripts.index(dependency) >= health_index:
+                  raise SystemExit(f'FAIL: dependency must precede Health: {dependency}')
+          engine = re.search(r"const ENGINE_URL='([^']+)'", integration)
+          if not engine or not Path(engine[1].split('?')[0]).is_file():
+              raise SystemExit('FAIL: configured Health engine asset not found')
+          for marker in ['SiKoyekHealthEngine.evaluate', 'project_summary', 'SiKoyekBackend.getClient()', '#dashboard-health-panel']:
+              if marker not in integration:
+                  raise SystemExit(f'FAIL: required integration behavior missing: {marker}')
+          if 'createClient(' in integration or '.supabase.co' in integration:
+              raise SystemExit('FAIL: Health must use the selected tenant backend')
+          print('Dashboard Health wiring and tenant routing smoke: PASS')

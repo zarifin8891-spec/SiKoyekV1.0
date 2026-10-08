@@ -38,7 +38,7 @@
   function boot(){
     apply();
     const target=document.body||document.documentElement;
-    if(target)new MutationObserver(()=>apply()).observe(target,{childList:true,subtree:true});
+    if(target)new window.SiKoyekFoundation.Observer(()=>apply()).observe(target,{childList:true,subtree:true});
     let n=0;
     const tick=()=>{apply();if(++n<80)setTimeout(tick,100)};
     tick();

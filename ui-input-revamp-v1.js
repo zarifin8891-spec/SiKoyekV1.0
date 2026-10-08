@@ -37,6 +37,6 @@
 
   const boot=()=>{addProgressButton();polishNumericFields()};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  const obs=new MutationObserver(()=>{clearTimeout(window.__uiInputRevampTimer);window.__uiInputRevampTimer=setTimeout(boot,120)});
+  const obs=new window.SiKoyekFoundation.Observer(()=>{clearTimeout(window.__uiInputRevampTimer);window.__uiInputRevampTimer=setTimeout(boot,120)});
   obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
 })();

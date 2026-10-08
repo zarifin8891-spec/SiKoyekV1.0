@@ -1,0 +1,8 @@
+{
+  "applicationRevision": "8b8df8a189496e5575f15ada40193c24b0a6370d6865a4720b9dc5b781c631f8",
+  "reviewedSourceCommit": "9d08f8696de766c6c9dd2887ece1bdcba40274e3",
+  "configFiles": [
+    "deployment/environments/master.json",
+    "deployment/environments/konstruva.json"
+  ]
+}

@@ -26,13 +26,12 @@
     if(!select||select.tagName!=='SELECT') return;
     const current=select.value;
     const desired=window.__projectFormSnapshot?.category;
-    select.innerHTML='';
-    categoryNames().forEach(item=>{
-      const o=document.createElement('option');o.value=item.name;o.textContent=item.name;select.appendChild(o);
-    });
+    const names=categoryNames().map(item=>item.name);
+    const changed=JSON.stringify([...select.options].map(option=>option.value))!==JSON.stringify(names);
+    if(changed){select.innerHTML='';names.forEach(name=>{const o=document.createElement('option');o.value=name;o.textContent=name;select.appendChild(o)})}
     const wanted=desired||current;
     select.value=categoryNames().some(x=>x.name===wanted)?wanted:(categoryNames()[0]?.name||'');
-    if(select.value) select.dispatchEvent(new Event('change',{bubbles:true}));
+    if(select.value&&(changed||select.value!==current))select.dispatchEvent(new Event('change',{bubbles:true}));
   }
 
   function replaceCategoryField(){
@@ -61,7 +60,11 @@
     raw.addEventListener('change',()=>{display.value=formatDateId(raw.value);refreshConfirm()});
   }
 
-  function enhanceModalDates(){['f_date','f_start','f_end','pr_date','tx_date'].forEach(enhanceDateInput)}
+  function enhanceModalDates(){
+    // Preserve the compact mobile project form and its native date picker.
+    if(document.getElementById('uiFinalProject')&&window.matchMedia('(max-width:520px)').matches)return;
+    ['f_date','f_start','f_end','pr_date','tx_date'].forEach(enhanceDateInput);
+  }
 
   function refreshConfirm(){
     const name=document.getElementById('f_name')?.value.trim()||'-';
@@ -158,5 +161,5 @@
   };
 
   const boot=()=>setTimeout(improveProjectWizard,20);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  const obs=new MutationObserver(()=>{clearTimeout(window.__formFixTimer);window.__formFixTimer=setTimeout(improveProjectWizard,100)});obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
+  const obs=new window.SiKoyekFoundation.Observer(()=>{clearTimeout(window.__formFixTimer);window.__formFixTimer=setTimeout(improveProjectWizard,100)});obs.observe(document.body,{childList:true,subtree:true});
 })();

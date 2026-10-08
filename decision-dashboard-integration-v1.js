@@ -1,13 +1,11 @@
 (function(){
-  const SUPABASE_URL='https://mmkusplegmittrlxqxby.supabase.co';
-  const SUPABASE_KEY='sb_publishable_m9qLt2yxWi6i40bo9ixR5A_QIbOLoyf';
   let client=null,lastSignature='',busy=false;
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
   function dashboardEl(){return [...document.querySelectorAll('.content')].find(x=>x.querySelector('.top h1')?.textContent.trim()==='Dashboard')}
   async function load(){
     if(busy||document.querySelector('#page .md-page')||!window.SiKoyekHealthEngine||!window.SiKoyekDecisionEngine||!window.supabase)return;
     const app=document.getElementById('app');const dashboard=app&&dashboardEl();if(!dashboard)return;
-    if(!client)client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    if(!client)client=window.SiKoyekBackend.getClient();
     busy=true;
     try{
       const {data,error}=await client.from('project_summary').select('project_code,project_name,project_progress,cost_ratio,rap_consumption').order('project_code');
@@ -29,7 +27,7 @@
   }
   function boot(){
     const s=document.createElement('script');s.src='./project-decision-engine-v1.js?v=3';document.body.appendChild(s);
-    const obs=new MutationObserver(()=>{window.clearTimeout(window.__deTimer);window.__deTimer=setTimeout(load,250)});
+    const obs=new window.SiKoyekFoundation.Observer(()=>{window.clearTimeout(window.__deTimer);window.__deTimer=setTimeout(load,250)});
     obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
     window.addEventListener('sikoyek:dashboard-panel-request',load);
     window.setInterval(load,15000);

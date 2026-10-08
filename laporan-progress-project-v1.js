@@ -4,7 +4,7 @@
   if(window.__SIKOYEK_LAPORAN_PROGRESS_PROJECT_V1__)return;
   window.__SIKOYEK_LAPORAN_PROGRESS_PROJECT_V1__=true;
 
-  const money=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
+  const money=n=>window.SiKoyekFoundation.money(n);
   const pct=n=>Number(n||0).toFixed(2)+'%';
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
 
@@ -136,7 +136,7 @@
   function boot(){
     start();
     const target=document.body||document.documentElement;
-    if(target)new MutationObserver(start).observe(target,{childList:true,subtree:true});
+    if(target)new window.SiKoyekFoundation.Observer(start).observe(target,{childList:true,subtree:true});
     let tries=0;
     const retry=()=>{start();if(++tries<40)setTimeout(retry,100)};
     retry();

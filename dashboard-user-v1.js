@@ -58,7 +58,8 @@
 
   function boot(){
     resolveUser();
-    setInterval(resolveUser,1000);
+    new window.SiKoyekFoundation.Observer(resolveUser).observe(document.body,{childList:true,subtree:true});
+
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,300));
   else setTimeout(boot,300);

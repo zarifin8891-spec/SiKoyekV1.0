@@ -101,7 +101,7 @@
   function start(){
     scan();
     const target=document.body||document.documentElement;
-    if(target)new MutationObserver(scan).observe(target,{childList:true,subtree:true});
+    if(target)new window.SiKoyekFoundation.Observer(scan).observe(target,{childList:true,subtree:true});
     let tries=0;
     const retry=()=>{scan();if(++tries<80)setTimeout(retry,100);};
     retry();

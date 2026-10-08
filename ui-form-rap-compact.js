@@ -157,7 +157,7 @@
   function boot(){
     addStyle();
     normalize();
-    const observer=new MutationObserver(normalize);
+    const observer=new window.SiKoyekFoundation.Observer(normalize);
     observer.observe(document.body,{childList:true,subtree:true});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();

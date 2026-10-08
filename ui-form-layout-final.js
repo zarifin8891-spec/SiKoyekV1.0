@@ -125,7 +125,7 @@
   function boot(){
     addStyle();
     removeStatusFromProjectForms();
-    const obs=new MutationObserver(()=>{
+    const obs=new window.SiKoyekFoundation.Observer(()=>{
       clearTimeout(window.__projectFormFinalTimer);
       window.__projectFormFinalTimer=setTimeout(removeStatusFromProjectForms,30);
     });

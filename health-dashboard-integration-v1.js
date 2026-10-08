@@ -1,5 +1,5 @@
 (function(){
-  const ENGINE_URL='./project-health-engine-v1.js';
+  const ENGINE_URL='./project-health-engine-v1.js?v=4';
   let healthClient=null,lastSignature='',busy=false;
 
   function esc(s){return String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
@@ -12,13 +12,15 @@
     if(!left||!right||!left.length||!right.length)return;
     const count=Math.min(left.length,right.length);
     for(let i=0;i<count;i++){
-      left[i].style.removeProperty('height');right[i].style.removeProperty('height');
+      left[i].style.removeProperty('height');
+      right[i].style.removeProperty('height');
       left[i].querySelectorAll('td').forEach(cell=>cell.style.removeProperty('height'));
       right[i].querySelectorAll('td').forEach(cell=>cell.style.removeProperty('height'));
     }
     for(let i=0;i<count;i++){
       const h=Math.max(left[i].getBoundingClientRect().height,right[i].getBoundingClientRect().height);
-      left[i].style.setProperty('height',h+'px','important');right[i].style.setProperty('height',h+'px','important');
+      left[i].style.setProperty('height',h+'px','important');
+      right[i].style.setProperty('height',h+'px','important');
       left[i].querySelectorAll('td').forEach(cell=>cell.style.setProperty('height',h+'px','important'));
       right[i].querySelectorAll('td').forEach(cell=>cell.style.setProperty('height',h+'px','important'));
     }
@@ -28,34 +30,60 @@
   function syncPeriodPreset(){
     const select=document.getElementById('periodPreset');
     if(!select || typeof state==='undefined' || !state.period)return;
-    const from=state.period.from||'',to=state.period.to||'';
-    const d=new Date(),pad=n=>String(n).padStart(2,'0');
+    const from=state.period.from||'';
+    const to=state.period.to||'';
+    const d=new Date();
+    const pad=n=>String(n).padStart(2,'0');
     const fmt=x=>`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;
     const fmtUTC=x=>x.toISOString().slice(0,10);
-    const local={thisMonth:[fmt(new Date(d.getFullYear(),d.getMonth(),1)),fmt(new Date(d.getFullYear(),d.getMonth()+1,0))],lastMonth:[fmt(new Date(d.getFullYear(),d.getMonth()-1,1)),fmt(new Date(d.getFullYear(),d.getMonth(),0))],thisYear:[`${d.getFullYear()}-01-01`,`${d.getFullYear()}-12-31`]};
-    const utc={thisMonth:[fmtUTC(new Date(d.getFullYear(),d.getMonth(),1)),fmtUTC(new Date(d.getFullYear(),d.getMonth()+1,0))],lastMonth:[fmtUTC(new Date(d.getFullYear(),d.getMonth()-1,1)),fmtUTC(new Date(d.getFullYear(),d.getMonth(),0))],thisYear:[`${d.getFullYear()}-01-01`,`${d.getFullYear()}-12-31`]};
+    const local={
+      thisMonth:[fmt(new Date(d.getFullYear(),d.getMonth(),1)),fmt(new Date(d.getFullYear(),d.getMonth()+1,0))],
+      lastMonth:[fmt(new Date(d.getFullYear(),d.getMonth()-1,1)),fmt(new Date(d.getFullYear(),d.getMonth(),0))],
+      thisYear:[`${d.getFullYear()}-01-01`,`${d.getFullYear()}-12-31`]
+    };
+    const utc={
+      thisMonth:[fmtUTC(new Date(d.getFullYear(),d.getMonth(),1)),fmtUTC(new Date(d.getFullYear(),d.getMonth()+1,0))],
+      lastMonth:[fmtUTC(new Date(d.getFullYear(),d.getMonth()-1,1)),fmtUTC(new Date(d.getFullYear(),d.getMonth(),0))],
+      thisYear:[`${d.getFullYear()}-01-01`,`${d.getFullYear()}-12-31`]
+    };
     let value='';
-    for(const key of ['thisMonth','lastMonth','thisYear']){const pair=local[key],legacy=utc[key];if((from===pair[0]&&to===pair[1])||(from===legacy[0]&&to===legacy[1])){value=key;break}}
+    for(const key of ['thisMonth','lastMonth','thisYear']){
+      const pair=local[key];
+      const legacy=utc[key];
+      if((from===pair[0]&&to===pair[1])||(from===legacy[0]&&to===legacy[1])){value=key;break}
+    }
     select.value=value;
   }
 
-  function syncDashboardLayout(){requestAnimationFrame(()=>requestAnimationFrame(()=>{syncDashboardRows();syncPeriodPreset()}));}
+  function syncDashboardLayout(){
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{syncDashboardRows();syncPeriodPreset()}));
+  }
 
   function installPeriodPresetFix(){
     if(window.__sikoyekPeriodPresetFixInstalled)return;
-    const originalApply=window.applyPreset,originalClear=window.clearPeriod;
-    if(typeof originalApply==='function')window.applyPreset=function(value){originalApply(value);syncDashboardLayout()};
-    if(typeof originalClear==='function')window.clearPeriod=function(){originalClear();syncDashboardLayout()};
-    window.__sikoyekPeriodPresetFixInstalled=true;syncDashboardLayout();
+    const originalApply=window.applyPreset;
+    const originalClear=window.clearPeriod;
+    if(typeof originalApply==='function'){
+      window.applyPreset=function(value){
+        originalApply(value);
+        syncDashboardLayout();
+      };
+    }
+    if(typeof originalClear==='function'){
+      window.clearPeriod=function(){
+        originalClear();
+        syncDashboardLayout();
+      };
+    }
+    window.__sikoyekPeriodPresetFixInstalled=true;
+    syncDashboardLayout();
   }
 
   async function load(){
     if(busy||!window.SiKoyekHealthEngine||!window.supabase)return;
     const app=document.getElementById('app');if(!app||!app.querySelector('.shell'))return;
     const dashboard=dashboardEl();if(!dashboard)return;
-    const activeClient=window.SK?.sb||window.sb;
-    if(!activeClient)return;
-    healthClient=activeClient;
+    if(!healthClient)healthClient=window.SiKoyekBackend.getClient();
     busy=true;
     try{
       const {data,error}=await healthClient.from('project_summary').select('project_code,project_name,project_progress,cost_ratio,rap_consumption').order('project_code');
@@ -79,8 +107,8 @@
 
   function boot(){
     installPeriodPresetFix();
-    const s=document.createElement('script');s.src=ENGINE_URL+'?v=3';s.onload=load;document.body.appendChild(s);
-    const obs=new MutationObserver(()=>{window.clearTimeout(window.__heTimer);window.__heTimer=setTimeout(()=>{installPeriodPresetFix();load()},250)});
+    const s=document.createElement('script');s.src=ENGINE_URL;s.onload=load;document.body.appendChild(s);
+    const obs=new window.SiKoyekFoundation.Observer(()=>{window.clearTimeout(window.__heTimer);window.__heTimer=setTimeout(()=>{installPeriodPresetFix();load()},250)});
     obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
     window.addEventListener('sikoyek:dashboard-panel-request',load);
     window.addEventListener('sikoyek:dashboard-panel-ready',syncDashboardLayout);

@@ -6,7 +6,7 @@
     if(document.getElementById(STYLE_ID)) return;
     const s=document.createElement('style');
     s.id=STYLE_ID;
-    s.textContent=`
+    window.SiKoyekFoundation.setStyle(s,`
       .${MARK}{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:18px}
       .${MARK} .dfk-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px}
       .${MARK} .dfk-label{font-size:12px;color:var(--muted);font-weight:750}
@@ -15,12 +15,12 @@
       .${MARK} .cash-out .dfk-value{color:var(--red)}
       .${MARK} .net .dfk-value{color:var(--blue)}
       @media(max-width:780px){.${MARK}{grid-template-columns:1fr}}
-    `;
+    `);
     document.head.appendChild(s);
   }
 
   function money(n){
-    return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
+    return window.SiKoyekFoundation.money(n);
   }
 
   let lastProjectId=null;
@@ -61,9 +61,9 @@
   }
 
   addStyle();
-  const observer=new MutationObserver(()=>render());
+  const observer=new window.SiKoyekFoundation.Observer(()=>render());
   observer.observe(document.body,{childList:true,subtree:true});
-  setInterval(render,500);
+
   render();
 })();
 
@@ -79,7 +79,7 @@
       style.id=STYLE_ID;
       document.head.appendChild(style);
     }
-    style.textContent=`
+    window.SiKoyekFoundation.setStyle(style,`
       .dashboard-view .top.dashboard-top .actions .btn.primary,
       .dashboard-view .top.dashboard-top .actions .btn.ghost{
         height:36px!important;
@@ -105,7 +105,7 @@
         font-size:18px!important;
         letter-spacing:-.01em!important;
       }
-    `;
+    `);
     dashboard.querySelectorAll('.dashboard-kpi-strip .kpi').forEach(card=>{
       const label=card.querySelector('.label')?.textContent.trim();
       if(!['NILAI KONTRAK','TOTAL RAP','TOTAL REALISASI'].includes(label))return;
@@ -121,9 +121,9 @@
     queued=true;
     requestAnimationFrame(()=>{queued=false;install()});
   }
-  new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,characterData:true});
+  new window.SiKoyekFoundation.Observer(schedule).observe(document.body,{childList:true,subtree:true,characterData:true});
   setTimeout(install,80);
-  setInterval(install,1000);
+
 })();
 
 /* Project detail visual polish: align header controls with the approved 42px Dashboard controls and compact the four KPI cards below it. */
@@ -137,7 +137,7 @@
       style.id=STYLE_ID;
       document.head.appendChild(style);
     }
-    style.textContent=`
+    window.SiKoyekFoundation.setStyle(style,`
       /* Detail header: only target the project-detail header, not Projects/Dashboard headers. */
       .top:has(.detailtitle) .actions .btn{
         height:42px!important;
@@ -185,8 +185,8 @@
         .top:has(.detailtitle) .actions .btn{height:42px!important;min-height:42px!important}
         .detailgrid>.card{height:96px!important;min-height:96px!important}
       }
-    `;
+    `);
   }
   install();
-  new MutationObserver(install).observe(document.body,{childList:true,subtree:true});
+  new window.SiKoyekFoundation.Observer(install).observe(document.body,{childList:true,subtree:true});
 })();

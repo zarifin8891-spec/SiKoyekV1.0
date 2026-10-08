@@ -74,7 +74,7 @@
     bind('prog');
   }
 
-  const observer=new MutationObserver(scan);
+  const observer=new window.SiKoyekFoundation.Observer(scan);
   function start(){
     scan();
     const page=document.getElementById('page');

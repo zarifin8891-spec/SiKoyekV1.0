@@ -122,7 +122,7 @@
     const tick=()=>{if(bind()||++n>=100)return;setTimeout(tick,100)};
     tick();
     const target=document.body||document.documentElement;
-    if(target)new MutationObserver(bind).observe(target,{childList:true,subtree:true});
+    if(target)new window.SiKoyekFoundation.Observer(bind).observe(target,{childList:true,subtree:true});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

@@ -78,5 +78,5 @@
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  new MutationObserver(apply).observe(document.body,{childList:true,subtree:true});
+  new window.SiKoyekFoundation.Observer(apply).observe(document.body,{childList:true,subtree:true});
 })();

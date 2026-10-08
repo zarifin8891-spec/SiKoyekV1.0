@@ -48,6 +48,6 @@
     `;
     document.head.appendChild(s);
   }
-  function boot(){apply();new MutationObserver(apply).observe(document.body,{childList:true,subtree:true});}
+  function boot(){apply();new window.SiKoyekFoundation.Observer(apply).observe(document.body,{childList:true,subtree:true});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();

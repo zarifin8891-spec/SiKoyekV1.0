@@ -1,0 +1,33 @@
+name: Test isolated Cloud Foundation
+
+on:
+  push:
+    branches: [refactor/cloud-foundation-2026-10-07]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Verify retired duplicate publishers are absent
+        run: |
+          test ! -e .github/workflows/pages.yml
+          test ! -e .github/workflows/fix-cost-gap.yml
+          test ! -e .github/workflows/load-cost-control-v6.yml
+          test ! -e .github/workflows/unified-pages.yml
+      - name: Check Foundation syntax
+        run: |
+          for source_file in foundation/*.js; do node --check "$source_file" || exit 1; done
+      - name: Run backend and repository contracts
+        run: node --test tests/foundation/*.test.cjs
+      - name: Run Closed engine and UI suites
+        run: |
+          for test_file in tests/*.test.js; do node "$test_file" || exit 1; done

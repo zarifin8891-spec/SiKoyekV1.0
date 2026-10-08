@@ -8,4 +8,5 @@ jobs:
   retired:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Retired: no automated Dashboard patching or commits."
+      - run: |
+          echo "Retired: no automated Dashboard patching or commits."

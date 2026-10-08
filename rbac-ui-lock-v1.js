@@ -46,5 +46,5 @@
   window.applyRBACUiLock=apply;
   const boot=()=>{setTimeout(apply,50);setTimeout(apply,200);setTimeout(apply,500)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  new MutationObserver(()=>{clearTimeout(window.__rbacUiLockTimer);window.__rbacUiLockTimer=setTimeout(apply,60)}).observe(document.body,{childList:true,subtree:true});
+  new window.SiKoyekFoundation.Observer(()=>{clearTimeout(window.__rbacUiLockTimer);window.__rbacUiLockTimer=setTimeout(apply,60)}).observe(document.body,{childList:true,subtree:true});
 })();

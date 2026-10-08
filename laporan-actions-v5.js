@@ -181,6 +181,6 @@
     const a=document.createElement('a');a.href=url;a.download=`${title}.csv`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
   }
 
-  function boot(){let n=0;const tick=()=>{if(inject()||++n>=80)return;setTimeout(tick,100)};tick();const target=document.body||document.documentElement;if(target)new MutationObserver(()=>inject()).observe(target,{childList:true,subtree:true})}
+  function boot(){let n=0;const tick=()=>{if(inject()||++n>=80)return;setTimeout(tick,100)};tick();const target=document.body||document.documentElement;if(target)new window.SiKoyekFoundation.Observer(()=>inject()).observe(target,{childList:true,subtree:true})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

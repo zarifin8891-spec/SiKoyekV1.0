@@ -117,5 +117,5 @@
   window.applyRBACUiLock=loadAndApply;
   const boot=()=>{loadAndApply();setTimeout(loadAndApply,100);setTimeout(loadAndApply,300);setTimeout(loadAndApply,700);setTimeout(loadAndApply,1200)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  new MutationObserver(()=>{clearTimeout(window.__rbacUiLockV3Timer);window.__rbacUiLockV3Timer=setTimeout(loadAndApply,70)}).observe(document.body,{childList:true,subtree:true});
+  new window.SiKoyekFoundation.Observer(()=>{clearTimeout(window.__rbacUiLockV3Timer);window.__rbacUiLockV3Timer=setTimeout(loadAndApply,70)}).observe(document.body,{childList:true,subtree:true});
 })();

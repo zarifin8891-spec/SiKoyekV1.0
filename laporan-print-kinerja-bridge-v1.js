@@ -52,5 +52,5 @@
 
   scan();
   const target=document.body||document.documentElement;
-  if(target)new MutationObserver(scan).observe(target,{childList:true,subtree:true});
+  if(target)new window.SiKoyekFoundation.Observer(scan).observe(target,{childList:true,subtree:true});
 })();

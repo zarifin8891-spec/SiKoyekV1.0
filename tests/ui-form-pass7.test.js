@@ -3,7 +3,7 @@ const assert=require('assert');
 const js=fs.readFileSync('ui-form-pass7.js','utf8');
 const css=fs.readFileSync('ui-form-pass7.css','utf8');
 const pass6=fs.readFileSync('ui-form-pass6.js','utf8');
-const pages=fs.readFileSync('.github/workflows/pages.yml','utf8');
+const pages=fs.readFileSync('docs/cloud-audit/closed-workflows/pages.yml','utf8');
 
 assert.ok(js.includes('p6CloseCategoryMaster'),'Pass 7 close hook missing');
 assert.ok(js.includes('window.p6CloseCategoryMaster=closeCategoryAndRestore'),'Category master close hook not replaced');

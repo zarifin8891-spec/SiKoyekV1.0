@@ -63,7 +63,7 @@
   }
 
   function esc(s){return String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));}
-  function money(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));}
+  function money(n){return window.SiKoyekFoundation.money(n);}
   function pct(n){return Number(n||0).toFixed(2)+'%';}
   function txKind(r){const t=String(r.transaction_type||r.type||r.category||'').toUpperCase();if(/IN|MASUK|PENERIMAAN|RECEIPT|PENDAPATAN/.test(t))return'in';if(/OUT|KELUAR|PENGELUARAN|PAYMENT|BIAYA|BELANJA/.test(t))return'out';return'other';}
 
@@ -178,7 +178,7 @@
     styles();
     scan();
     const target=document.body||document.documentElement;
-    if(target)new MutationObserver(scan).observe(target,{childList:true,subtree:true});
+    if(target)new window.SiKoyekFoundation.Observer(scan).observe(target,{childList:true,subtree:true});
     let tries=0;
     const retry=()=>{scan();if(++tries<40)setTimeout(retry,100);};
     retry();

@@ -276,6 +276,6 @@
 
   let timer=0;
   function schedule(){clearTimeout(timer);timer=setTimeout(apply,40)}
-  function boot(){apply();new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});}
+  function boot(){apply();new window.SiKoyekFoundation.Observer(schedule).observe(document.body,{childList:true,subtree:true});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
