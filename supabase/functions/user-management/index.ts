@@ -1,21 +1,20 @@
 // STAGING CANDIDATE — not deployed. Shared by SiKoyek MASTER and KONSTRUVA.
 // Supabase Edge Function: user-management. Run isolated tests before changing active functions.
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.119.0";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
-const json = (payload, status = 200) => new Response(JSON.stringify(payload), {
+const json = (payload: unknown, status = 200) => new Response(JSON.stringify(payload), {
   status, headers: { ...cors, "Content-Type": "application/json" },
 });
-const validUUID = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
-const clean = value => String(value ?? "").trim();
-const fail = (error, status = 400) => json({ error }, status);
+const validUUID = (value: unknown): value is string => typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+const clean = (value: unknown) => String(value ?? "").trim();
+const fail = (error: string, status = 400) => json({ error }, status);
 
-async function activeRole(admin, roleId) {
+async function activeRole(admin: SupabaseClient, roleId: unknown) {
   if (!validUUID(roleId)) return null;
   const { data, error } = await admin.from("roles")
     .select("id,name,is_active").eq("id", roleId).maybeSingle();
@@ -80,7 +79,7 @@ Deno.serve(async req => {
     if (action === "update") {
       const id = clean(body.id || body.user_id);
       if (!validUUID(id)) return fail("User ID tidak valid");
-      const changes = {};
+      const changes: { full_name?: string; role_id?: string; is_active?: boolean; updated_at?: string } = {};
       if (body.full_name !== undefined) {
         if (!clean(body.full_name)) return fail("Nama lengkap wajib diisi");
         changes.full_name = clean(body.full_name);
@@ -133,9 +132,9 @@ Deno.serve(async req => {
         return fail("Gunakan role_id dan permission_ids untuk mengubah hak akses");
       }
       if (!await activeRole(admin, roleId)) return fail("Role tidak valid atau tidak aktif");
-      if (body.permission_ids.length > 200 ||
-          body.permission_ids.some(id => !validUUID(id))) return fail("Permission ID tidak valid");
-      const ids = [...new Set(body.permission_ids)];
+      const permissionIds: unknown[] = body.permission_ids;
+      if (permissionIds.length > 200 || !permissionIds.every(validUUID)) return fail("Permission ID tidak valid");
+      const ids = [...new Set(permissionIds)];
       if (ids.length) {
         const { data: valid, error: e } = await admin.from("permissions").select("id").in("id", ids);
         if (e || valid?.length !== ids.length) return fail("Permission tidak valid");

@@ -4,12 +4,12 @@ const { test } = require('node:test');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const { stripTypeScriptTypes } = require('node:module');
 
 // Tests execute the staged Edge handler with synthetic clients; they do NOT call Supabase.
 const filepath = path.resolve(__dirname, '../../supabase/functions/user-management/index.ts');
-const source = fs.readFileSync(filepath, 'utf8')
-  .replace(/^import "jsr:[^\n]+\n/m, '')
-  .replace(/^import \{ createClient \} from "[^\n]+\n/m, '');
+const source = stripTypeScriptTypes(fs.readFileSync(filepath, 'utf8')
+  .replace(/^import \{ createClient,[^\n]+\n/m, ''));
 
 const CALLER = '11111111-1111-4111-8111-111111111111';
 const ROLE = '22222222-2222-4222-8222-222222222222';
