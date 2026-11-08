@@ -1,6 +1,6 @@
 /* SiKoyek Cloud: restrict browser data requests by server-backed permissions.
  * UI and query gating are defense-in-depth, NOT replacements for RLS.
- * Finance-sensitive columns in public.projects still require a server-side solution.
+ * Finance-sensitive values must be returned only by authenticated, role-checked RPCs.
  */
 (function(){
   'use strict';
@@ -52,8 +52,7 @@
         net_cashflow:null,cash_in:null,cash_out:null
       }))};
     }
-    const {data:summary,error}=await client.from('project_summary')
-      .select('*').order('project_code');
+    const {data:summary,error}=await client.rpc('sikoyek_secure_project_summary');
     if(error)throw error;
     return {
       access,
@@ -72,8 +71,9 @@
     const noData=Promise.resolve({data:null,error:null});
     const emptyRows=Promise.resolve({data:[],error:null});
     const requests=[
-      client.from('projects')
-        .select(access.finance?'*':SAFE_PROJECT_COLUMNS).eq('id',id).single(),
+      access.finance
+        ? client.rpc('sikoyek_secure_project_detail',{p_project_id:id})
+        : client.from('projects').select(SAFE_PROJECT_COLUMNS).eq('id',id).single(),
       client.from('project_work_items').select('*').eq('project_id',id).order('sort_order'),
       access.rap?client.from('project_rap').select('*').eq('project_id',id).maybeSingle():noData,
       access.finance?client.from('financial_transactions').select('*').eq('project_id',id)
