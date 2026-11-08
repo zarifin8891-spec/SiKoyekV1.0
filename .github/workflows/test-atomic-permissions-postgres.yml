@@ -14,6 +14,8 @@ on:
       - 'tests/security/postgres-secure-projection-*.sql'
       - 'docs/security-hardening/STAGING_ONLY_project_lifecycle_gate.sql'
       - 'tests/security/postgres-project-lifecycle-assertions.sql'
+      - 'docs/security-hardening/STAGING_ONLY_revoke_legacy_definers.sql'
+      - 'tests/security/postgres-legacy-definer-*.sql'
       - '.github/workflows/test-atomic-permissions-postgres.yml'
   pull_request:
     branches: [main]
@@ -27,6 +29,8 @@ on:
       - 'tests/security/postgres-secure-projection-*.sql'
       - 'docs/security-hardening/STAGING_ONLY_project_lifecycle_gate.sql'
       - 'tests/security/postgres-project-lifecycle-assertions.sql'
+      - 'docs/security-hardening/STAGING_ONLY_revoke_legacy_definers.sql'
+      - 'tests/security/postgres-legacy-definer-*.sql'
       - '.github/workflows/test-atomic-permissions-postgres.yml'
 
 permissions:
@@ -84,3 +88,6 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f tests/security/postgres-secure-projection-assertions.sql
           psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f docs/security-hardening/STAGING_ONLY_project_lifecycle_gate.sql
           psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f tests/security/postgres-project-lifecycle-assertions.sql
+          psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f tests/security/postgres-legacy-definer-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f docs/security-hardening/STAGING_ONLY_revoke_legacy_definers.sql
+          psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f tests/security/postgres-legacy-definer-assertions.sql
