@@ -191,7 +191,7 @@
       window.__SIKOYEK_RBAC_PERMISSIONS_V3__=permissions;
       applyUI();
       wireSidebarNavigation();
-      window.dispatchEvent(new CustomEvent('sikoyek:rbac-ready'));
+      window.dispatchEvent?.(new CustomEvent('sikoyek:rbac-ready'));
     }catch(e){console.warn('SiKoyek RBAC:',e)}
   }
 
