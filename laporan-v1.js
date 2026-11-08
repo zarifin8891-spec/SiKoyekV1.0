@@ -4,8 +4,8 @@
   if(window.__SIKOYEK_LAPORAN_V4__)return;
   window.__SIKOYEK_LAPORAN_V4__=true;
 
-  const money=n=>window.SiKoyekFoundation.money(n);
-  const pct=n=>Number(n||0).toFixed(2)+'%';
+  const money=n=>n==null?'—':window.SiKoyekFoundation.money(n);
+  const pct=n=>n==null?'—':Number(n||0).toFixed(2)+'%';
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
   let projects=[];
   let summaryRows=[];
@@ -222,20 +222,24 @@
   async function load(){
     const client=window.SK?.sb||window.sb;
     if(!client)return;
-    const [{data:ps,error:e1},{data:sr,error:e2},{data:wi,error:e3},{data:pr,error:e4},{data:ft,error:e5}]=await Promise.all([
-      client.from('projects').select('id,project_code,project_name,contract_value').order('project_code'),
-      client.from('project_summary').select('*').order('project_code'),
-      client.from('project_work_items').select('*').order('sort_order'),
-      client.from('progress_records').select('*').order('progress_date'),
-      client.from('financial_transactions').select('project_id,transaction_date,transaction_type,amount')
+    if(!window.SiKoyekDataAccess)throw new Error('Pengaman data belum siap.');
+    const {summary:sr,access}=await window.SiKoyekDataAccess.loadSummary(client);
+    const empty=Promise.resolve({data:[],error:null});
+    const [wi,pr,ft]=await Promise.all([
+      access.projects?client.from('project_work_items').select('*').order('sort_order'):empty,
+      access.progress?client.from('progress_records').select('*').order('progress_date'):empty,
+      access.finance?client.from('financial_transactions').select('project_id,transaction_date,transaction_type,amount'):empty
     ]);
-    const err=e1||e2||e3||e4||e5;
+    const err=wi.error||pr.error||ft.error;
     if(err)throw err;
-    projects=ps||[];
+    projects=(sr||[]).map(p=>({
+      id:p.project_id,project_code:p.project_code,project_name:p.project_name,
+      contract_value:p.contract_value
+    }));
     summaryRows=sr||[];
-    workItems=wi||[];
-    progressRecords=pr||[];
-    financialTransactions=ft||[];
+    workItems=wi.data||[];
+    progressRecords=pr.data||[];
+    financialTransactions=ft.data||[];
   }
 
   function renderReport(){
