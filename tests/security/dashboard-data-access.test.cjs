@@ -18,6 +18,14 @@ function harness(role,{active=true,roleActive=true}={}){
   const profile={role_id:'role-id',is_active:active,roles:{name:role,is_active:roleActive}};
   const client={
     auth:{getUser:async()=>({data:{user:{id:'synthetic-user'}},error:null})},
+    rpc(name,args){
+      events.push({table:name,operation:'rpc',args});
+      if(name==='sikoyek_secure_project_summary')return Promise.resolve({data:[FIN_SUMMARY],error:null});
+      if(name==='sikoyek_secure_project_detail')return Promise.resolve({
+        data:{...PROJECT,contract_value:10000},error:null
+      });
+      throw new Error('Unexpected RPC '+name);
+    },
     from(table){
       let operation='';let columns='';
       const query={
@@ -81,7 +89,8 @@ test('KEUANGAN can fetch finance summary but hides unverified progress and healt
   assert.equal(s.summary[0].total_rap,5000);
   assert.equal(s.summary[0].project_progress,null);
   assert.equal(s.summary[0].health_status,null);
-  assert.equal(h.events.some(x=>x.table==='project_summary'),true);
+  assert.equal(h.events.some(x=>x.table==='sikoyek_secure_project_summary'),true);
+  assert.equal(h.events.some(x=>x.table==='project_summary'),false);
   const d=await h.api.loadDetail(h.client,'p1',s.access);
   assert.equal(d.fin.length,1);
   assert.equal(d.progress.length,0);
@@ -91,8 +100,13 @@ test('ADMIN may query full authorized summary and detail financial records',asyn
   const h=harness('ADMIN');const s=await h.api.loadSummary(h.client);
   assert.equal(s.access.full,true);
   assert.equal(s.summary[0].project_progress,70);
+  assert.equal(h.events.some(x=>x.table==='sikoyek_secure_project_summary'),true);
+  assert.equal(h.events.some(x=>x.table==='project_summary'),false);
   const d=await h.api.loadDetail(h.client,'p1',s.access);
   assert.equal(d.fin[0].amount,1000);
+  assert.equal(d.project.contract_value,10000);
+  assert.equal(h.events.some(x=>x.table==='sikoyek_secure_project_detail'),true);
+  assert.equal(h.events.filter(x=>x.table==='projects').some(x=>x.columns==='*'),false);
   assert.equal(h.events.some(x=>x.table==='progress_records'),true);
 });
 test('inactive user and inactive role deny all project and summary fetches',async()=>{
