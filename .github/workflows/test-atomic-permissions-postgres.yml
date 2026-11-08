@@ -7,12 +7,14 @@ on:
     paths:
       - 'docs/security-hardening/STAGING_ONLY_atomic_role_permissions.sql'
       - 'tests/security/postgres-atomic-*.sql'
+      - 'tests/security/postgres-rls-matrix.sql'
       - '.github/workflows/test-atomic-permissions-postgres.yml'
   pull_request:
     branches: [main]
     paths:
       - 'docs/security-hardening/STAGING_ONLY_atomic_role_permissions.sql'
       - 'tests/security/postgres-atomic-*.sql'
+      - 'tests/security/postgres-rls-matrix.sql'
       - '.github/workflows/test-atomic-permissions-postgres.yml'
 
 permissions:
@@ -52,3 +54,5 @@ jobs:
         run: psql -X -v ON_ERROR_STOP=1 -f docs/security-hardening/STAGING_ONLY_atomic_role_permissions.sql
       - name: Test real PostgreSQL transaction, rollback and grants
         run: psql -X -v ON_ERROR_STOP=1 -f tests/security/postgres-atomic-assertions.sql
+      - name: Test representative RLS permissions for five synthetic users
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/security/postgres-rls-matrix.sql
