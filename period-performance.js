@@ -56,7 +56,7 @@
   function inRange(date){if(!date)return false;if(state.period?.from&&date<state.period.from)return false;if(state.period?.to&&date>state.period.to)return false;return true}
 
   async function load(){
-    if(loading||typeof state==='undefined'||state.page!=='dashboard')return;
+    if(loading||typeof state==='undefined'||state.page!=='dashboard'||!state.access?.finance)return;
     const page=document.getElementById('page');if(!page)return;
     if(page.querySelector('.'+SECTION_CLASS))return;
     const panels=page.querySelector('.dashboard-panels');if(!panels)return;
@@ -95,7 +95,7 @@
   // This file is already loaded by index.html, so it is used as the safe bootstrap hook.
   if(!window.__SIKOYEK_UNIFIED_CORE__) {
     const s=document.createElement('script');
-    s.src='./core-unified-shell-v2.js?v=2';
+    s.src='./core-unified-shell-v2.js?v=3';
     s.async=false;
     document.head.appendChild(s);
   }

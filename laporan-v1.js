@@ -193,7 +193,7 @@
       const d=String(r.progress_date||'').slice(0,10);
       if(from && (!d||d<from))return;
       if(to && (!d||d>to))return;
-      recByItem[r.work_item_id]=(recByItem[r.work_item_id]||0)+Number(r.progress_percentage||0);
+      recByItem[r.work_item_id]=(recByItem[r.work_item_id]||0)+Number(r.progress_percentage||0)*100;
     });
     const data=workItems.filter(i=>selectedIds.has(String(i.project_id))).map(i=>{
       const progress=Math.min(100,recByItem[i.id]||0);

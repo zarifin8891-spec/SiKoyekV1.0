@@ -34,6 +34,27 @@ BEGIN
 END;
 $preflight$;
 
+-- MASTER's legacy view divides by contract value in its health expressions.
+-- The same application can create a RENCANA project with a zero contract.
+-- Patch only the observed expression in the observed view shape. KONSTRUVA
+-- already guards its ratio calculation, so leave its view definition alone.
+DO $zero_contract$
+DECLARE
+  definition text := pg_get_viewdef('public.project_summary'::regclass,true);
+  unsafe_ratio constant text := 'COALESCE(ft.cash_out, 0::numeric) / p.contract_value * 100::numeric';
+  safe_ratio constant text := 'COALESCE(COALESCE(ft.cash_out, 0::numeric) / NULLIF(p.contract_value, 0::numeric) * 100::numeric, 0::numeric)';
+  occurrences integer;
+BEGIN
+  occurrences := (length(definition)-length(replace(definition,unsafe_ratio,'')))/length(unsafe_ratio);
+  IF occurrences=5 THEN
+    EXECUTE 'CREATE OR REPLACE VIEW public.project_summary WITH (security_invoker=true) AS '
+      || replace(definition,unsafe_ratio,safe_ratio);
+  ELSIF occurrences<>0 THEN
+    RAISE EXCEPTION 'Legacy project_summary ratio expression changed';
+  END IF;
+END;
+$zero_contract$;
+
 -- Distinguish row permission from column permission: any authenticated user
 -- may have PROJECTS VIEW, but cannot read value of the contract from Data API.
 REVOKE SELECT ON public.projects FROM PUBLIC, anon, authenticated;
@@ -59,8 +80,8 @@ BEGIN
       RAISE EXCEPTION 'Not authorized to set project contract value'
         USING ERRCODE='42501';
     END IF;
-  ELSIF NEW.contract_value IS DISTINCT FROM OLD.contract_value
-     AND NOT (SELECT sikoyek_authz.can('KEUANGAN','VIEW')) THEN
+  -- UPDATE OF fires even if the supplied value matches the stored value.
+  ELSIF NOT (SELECT sikoyek_authz.can('KEUANGAN','VIEW')) THEN
     RAISE EXCEPTION 'Not authorized to change project contract value'
       USING ERRCODE='42501';
   END IF;
@@ -116,6 +137,21 @@ BEGIN
 END;
 $function$;
 
+-- Kinerja requires contract values but does not require access to RAP or health.
+CREATE OR REPLACE FUNCTION public.sikoyek_secure_project_contracts()
+RETURNS TABLE(project_id uuid, contract_value numeric)
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=''
+AS $function$
+BEGIN
+  IF (SELECT auth.uid()) IS NULL
+     OR NOT (SELECT sikoyek_authz.can('PROJECTS','VIEW'))
+     OR NOT (SELECT sikoyek_authz.can('KEUANGAN','VIEW')) THEN
+    RAISE EXCEPTION 'Project contract list access denied' USING ERRCODE='42501';
+  END IF;
+  RETURN QUERY SELECT p.id,p.contract_value FROM public.projects p ORDER BY p.project_code,p.id;
+END;
+$function$;
+
 CREATE OR REPLACE FUNCTION public.sikoyek_secure_project_cost_control()
 RETURNS SETOF jsonb
 LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=''
@@ -139,6 +175,8 @@ REVOKE ALL ON FUNCTION public.sikoyek_secure_project_detail(uuid)
   FROM PUBLIC,anon,authenticated;
 REVOKE ALL ON FUNCTION public.sikoyek_secure_project_cost_control()
   FROM PUBLIC,anon,authenticated;
+REVOKE ALL ON FUNCTION public.sikoyek_secure_project_contracts() FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.sikoyek_secure_project_contracts() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.sikoyek_secure_project_summary()
   TO authenticated;
 GRANT EXECUTE ON FUNCTION public.sikoyek_secure_project_detail(uuid)
@@ -155,6 +193,7 @@ BEGIN
      OR has_table_privilege('authenticated','public.project_summary','SELECT')
      OR has_table_privilege('authenticated','public.project_cost_control','SELECT')
      OR has_function_privilege('anon','public.sikoyek_secure_project_detail(uuid)','EXECUTE')
+     OR has_function_privilege('anon','public.sikoyek_secure_project_contracts()','EXECUTE')
   THEN
     RAISE EXCEPTION 'Sensitive financial permissions are not sufficiently restricted';
   END IF;

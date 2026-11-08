@@ -47,15 +47,7 @@
   async function loadData(){
     const client=window.SK?.sb||window.sb;
     if(!client)throw new Error('Supabase client belum siap.');
-    const [{data:projects,error:e1},{data:summary,error:e2},{data:transactions,error:e3},{data:progress,error:e4}]=await Promise.all([
-      client.from('projects').select('id,project_code,project_name,contract_value').order('project_code'),
-      client.from('project_summary').select('*').order('project_code'),
-      client.from('financial_transactions').select('*').order('transaction_date'),
-      client.from('progress_records').select('*').order('progress_date')
-    ]);
-    const err=e1||e2||e3||e4;
-    if(err)throw err;
-    data={projects:projects||[],summary:summary||[],transactions:transactions||[],progress:progress||[]};
+    data=await window.SiKoyekDataAccess.loadReport(client,{summary:true,finance:true,progress:true});
   }
 
   function projectName(id){
@@ -119,13 +111,13 @@
     sync();
   }
 
-  function rapView(){
-    const rows=data.summary.map(r=>({r,rap:Number(r.total_rap||0),real:Number(r.total_realization||0),ratio:Number(r.cost_ratio||0),progress:Number(r.project_progress||0)}));
+  function rapView(){if(!(data.access?.finance&&data.access?.rap))throw new Error('Akun ini tidak memiliki izin untuk membuka laporan tersebut.');
+    const rows=data.summary.map(r=>({r,rap:Number(r.total_rap||0),real:Number(r.total_realization||0),ratio:Number(r.cost_ratio||0),progress:r.project_progress}));
     const rap=rows.reduce((s,x)=>s+x.rap,0),real=rows.reduce((s,x)=>s+x.real,0);
-    document.getElementById('reportContent').innerHTML=`<div class="extra-kpis"><div class="extra-kpi"><small>TOTAL PROYEK</small><strong>${rows.length}</strong></div><div class="extra-kpi"><small>TOTAL RAP</small><strong>${money(rap)}</strong></div><div class="extra-kpi"><small>TOTAL REALISASI</small><strong>${money(real)}</strong></div><div class="extra-kpi"><small>RAP TERSISA</small><strong>${money(rap-real)}</strong></div></div><div class="card tablecard"><div class="scroll"><table><thead><tr><th>Kode</th><th>Nama Proyek</th><th class="num">RAP</th><th class="num">Realisasi</th><th class="num">Sisa RAP</th><th>Progress</th><th>Rasio Biaya</th><th>Status</th></tr></thead><tbody>${rows.length?rows.map(x=>`<tr><td><strong>${esc(x.r.project_code||'-')}</strong></td><td>${esc(x.r.project_name||'-')}</td><td class="num">${money(x.rap)}</td><td class="num">${money(x.real)}</td><td class="num">${money(x.rap-x.real)}</td><td>${pct(x.progress)}</td><td>${pct(x.ratio)}</td><td>${esc(x.r.health_status||'-')}</td></tr>`).join(''):`<tr><td colspan="8" class="extra-empty">Belum ada data.</td></tr>`}</tbody></table></div></div><div class="card extra-note">RAP, realisasi, rasio biaya, dan progress mengikuti ringkasan proyek.</div>`;
+    document.getElementById('reportContent').innerHTML=`<div class="extra-kpis"><div class="extra-kpi"><small>TOTAL PROYEK</small><strong>${rows.length}</strong></div><div class="extra-kpi"><small>TOTAL RAP</small><strong>${money(rap)}</strong></div><div class="extra-kpi"><small>TOTAL REALISASI</small><strong>${money(real)}</strong></div><div class="extra-kpi"><small>RAP TERSISA</small><strong>${money(rap-real)}</strong></div></div><div class="card tablecard"><div class="scroll"><table><thead><tr><th>Kode</th><th>Nama Proyek</th><th class="num">RAP</th><th class="num">Realisasi</th><th class="num">Sisa RAP</th><th>Progress</th><th>Rasio Biaya</th><th>Status</th></tr></thead><tbody>${rows.length?rows.map(x=>`<tr><td><strong>${esc(x.r.project_code||'-')}</strong></td><td>${esc(x.r.project_name||'-')}</td><td class="num">${money(x.rap)}</td><td class="num">${money(x.real)}</td><td class="num">${money(x.rap-x.real)}</td><td>${x.progress==null?'—':pct(x.progress)}</td><td>${pct(x.ratio)}</td><td>${esc(x.r.health_status||'-')}</td></tr>`).join(''):`<tr><td colspan="8" class="extra-empty">Belum ada data.</td></tr>`}</tbody></table></div></div><div class="card extra-note">RAP, realisasi, rasio biaya, dan progress mengikuti ringkasan proyek.</div>`;
   }
 
-  function financeView(){
+  function financeView(){if(!(data.access?.finance))throw new Error('Akun ini tidak memiliki izin untuk membuka laporan tersebut.');
     document.getElementById('reportContent').innerHTML=periodBox('fin');
     bindPeriod('fin',renderFinance);
   }
@@ -135,16 +127,16 @@
     let income=0,expense=0;rows.forEach(r=>{const a=Number(r.amount||0);if(txKind(r)==='in')income+=a;else if(txKind(r)==='out')expense+=a});
     const c=document.getElementById('reportContent');if(!c)return;
     c.querySelectorAll('.extra-dynamic').forEach(x=>x.remove());
-    c.insertAdjacentHTML('beforeend',`<div class="extra-dynamic"><div class="extra-kpis"><div class="extra-kpi"><small>TRANSAKSI</small><strong>${rows.length}</strong></div><div class="extra-kpi"><small>PEMASUKAN</small><strong>${money(income)}</strong></div><div class="extra-kpi"><small>PENGELUARAN</small><strong>${money(expense)}</strong></div><div class="extra-kpi"><small>NET</small><strong>${money(income-expense)}</strong></div></div><div class="card tablecard"><div class="scroll"><table><thead><tr><th>Tanggal</th><th>Proyek</th><th>Jenis</th><th>Keterangan</th><th class="num">Jumlah</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(String(r.transaction_date||'').slice(0,10))}</td><td>${esc(projectName(r.project_id))}</td><td>${esc(r.transaction_type||r.type||'-')}</td><td>${esc(r.description||r.notes||r.remark||'-')}</td><td class="num">${money(r.amount)}</td></tr>`).join('')||'<tr><td colspan="5" class="extra-empty">Tidak ada transaksi pada periode/filter ini.</td></tr>'}</tbody></table></div></div></div>`);
+    c.insertAdjacentHTML('beforeend',`<div class="extra-dynamic"><div class="extra-kpis"><div class="extra-kpi"><small>TRANSAKSI</small><strong>${rows.length}</strong></div><div class="extra-kpi"><small>PEMASUKAN</small><strong>${data.access?.finance?money(income):'—'}</strong></div><div class="extra-kpi"><small>PENGELUARAN</small><strong>${data.access?.finance?money(expense):'—'}</strong></div><div class="extra-kpi"><small>NET</small><strong>${money(income-expense)}</strong></div></div><div class="card tablecard"><div class="scroll"><table><thead><tr><th>Tanggal</th><th>Proyek</th><th>Jenis</th><th>Keterangan</th><th class="num">Jumlah</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(String(r.transaction_date||'').slice(0,10))}</td><td>${esc(projectName(r.project_id))}</td><td>${esc(r.transaction_type||r.type||'-')}</td><td>${esc(r.description||r.notes||r.remark||'-')}</td><td class="num">${money(r.amount)}</td></tr>`).join('')||'<tr><td colspan="5" class="extra-empty">Tidak ada transaksi pada periode/filter ini.</td></tr>'}</tbody></table></div></div></div>`);
   }
 
-  function cashflowView(){
+  function cashflowView(){if(!(data.access?.finance&&data.access?.rap))throw new Error('Akun ini tidak memiliki izin untuk membuka laporan tersebut.');
     const rows=data.summary.map(r=>({code:r.project_code,name:r.project_name,in:Number(r.cash_in||0),out:Number(r.cash_out||0),net:Number(r.net_cashflow||0)}));
     const cin=rows.reduce((s,x)=>s+x.in,0),cout=rows.reduce((s,x)=>s+x.out,0),net=rows.reduce((s,x)=>s+x.net,0);
-    document.getElementById('reportContent').innerHTML=`<div class="extra-kpis"><div class="extra-kpi"><small>CASH IN</small><strong>${money(cin)}</strong></div><div class="extra-kpi"><small>CASH OUT</small><strong>${money(cout)}</strong></div><div class="extra-kpi"><small>NET CASH FLOW</small><strong>${money(net)}</strong></div><div class="extra-kpi"><small>PROYEK</small><strong>${rows.length}</strong></div></div><div class="card tablecard"><div class="scroll"><table><thead><tr><th>Kode</th><th>Nama Proyek</th><th class="num">Cash In</th><th class="num">Cash Out</th><th class="num">Net Cash Flow</th><th>Status</th></tr></thead><tbody>${rows.map(x=>`<tr><td><strong>${esc(x.code||'-')}</strong></td><td>${esc(x.name||'-')}</td><td class="num">${money(x.in)}</td><td class="num">${money(x.out)}</td><td class="num">${money(x.net)}</td><td>${x.net<0?'<span class="pill red">BERISIKO</span>':x.in>0&&x.net/x.in<.2?'<span class="pill amber">PERLU PENGAWASAN</span>':'<span class="pill green">SEHAT</span>'}</td></tr>`).join('')}</tbody></table></div></div><div class="card extra-note">Cash Flow memakai Cash In, Cash Out, dan Net Cashflow dari ringkasan proyek.</div>`;
+    document.getElementById('reportContent').innerHTML=`<div class="extra-kpis"><div class="extra-kpi"><small>CASH IN</small><strong>${data.access?.finance?money(cin):'—'}</strong></div><div class="extra-kpi"><small>CASH OUT</small><strong>${data.access?.finance?money(cout):'—'}</strong></div><div class="extra-kpi"><small>NET CASH FLOW</small><strong>${money(net)}</strong></div><div class="extra-kpi"><small>PROYEK</small><strong>${rows.length}</strong></div></div><div class="card tablecard"><div class="scroll"><table><thead><tr><th>Kode</th><th>Nama Proyek</th><th class="num">Cash In</th><th class="num">Cash Out</th><th class="num">Net Cash Flow</th><th>Status</th></tr></thead><tbody>${rows.map(x=>`<tr><td><strong>${esc(x.code||'-')}</strong></td><td>${esc(x.name||'-')}</td><td class="num">${money(x.in)}</td><td class="num">${money(x.out)}</td><td class="num">${money(x.net)}</td><td>${x.net<0?'<span class="pill red">BERISIKO</span>':x.in>0&&x.net/x.in<.2?'<span class="pill amber">PERLU PENGAWASAN</span>':'<span class="pill green">SEHAT</span>'}</td></tr>`).join('')}</tbody></table></div></div><div class="card extra-note">Cash Flow memakai Cash In, Cash Out, dan Net Cashflow dari ringkasan proyek.</div>`;
   }
 
-  function periodView(){
+  function periodView(){if(!(data.access?.finance||data.access?.progress))throw new Error('Akun ini tidak memiliki izin untuk membuka laporan tersebut.');
     document.getElementById('reportContent').innerHTML=periodBox('per');
     bindPeriod('per',renderPeriod);
   }
@@ -153,10 +145,10 @@
     const tx=data.transactions.filter(r=>{const d=String(r.transaction_date||'').slice(0,10);return (!from||d>=from)&&(!to||d<=to)&&(!pid||String(r.project_id)===String(pid))});
     const pr=data.progress.filter(r=>{const d=String(r.progress_date||'').slice(0,10);return (!from||d>=from)&&(!to||d<=to)&&(!pid||String(r.project_id)===String(pid))});
     let cin=0,cout=0;tx.forEach(r=>{const a=Number(r.amount||0);if(txKind(r)==='in')cin+=a;else if(txKind(r)==='out')cout+=a});
-    const avg=pr.length?pr.reduce((s,r)=>s+Number(r.progress_percentage||0),0)/pr.length:0;
-    const entries=[...tx.map(r=>({d:String(r.transaction_date||'').slice(0,10),p:projectName(r.project_id),a:`Transaksi ${r.transaction_type||r.type||''}`,v:money(r.amount)})),...pr.map(r=>({d:String(r.progress_date||'').slice(0,10),p:projectName(r.project_id),a:`Progress ${r.work_item_id||''}`,v:pct(r.progress_percentage)}))].sort((a,b)=>a.d.localeCompare(b.d));
+    const avg=pr.length?pr.reduce((s,r)=>s+Number(r.progress_percentage||0)*100,0)/pr.length:0;
+    const entries=[...tx.map(r=>({d:String(r.transaction_date||'').slice(0,10),p:projectName(r.project_id),a:`Transaksi ${r.transaction_type||r.type||''}`,v:money(r.amount)})),...pr.map(r=>({d:String(r.progress_date||'').slice(0,10),p:projectName(r.project_id),a:`Progress ${r.work_item_id||''}`,v:pct(Number(r.progress_percentage||0)*100)}))].sort((a,b)=>a.d.localeCompare(b.d));
     const c=document.getElementById('reportContent');if(!c)return;c.querySelectorAll('.extra-dynamic').forEach(x=>x.remove());
-    c.insertAdjacentHTML('beforeend',`<div class="extra-dynamic"><div class="extra-kpis"><div class="extra-kpi"><small>TRANSAKSI</small><strong>${tx.length}</strong></div><div class="extra-kpi"><small>CASH IN</small><strong>${money(cin)}</strong></div><div class="extra-kpi"><small>CASH OUT</small><strong>${money(cout)}</strong></div><div class="extra-kpi"><small>AVG INPUT PROGRESS</small><strong>${pct(avg)}</strong></div></div><div class="card tablecard"><div class="scroll"><table><thead><tr><th>Tanggal</th><th>Proyek</th><th>Aktivitas</th><th class="num">Nilai / Progress</th></tr></thead><tbody>${entries.map(x=>`<tr><td>${esc(x.d)}</td><td>${esc(x.p)}</td><td>${esc(x.a)}</td><td class="num">${x.v}</td></tr>`).join('')||'<tr><td colspan="4" class="extra-empty">Tidak ada aktivitas pada periode ini.</td></tr>'}</tbody></table></div></div></div>`);
+    c.insertAdjacentHTML('beforeend',`<div class="extra-dynamic"><div class="extra-kpis"><div class="extra-kpi"><small>TRANSAKSI</small><strong>${data.access?.finance?tx.length:'—'}</strong></div><div class="extra-kpi"><small>CASH IN</small><strong>${data.access?.finance?money(cin):'—'}</strong></div><div class="extra-kpi"><small>CASH OUT</small><strong>${data.access?.finance?money(cout):'—'}</strong></div><div class="extra-kpi"><small>AVG INPUT PROGRESS</small><strong>${data.access?.progress?pct(avg):'—'}</strong></div></div><div class="card tablecard"><div class="scroll"><table><thead><tr><th>Tanggal</th><th>Proyek</th><th>Aktivitas</th><th class="num">Nilai / Progress</th></tr></thead><tbody>${entries.map(x=>`<tr><td>${esc(x.d)}</td><td>${esc(x.p)}</td><td>${esc(x.a)}</td><td class="num">${x.v}</td></tr>`).join('')||'<tr><td colspan="4" class="extra-empty">Tidak ada aktivitas pada periode ini.</td></tr>'}</tbody></table></div></div></div>`);
   }
 
   function exportView(){

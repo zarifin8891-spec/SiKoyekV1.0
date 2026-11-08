@@ -20,6 +20,7 @@ function harness(role,{active=true,roleActive=true}={}){
     auth:{getUser:async()=>({data:{user:{id:'synthetic-user'}},error:null})},
     rpc(name,args){
       events.push({table:name,operation:'rpc',args});
+      if(name==='sikoyek_secure_project_contracts')return Promise.resolve({data:[{project_id:PROJECT.id,contract_value:10000}],error:null});
       if(name==='sikoyek_secure_project_summary')return Promise.resolve({data:[FIN_SUMMARY],error:null});
       if(name==='sikoyek_secure_project_detail')return Promise.resolve({
         data:{...PROJECT,contract_value:10000},error:null
@@ -116,4 +117,41 @@ test('inactive user and inactive role deny all project and summary fetches',asyn
     assert.equal(s.access.projects,false);
     assert.equal(h.events.some(x=>['projects','project_summary','financial_transactions'].includes(x.table)),false);
   }
+});
+
+test('Kinerja gets authorized contract and expense data without fetching restricted progress',async()=>{
+  const h=harness('KEUANGAN');
+  const report=await h.api.loadReport(h.client,{
+    contracts:true,finance:true,items:true,progress:true,require:['finance']
+  });
+  assert.equal(report.projects[0].contract_value,10000);
+  assert.equal(report.transactions[0].amount,1000);
+  assert.equal(report.progress.length,0);
+  assert.equal(report.items.length,0);
+  assert.ok(h.events.some(x=>x.table==='sikoyek_secure_project_contracts'));
+  assert.ok(!h.events.some(x=>x.table==='project_work_items'||x.table==='progress_records'));
+  assert.ok(!h.events.some(x=>x.table==='projects'&&/contract_value|\*/.test(x.columns)));
+});
+test('Progress reads project and progress data without requesting a contract or finance',async()=>{
+  const h=harness('PELAKSANA');
+  const report=await h.api.loadReport(h.client,{items:true,progress:true,require:['progress']});
+  assert.equal(report.projects[0].id,PROJECT.id);
+  assert.equal(report.projects[0].contract_value,null);
+  assert.ok(h.events.some(x=>x.table==='progress_records'));
+  assert.ok(!h.events.some(x=>x.operation==='rpc'||x.table==='financial_transactions'));
+});
+test('Kinerja refuses restricted accounts before fetching report data',async()=>{
+  const h=harness('MARKETING');
+  await assert.rejects(h.api.loadReport(h.client,{
+    contracts:true,finance:true,items:true,progress:true,require:['finance']
+  }),/tidak memiliki izin/);
+  assert.ok(!h.events.some(x=>x.operation==='rpc'||x.table==='projects'||x.table==='financial_transactions'));
+});
+test('Extra tabs use protected summaries and only request authorized data sources',async()=>{
+  const h=harness('PELAKSANA');
+  const report=await h.api.loadReport(h.client,{summary:true,finance:true,progress:true});
+  assert.equal(report.projects[0].id,PROJECT.id);
+  assert.equal(report.summary[0].contract_value,null);
+  assert.ok(!h.events.some(x=>x.table==='project_summary'||x.table==='financial_transactions'));
+  assert.ok(h.events.some(x=>x.table==='progress_records'));
 });

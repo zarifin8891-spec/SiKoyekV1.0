@@ -35,8 +35,8 @@
       return denied();
     }
   }
-  async function loadSummary(client){
-    const access=await resolve(client);
+  async function loadSummary(client,access){
+    access=access||await resolve(client);
     if(!access.projects)return {summary:[],access};
     const {data:projects,error:projectsError}=await client.from('projects')
       .select(SAFE_PROJECT_COLUMNS).order('project_code');
@@ -88,5 +88,34 @@
       fin:fin.data||[],progress:progress.data||[],readError:error
     };
   }
-  window.SiKoyekDataAccess={resolve,loadSummary,loadDetail};
+  async function loadReport(client,{summary=false,contracts=false,progress=false,items=false,
+    finance=false,descending=false,require=[]}={}){
+    const access=await resolve(client);
+    if(!access.projects||require.some(key=>!access[key])){
+      throw new Error('Akun ini tidak memiliki izin untuk membuka laporan tersebut.');
+    }
+    const empty=Promise.resolve({data:[],error:null});
+    const [projectRows,contractRows,itemRows,progressRows,transactions]=await Promise.all([
+      summary?loadSummary(client,access):client.from('projects')
+        .select('id,project_code,project_name,status').order('project_code'),
+      contracts&&access.finance?client.rpc('sikoyek_secure_project_contracts'):empty,
+      items&&access.progress?client.from('project_work_items').select('id,project_id,work_name,weight')
+        .order('sort_order'):empty,
+      progress&&access.progress?client.from('progress_records')
+        .select('project_id,work_item_id,progress_date,progress_percentage').order('progress_date'):empty,
+      finance&&access.finance?client.from('financial_transactions')
+        .select('id,project_id,transaction_date,transaction_type,category,description,notes,amount')
+        .order('transaction_date',{ascending:!descending}).order('created_at').order('id'):empty
+    ]);
+    const error=[projectRows,contractRows,itemRows,progressRows,transactions].find(result=>result.error)?.error;
+    if(error)throw error;
+    const values=new Map((contractRows.data||[]).map(row=>[row.project_id,row.contract_value]));
+    const projects=summary
+      ? projectRows.summary.map(row=>({...row,id:row.project_id}))
+      : (projectRows.data||[]).map(row=>({...row,contract_value:values.get(row.id)??null}));
+    return {access,projects,summary:projectRows.summary||[],items:itemRows.data||[],
+      progress:progressRows.data||[],transactions:transactions.data||[]};
+  }
+
+  window.SiKoyekDataAccess={resolve,loadSummary,loadDetail,loadReport};
 })();

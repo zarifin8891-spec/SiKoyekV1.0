@@ -99,12 +99,8 @@
       to:document.getElementById('rapTo')?.value||''
     };
 
-    const [{data:summary,error:e1},{data:tx,error:e2},{data:pr,error:e3}]=await Promise.all([
-      client.from('project_summary').select('*').order('project_code'),
-      client.from('financial_transactions').select('*').order('transaction_date'),
-      client.from('progress_records').select('*').order('progress_date')
-    ]);
-    if(e1||e2||e3)throw(e1||e2||e3);
+    const {summary,transactions:tx,progress:pr}=await window.SiKoyekDataAccess.loadReport(client,
+      {summary:true,finance:true,progress:true,require:['finance','rap']});
 
     const period=previous.period||'all';
     const from=previous.from||'';
@@ -130,7 +126,7 @@
         <div class="rap-period-kpi"><small>REALISASI</small><strong>${money(totalReal)}</strong></div>
         <div class="rap-period-kpi"><small>RAP TERSISA</small><strong>${money(residual)}</strong></div>
       </div>
-      <div class="card tablecard"><div class="scroll"><table><thead><tr><th>Kode</th><th>Nama Proyek</th><th class="num">RAP</th><th class="num">Realisasi</th><th class="num">Sisa RAP</th><th>Progress</th><th>Rasio Biaya</th><th>Status</th></tr></thead><tbody>${rows.map(x=>`<tr><td><strong>${esc(x.project_code||'-')}</strong></td><td>${esc(x.project_name||'-')}</td><td class="num">${money(x.total_rap)}</td><td class="num">${money(x.total_realization)}</td><td class="num">${money(Number(x.total_rap||0)-Number(x.total_realization||0))}</td><td>${pct(x.project_progress)}</td><td>${pct(x.cost_ratio)}</td><td>${esc(x.health_status||'-')}</td></tr>`).join('')||'<tr><td colspan="8" class="extra-empty">Tidak ada data pada periode ini.</td></tr>'}</tbody></table></div></div>`;
+      <div class="card tablecard"><div class="scroll"><table><thead><tr><th>Kode</th><th>Nama Proyek</th><th class="num">RAP</th><th class="num">Realisasi</th><th class="num">Sisa RAP</th><th>Progress</th><th>Rasio Biaya</th><th>Status</th></tr></thead><tbody>${rows.map(x=>`<tr><td><strong>${esc(x.project_code||'-')}</strong></td><td>${esc(x.project_name||'-')}</td><td class="num">${money(x.total_rap)}</td><td class="num">${money(x.total_realization)}</td><td class="num">${money(Number(x.total_rap||0)-Number(x.total_realization||0))}</td><td>${x.project_progress==null?'—':pct(x.project_progress)}</td><td>${pct(x.cost_ratio)}</td><td>${esc(x.health_status||'-')}</td></tr>`).join('')||'<tr><td colspan="8" class="extra-empty">Tidak ada data pada periode ini.</td></tr>'}</tbody></table></div></div>`;
 
     const newPeriod=document.getElementById('rapPeriod');
     const newFrom=document.getElementById('rapFrom');

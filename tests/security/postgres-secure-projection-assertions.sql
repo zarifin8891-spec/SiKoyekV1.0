@@ -13,6 +13,7 @@ BEGIN
  THEN RAISE EXCEPTION 'Sensitive views still exposed'; END IF;
  IF has_function_privilege('anon','public.sikoyek_secure_project_summary()','EXECUTE')
     OR has_function_privilege('anon','public.sikoyek_secure_project_detail(uuid)','EXECUTE')
+    OR has_function_privilege('anon','public.sikoyek_secure_project_contracts()','EXECUTE')
     OR has_function_privilege('anon','public.sikoyek_secure_project_cost_control()','EXECUTE')
  THEN RAISE EXCEPTION 'Anonymous financial RPC executable'; END IF;
  IF NOT has_function_privilege('authenticated','public.sikoyek_secure_project_summary()','EXECUTE')
@@ -61,6 +62,9 @@ BEGIN
   SELECT public.sikoyek_secure_project_detail(projectid) INTO jsonrow;
   IF (jsonrow->>'contract_value')::numeric<>300000000
   THEN RAISE EXCEPTION 'Finance user cannot read contract via authorized RPC'; END IF;
+  SELECT to_jsonb(c) INTO jsonrow FROM public.sikoyek_secure_project_contracts() AS c;
+  IF jsonrow IS DISTINCT FROM jsonb_build_object('project_id',projectid,'contract_value',300000000)
+  THEN RAISE EXCEPTION 'Contract report projection does not match the allowlist'; END IF;
   SELECT value INTO jsonrow FROM public.sikoyek_secure_project_summary() AS value LIMIT 1;
   IF (jsonrow->>'contract_value')::numeric<>300000000
     OR jsonrow ? 'project_progress'
@@ -88,10 +92,21 @@ BEGIN
   EXCEPTION WHEN SQLSTATE '42501' THEN NULL;
   END;
 
+  BEGIN
+    PERFORM * FROM public.sikoyek_secure_project_contracts();
+    RAISE EXCEPTION 'Marketing can read contract list' USING ERRCODE='22000';
+  EXCEPTION WHEN SQLSTATE '42501' THEN NULL;
+  END;
+
   -- Marketing with PROJECTS EDIT must not be allowed to modify contract.
   BEGIN
     UPDATE public.projects SET contract_value=900000000 WHERE id=projectid;
     RAISE EXCEPTION 'Marketing changed protected contract' USING ERRCODE='22000';
+  EXCEPTION WHEN SQLSTATE '42501' THEN NULL;
+  END;
+  BEGIN
+    UPDATE public.projects SET contract_value=300000000 WHERE id=projectid;
+    RAISE EXCEPTION 'Marketing can verify a guessed contract value' USING ERRCODE='22000';
   EXCEPTION WHEN SQLSTATE '42501' THEN NULL;
   END;
   UPDATE public.projects SET project_name='Marketing edit allowed' WHERE id=projectid;

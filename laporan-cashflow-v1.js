@@ -50,12 +50,9 @@
 
   async function load(){
     const client=window.SK?.sb||window.sb;if(!client)throw new Error('Supabase client belum siap.');
-    const [{data:p,error:e1},{data:t,error:e2}]=await Promise.all([
-      client.from('projects').select('id,project_code,project_name').order('project_code',{ascending:true}),
-      client.from('financial_transactions').select('id,project_id,transaction_date,transaction_type,category,description,amount').order('transaction_date',{ascending:true}).order('created_at',{ascending:true})
-    ]);
-    if(e1)throw e1;if(e2)throw e2;
-    projects=p||[];transactions=t||[];
+    const report=await window.SiKoyekDataAccess.loadReport(client,{finance:true,require:['finance']});
+    projects=report.projects;
+    transactions=report.transactions;
   }
 
   function lastMonthRange(){

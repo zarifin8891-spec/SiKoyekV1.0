@@ -25,7 +25,7 @@
 <script src="./foundation/runtime.js"></script>
 <script src="./foundation/backend.js"></script>
 <script src="./foundation/repository.js"></script>
-<script src="./foundation/data-access.js"></script>
+<script src="./foundation/data-access.js?v=2"></script>
 </head>
 <body><div id="app"></div><script>
 const sb=window.sb=window.SiKoyekBackend.getClient();
@@ -92,7 +92,7 @@ function openTxForm(){modal('Tambah Transaksi Keuangan',`<div class="formgrid"><
 async function saveTx(){const row={project_id:state.selected,transaction_date:document.getElementById('tx_date').value,transaction_type:document.getElementById('tx_type').value,category:document.getElementById('tx_cat').value.trim()||null,description:document.getElementById('tx_desc').value.trim(),amount:Number(document.getElementById('tx_amount').value||0),payment_method:document.getElementById('tx_method').value.trim()||null};if(!row.description||row.amount<=0){toast('Deskripsi dan jumlah wajib diisi');return}const {error}=await sb.from('financial_transactions').insert(row);if(error){toast(error.message);return}closeModal();await loadSummary();await openProject(state.selected);toast('Transaksi berhasil disimpan')}
 boot();
 </script>
-<script src="./period-performance.js?v=2"></script>
+<script src="./period-performance.js?v=3"></script>
 <script src="./dashboard-graphs.js?v=6"></script>
 <script src="./dashboard-graphs-ui-fix.js?v=1"></script>
 <script src="./detail-finance-kpi.js?v=1"></script>

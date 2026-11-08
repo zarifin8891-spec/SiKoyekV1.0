@@ -50,12 +50,10 @@
   async function load(){
     const client=window.SK?.sb||window.sb;
     if(!client)throw new Error('Supabase client belum siap.');
-    const [{data:tx,error:e1},{data:ps,error:e2}]=await Promise.all([
-      client.from('financial_transactions').select('*').order('transaction_date',{ascending:false}),
-      client.from('projects').select('id,project_code,project_name').order('project_code')
-    ]);
-    if(e1||e2)throw(e1||e2);
-    transactions=tx||[];projects=ps||[];
+    const report=await window.SiKoyekDataAccess.loadReport(client,
+      {finance:true,descending:true,require:['finance']});
+    transactions=report.transactions;
+    projects=report.projects;
   }
 
   function projectName(id){const p=projects.find(x=>String(x.id)===String(id));return p?`${p.project_code||'-'} — ${p.project_name||'-'}`:'-'}
