@@ -12,7 +12,10 @@ const paths=[
   'workspace.html',
   'daftar-proyek.html',
   'laporan-v1.js',
-  'laporan-unified-v3.js'
+  'laporan-unified-v3.js',
+  'laporan-rap-biaya-v1.js',
+  'cashflow-decision-dashboard-v1.js',
+  'foundation/repository.js'
 ];
 for(const filename of paths){
  test(filename+' does not bypass protected financial view RPCs',()=>{
@@ -33,4 +36,17 @@ test('staging-only SQL explicitly revokes public select on sensitive financial v
  assert.match(source,/REVOKE ALL ON public\.project_summary,public\.project_cost_control/);
  assert.match(source,/REVOKE SELECT ON public\.projects FROM PUBLIC, anon, authenticated/);
  assert.match(source,/SECURITY DEFINER SET search_path=''/);
+});
+
+test('lifecycle cannot trust filtered finance transaction counts',()=>{
+ const repository=fs.readFileSync(path.join(root,'foundation/repository.js'),'utf8');
+ assert.match(repository,/sikoyek_secure_project_lifecycle/);
+ assert.doesNotMatch(repository,/\.from\(['"`]financial_transactions['"`]\)/);
+ assert.doesNotMatch(repository,/\.from\(['"`]projects['"`]\)\.select\(['"`]\*['"`]\)/);
+});
+test('read-only reports cannot query raw finance-bearing summary from Data API',()=>{
+ for(const filename of ['laporan-rap-biaya-v1.js','cashflow-decision-dashboard-v1.js']){
+  const source=fs.readFileSync(path.join(root,filename),'utf8');
+  assert.match(source,/SiKoyekDataAccess\.loadSummary/);
+ }
 });
