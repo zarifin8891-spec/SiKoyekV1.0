@@ -13,6 +13,7 @@
 <script src="./foundation/runtime.js"></script>
 <script src="./foundation/backend.js"></script>
 <script src="./foundation/repository.js"></script>
+<script src="./foundation/data-access.js"></script>
 </head>
 <body class="secondary-page">
 <div class="shell">
@@ -44,18 +45,16 @@
     const session=await window.SK.requireSession();
     if(!session)return;
     const page=document.getElementById('page');
-    const money=n=>window.SiKoyekFoundation.money(n);
-    const pct=n=>Number(n||0).toFixed(2)+'%';
+    const money=n=>n==null?'—':window.SiKoyekFoundation.money(n);
+    const pct=n=>n==null?'—':Number(n||0).toFixed(2)+'%';
     const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
     const healthClass=s=>s==='SEHAT'?'green':s==='BERISIKO'?'red':'amber';
-    const {data,error}=await window.SK.sb.from('project_summary').select('*').order('project_code');
-    if(error)throw error;
-    const rows=data||[];
-    page.innerHTML=`<div class="card tablecard"><div class="scroll"><table class="table"><thead><tr><th>Kode</th><th>Nama Proyek</th><th>Kontrak</th><th>RAP</th><th>Progress</th><th>Cost Ratio</th><th>RAP Consumption</th><th>Health</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(x.project_code)}</td><td><strong>${esc(x.project_name)}</strong></td><td>${money(x.contract_value)}</td><td>${money(x.total_rap)}</td><td>${pct(x.project_progress)}</td><td>${pct(x.cost_ratio)}</td><td>${pct(x.rap_consumption)}</td><td><span class="pill ${healthClass(x.health_status)}">${esc(x.health_status||'-')}</span></td></tr>`).join('')||'<tr><td colspan="8" class="empty">Belum ada proyek.</td></tr>'}</tbody></table></div></div>`;
+    const {summary:rows}=await window.SiKoyekDataAccess.loadSummary(window.SK.sb);
+    page.innerHTML=`<div class="card tablecard"><div class="scroll"><table class="table"><thead><tr><th>Kode</th><th>Nama Proyek</th><th>Kontrak</th><th>RAP</th><th>Progress</th><th>Cost Ratio</th><th>RAP Consumption</th><th>Health</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(x.project_code)}</td><td><strong>${esc(x.project_name)}</strong></td><td>${money(x.contract_value)}</td><td>${money(x.total_rap)}</td><td>${pct(x.project_progress)}</td><td>${pct(x.cost_ratio)}</td><td>${pct(x.rap_consumption)}</td><td><span class="pill ${healthClass(x.health_status)}">${esc(x.health_status??'—')}</span></td></tr>`).join('')||'<tr><td colspan="8" class="empty">Belum ada proyek.</td></tr>'}</tbody></table></div></div>`;
     const {data:profile}=await window.SK.sb.from('profiles').select('roles(name)').eq('id',session.user.id).maybeSingle();
     document.querySelector('.locked-user-main')?.replaceChildren(document.createTextNode(session.user?.user_metadata?.full_name||session.user?.email||'Pengguna'));
     document.querySelector('.locked-user-role')?.replaceChildren(document.createTextNode(profile?.roles?.name?'Role: '+String(profile.roles.name).toUpperCase():'Pengguna'));
-  }catch(e){document.getElementById('page').innerHTML='<div class="card"><div class="empty">Gagal memuat daftar proyek: '+esc(e?.message||e)+'</div></div>'}
+  }catch(e){const target=document.getElementById('page');if(target){const error=document.createElement('div');error.className='empty';error.textContent='Gagal memuat daftar proyek: '+String(e?.message||e);target.replaceChildren(error)}}
 })();
 </script>
 </body>
