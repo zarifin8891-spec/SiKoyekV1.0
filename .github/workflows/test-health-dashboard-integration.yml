@@ -28,8 +28,9 @@ jobs:
           integration = Path('health-dashboard-integration-v1.js').read_text(encoding='utf-8')
           if 'id="app"' not in html:
               raise SystemExit('FAIL: Dashboard app mount not found')
-          scripts = re.findall(r'<script[^>]+src="([^"]+)"', html)
-          health = [src for src in scripts if src.split('?')[0] == './health-dashboard-integration-v1.js']
+          script_sources = re.findall(r'<script[^>]+src="([^"]+)"', html)
+          scripts = [src.split('?', 1)[0] for src in script_sources]
+          health = [src for src in scripts if src == './health-dashboard-integration-v1.js']
           if len(health) != 1:
               raise SystemExit('FAIL: Health integration must be loaded exactly once')
           health_index = scripts.index(health[0])
