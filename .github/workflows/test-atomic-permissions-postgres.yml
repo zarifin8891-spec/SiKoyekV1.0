@@ -1,0 +1,54 @@
+name: Test atomic RLS helper on PostgreSQL 17 (synthetic, no Supabase)
+
+on:
+  push:
+    branches:
+      - security/hardening-v1-staging-20261108
+    paths:
+      - 'docs/security-hardening/STAGING_ONLY_atomic_role_permissions.sql'
+      - 'tests/security/postgres-atomic-*.sql'
+      - '.github/workflows/test-atomic-permissions-postgres.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/security-hardening/STAGING_ONLY_atomic_role_permissions.sql'
+      - 'tests/security/postgres-atomic-*.sql'
+      - '.github/workflows/test-atomic-permissions-postgres.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-atomic-permissions:
+    runs-on: ubuntu-latest
+    # Disposable PostgreSQL; no credentials, data, or connection to production.
+    container: postgres:17
+    env:
+      PGHOST: postgres
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: local-synthetic-only
+      PGDATABASE: sikoyek_synthetic
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: local-synthetic-only
+          POSTGRES_DB: sikoyek_synthetic
+        options: >-
+          --health-cmd "pg_isready -U postgres -d sikoyek_synthetic"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check disposable database
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -c "select version(), current_database();"
+      - name: Create minimal synthetic schema (not a production snapshot)
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/security/postgres-atomic-schema.sql
+      - name: Install STAGING-ONLY candidate RPC
+        run: psql -X -v ON_ERROR_STOP=1 -f docs/security-hardening/STAGING_ONLY_atomic_role_permissions.sql
+      - name: Test real PostgreSQL transaction, rollback and grants
+        run: psql -X -v ON_ERROR_STOP=1 -f tests/security/postgres-atomic-assertions.sql
