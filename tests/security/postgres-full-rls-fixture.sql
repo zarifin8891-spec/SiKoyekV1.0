@@ -4,6 +4,7 @@ CREATE ROLE anon NOLOGIN;
 CREATE ROLE authenticated NOLOGIN;
 CREATE ROLE service_role NOLOGIN;
 CREATE SCHEMA auth;
+GRANT USAGE ON SCHEMA auth TO authenticated;
 CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE SET search_path=''
 AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
 
