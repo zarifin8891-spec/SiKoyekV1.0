@@ -9,6 +9,10 @@ on:
       - 'dashboard-graphs.js'
       - 'index.html'
       - 'foundation/data-access.js'
+      - 'foundation/repository.js'
+      - 'ui-form-edit-final-v5.js'
+      - 'cashflow-decision-dashboard-v1.js'
+      - 'laporan-rap-biaya-v1.js'
       - 'health-dashboard-integration-v1.js'
       - 'decision-dashboard-integration-v1.js'
       - 'dashboard-data-fallback-v1.js'
@@ -28,6 +32,10 @@ on:
       - 'dashboard-graphs.js'
       - 'index.html'
       - 'foundation/data-access.js'
+      - 'foundation/repository.js'
+      - 'ui-form-edit-final-v5.js'
+      - 'cashflow-decision-dashboard-v1.js'
+      - 'laporan-rap-biaya-v1.js'
       - 'health-dashboard-integration-v1.js'
       - 'decision-dashboard-integration-v1.js'
       - 'dashboard-data-fallback-v1.js'
@@ -57,6 +65,10 @@ jobs:
           node --check rbac-nav-v1.js
           node --check dashboard-graphs.js
           node --check foundation/data-access.js
+          node --check foundation/repository.js
+          node --check ui-form-edit-final-v5.js
+          node --check cashflow-decision-dashboard-v1.js
+          node --check laporan-rap-biaya-v1.js
           for source_file in health-dashboard-integration-v1.js decision-dashboard-integration-v1.js dashboard-data-fallback-v1.js laporan-v1.js laporan-unified-v3.js project-summary-v2.js; do node --check "$source_file" || exit 1; done
       - name: Test RBAC permissions with synthetic users
         run: node --test tests/security/*.test.cjs
