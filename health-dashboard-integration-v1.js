@@ -86,8 +86,9 @@
     if(!healthClient)healthClient=window.SiKoyekBackend.getClient();
     busy=true;
     try{
-      const {data,error}=await healthClient.from('project_summary').select('project_code,project_name,project_progress,cost_ratio,rap_consumption').order('project_code');
-      if(error)throw error;
+      if(!window.SiKoyekDataAccess)return;
+      const {summary:data,access}=await window.SiKoyekDataAccess.loadSummary(healthClient);
+      if(!access.full)return;
       const rows=(data||[]).map(r=>({...r,project_progress:Number(r.project_progress||0),cost_ratio:Number(r.cost_ratio||0),rap_consumption:Number(r.rap_consumption||0)})).map(r=>({...r,health:window.SiKoyekHealthEngine.evaluate(r)}));
       const sig=JSON.stringify(rows.map(r=>[r.project_code,r.health.status,r.project_progress,r.cost_ratio,r.rap_consumption]));
       const cardExists=dashboard.querySelector('#dashboard-health-panel')?.dataset.renderer==='health';
