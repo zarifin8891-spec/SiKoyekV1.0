@@ -10,6 +10,8 @@ on:
       - 'tests/security/postgres-rls-matrix.sql'
       - 'tests/security/postgres-full-rls-*.sql'
       - 'docs/security-hardening/STAGING_ONLY_full_rls_15_tables.sql'
+      - 'docs/security-hardening/STAGING_ONLY_secure_financial_projection.sql'
+      - 'tests/security/postgres-secure-projection-*.sql'
       - '.github/workflows/test-atomic-permissions-postgres.yml'
   pull_request:
     branches: [main]
@@ -19,6 +21,8 @@ on:
       - 'tests/security/postgres-rls-matrix.sql'
       - 'tests/security/postgres-full-rls-*.sql'
       - 'docs/security-hardening/STAGING_ONLY_full_rls_15_tables.sql'
+      - 'docs/security-hardening/STAGING_ONLY_secure_financial_projection.sql'
+      - 'tests/security/postgres-secure-projection-*.sql'
       - '.github/workflows/test-atomic-permissions-postgres.yml'
 
 permissions:
@@ -66,3 +70,11 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -d sikoyek_full_rls_synthetic -f tests/security/postgres-full-rls-fixture.sql
           psql -X -v ON_ERROR_STOP=1 -d sikoyek_full_rls_synthetic -f docs/security-hardening/STAGING_ONLY_full_rls_15_tables.sql
           psql -X -v ON_ERROR_STOP=1 -d sikoyek_full_rls_synthetic -f tests/security/postgres-full-rls-assertions.sql
+      - name: Test sensitive column grants and authorized financial RPCs in disposable database
+        run: |
+          createdb sikoyek_secure_projection_synthetic
+          psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f tests/security/postgres-full-rls-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f tests/security/postgres-secure-projection-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f docs/security-hardening/STAGING_ONLY_full_rls_15_tables.sql
+          psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f docs/security-hardening/STAGING_ONLY_secure_financial_projection.sql
+          psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f tests/security/postgres-secure-projection-assertions.sql
