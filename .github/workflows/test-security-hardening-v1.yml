@@ -7,6 +7,8 @@ on:
     paths:
       - 'rbac-nav-v1.js'
       - 'dashboard-graphs.js'
+      - 'index.html'
+      - 'foundation/data-access.js'
       - 'supabase/functions/user-management/**'
       - 'tests/security/**'
       - '.github/workflows/test-security-hardening-v1.yml'
@@ -15,6 +17,8 @@ on:
     paths:
       - 'rbac-nav-v1.js'
       - 'dashboard-graphs.js'
+      - 'index.html'
+      - 'foundation/data-access.js'
       - 'supabase/functions/user-management/**'
       - 'tests/security/**'
       - '.github/workflows/test-security-hardening-v1.yml'
@@ -34,5 +38,6 @@ jobs:
         run: |
           node --check rbac-nav-v1.js
           node --check dashboard-graphs.js
+          node --check foundation/data-access.js
       - name: Test RBAC permissions with synthetic users
         run: node --test tests/security/*.test.cjs
