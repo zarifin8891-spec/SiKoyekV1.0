@@ -42,9 +42,14 @@ BEGIN
     SELECT jsonb_build_object(
        'id',p.id,
        'project',jsonb_build_object(
-         'id',p.id,'project_code',p.project_code,
-         'project_name',p.project_name,'status',p.status
-       ),
+         'id',p.id,'project_code',p.project_code,'project_date',p.project_date,
+         'project_name',p.project_name,'owner_name',p.owner_name,
+         'category',p.category,'location',p.location,
+         'project_manager',p.project_manager,'start_date',p.start_date,
+         'end_date',p.end_date,'status',p.status
+       ) || CASE WHEN (SELECT sikoyek_authz.can('KEUANGAN','VIEW'))
+           THEN jsonb_build_object('contract_value',p.contract_value)
+           ELSE '{}'::jsonb END,
        'progressCount',CASE WHEN EXISTS(
          SELECT 1 FROM public.progress_records r WHERE r.project_id=p.id
        ) THEN 1 ELSE 0 END,
