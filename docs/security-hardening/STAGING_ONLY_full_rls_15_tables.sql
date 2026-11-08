@@ -15,10 +15,10 @@ DECLARE
   actual text[];
   r record;
 BEGIN
-  SELECT array_agg(tablename ORDER BY tablename) INTO actual
+  SELECT array_agg(tablename::text ORDER BY tablename::text COLLATE "C") INTO actual
   FROM pg_tables WHERE schemaname='public';
-  IF actual IS DISTINCT FROM (SELECT array_agg(x ORDER BY x) FROM unnest(expected) x) THEN
-    RAISE EXCEPTION 'SiKoyek public table drift: actual %, expected %', actual, (SELECT array_agg(x ORDER BY x) FROM unnest(expected) x);
+  IF actual IS DISTINCT FROM (SELECT array_agg(x ORDER BY x COLLATE "C") FROM unnest(expected) x) THEN
+    RAISE EXCEPTION 'SiKoyek public table drift: actual %, expected %', actual, (SELECT array_agg(x ORDER BY x COLLATE "C") FROM unnest(expected) x);
   END IF;
   FOR r IN SELECT c.relname, c.relrowsecurity FROM pg_class c
       WHERE c.relnamespace='public'::regnamespace AND c.relkind IN ('r','p')
