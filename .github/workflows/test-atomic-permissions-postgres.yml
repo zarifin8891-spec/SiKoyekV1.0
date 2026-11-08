@@ -12,6 +12,8 @@ on:
       - 'docs/security-hardening/STAGING_ONLY_full_rls_15_tables.sql'
       - 'docs/security-hardening/STAGING_ONLY_secure_financial_projection.sql'
       - 'tests/security/postgres-secure-projection-*.sql'
+      - 'docs/security-hardening/STAGING_ONLY_project_lifecycle_gate.sql'
+      - 'tests/security/postgres-project-lifecycle-assertions.sql'
       - '.github/workflows/test-atomic-permissions-postgres.yml'
   pull_request:
     branches: [main]
@@ -23,6 +25,8 @@ on:
       - 'docs/security-hardening/STAGING_ONLY_full_rls_15_tables.sql'
       - 'docs/security-hardening/STAGING_ONLY_secure_financial_projection.sql'
       - 'tests/security/postgres-secure-projection-*.sql'
+      - 'docs/security-hardening/STAGING_ONLY_project_lifecycle_gate.sql'
+      - 'tests/security/postgres-project-lifecycle-assertions.sql'
       - '.github/workflows/test-atomic-permissions-postgres.yml'
 
 permissions:
@@ -78,3 +82,5 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f docs/security-hardening/STAGING_ONLY_full_rls_15_tables.sql
           psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f docs/security-hardening/STAGING_ONLY_secure_financial_projection.sql
           psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f tests/security/postgres-secure-projection-assertions.sql
+          psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f docs/security-hardening/STAGING_ONLY_project_lifecycle_gate.sql
+          psql -X -v ON_ERROR_STOP=1 -d sikoyek_secure_projection_synthetic -f tests/security/postgres-project-lifecycle-assertions.sql
