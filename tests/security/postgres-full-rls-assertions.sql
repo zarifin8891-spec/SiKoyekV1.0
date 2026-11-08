@@ -83,7 +83,7 @@ BEGIN
     OR (SELECT count(*) FROM public.project_rap)<>0
     OR (SELECT count(*) FROM public.progress_records)<>0
     OR (SELECT count(*) FROM public.profiles)<>1
-    OR (SELECT count(*) FROM public.role_permissions)<>4
+    OR (SELECT count(*) FROM public.role_permissions)<>5
  THEN RAISE EXCEPTION 'MARKETING access isolation failed'; END IF;
  UPDATE public.projects SET project_name='MARKETING APPROVED' WHERE id=projectid;
  GET DIAGNOSTICS updated=ROW_COUNT;
