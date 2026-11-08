@@ -9,6 +9,15 @@ on:
       - 'dashboard-graphs.js'
       - 'index.html'
       - 'foundation/data-access.js'
+      - 'health-dashboard-integration-v1.js'
+      - 'decision-dashboard-integration-v1.js'
+      - 'dashboard-data-fallback-v1.js'
+      - 'workspace.html'
+      - 'daftar-proyek.html'
+      - 'laporan.html'
+      - 'laporan-v1.js'
+      - 'laporan-unified-v3.js'
+      - 'project-summary-v2.js'
       - 'supabase/functions/user-management/**'
       - 'tests/security/**'
       - '.github/workflows/test-security-hardening-v1.yml'
@@ -19,6 +28,15 @@ on:
       - 'dashboard-graphs.js'
       - 'index.html'
       - 'foundation/data-access.js'
+      - 'health-dashboard-integration-v1.js'
+      - 'decision-dashboard-integration-v1.js'
+      - 'dashboard-data-fallback-v1.js'
+      - 'workspace.html'
+      - 'daftar-proyek.html'
+      - 'laporan.html'
+      - 'laporan-v1.js'
+      - 'laporan-unified-v3.js'
+      - 'project-summary-v2.js'
       - 'supabase/functions/user-management/**'
       - 'tests/security/**'
       - '.github/workflows/test-security-hardening-v1.yml'
@@ -39,5 +57,6 @@ jobs:
           node --check rbac-nav-v1.js
           node --check dashboard-graphs.js
           node --check foundation/data-access.js
+          for source_file in health-dashboard-integration-v1.js decision-dashboard-integration-v1.js dashboard-data-fallback-v1.js laporan-v1.js laporan-unified-v3.js project-summary-v2.js; do node --check "$source_file" || exit 1; done
       - name: Test RBAC permissions with synthetic users
         run: node --test tests/security/*.test.cjs
