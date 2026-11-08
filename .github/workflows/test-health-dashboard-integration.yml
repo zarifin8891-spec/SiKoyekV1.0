@@ -33,7 +33,7 @@ jobs:
           if len(health) != 1:
               raise SystemExit('FAIL: Health integration must be loaded exactly once')
           health_index = scripts.index(health[0])
-          for dependency in ['./environment.js', './foundation/config.js', './foundation/runtime.js', './foundation/backend.js']:
+          for dependency in ['./environment.js', './foundation/config.js', './foundation/runtime.js', './foundation/backend.js', './foundation/data-access.js']:
               if dependency not in scripts or scripts.index(dependency) >= health_index:
                   raise SystemExit(f'FAIL: dependency must precede Health: {dependency}')
           engine = re.search(r"const ENGINE_URL='([^']+)'", integration)
