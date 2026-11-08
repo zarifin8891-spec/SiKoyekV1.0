@@ -39,7 +39,7 @@ jobs:
           engine = re.search(r"const ENGINE_URL='([^']+)'", integration)
           if not engine or not Path(engine[1].split('?')[0]).is_file():
               raise SystemExit('FAIL: configured Health engine asset not found')
-          for marker in ['SiKoyekHealthEngine.evaluate', 'project_summary', 'SiKoyekBackend.getClient()', '#dashboard-health-panel']:
+          for marker in ['SiKoyekHealthEngine.evaluate', 'SiKoyekDataAccess.loadSummary', 'SiKoyekBackend.getClient()', '#dashboard-health-panel']:
               if marker not in integration:
                   raise SystemExit(f'FAIL: required integration behavior missing: {marker}')
           if 'createClient(' in integration or '.supabase.co' in integration:
