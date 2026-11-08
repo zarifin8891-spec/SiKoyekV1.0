@@ -140,27 +140,15 @@ Deno.serve(async req => {
         const { data: valid, error: e } = await admin.from("permissions").select("id").in("id", ids);
         if (e || valid?.length !== ids.length) return fail("Permission tidak valid");
       }
-      // Compatibility implementation only. Two writes are not atomic.
-      // This action MUST be replaced by a transactional RPC before production.
-      const { data: previous, error: readErr } = await admin.from("role_permissions")
-        .select("permission_id").eq("role_id", roleId);
-      if (readErr) return fail("Gagal membaca hak akses sebelumnya");
-      const { error: delErr } = await admin.from("role_permissions").delete().eq("role_id", roleId);
-      if (delErr) return fail("Gagal memperbarui hak akses");
-      if (ids.length) {
-        const { error: insertErr } = await admin.from("role_permissions").insert(
-          ids.map(permission_id => ({ role_id: roleId, permission_id }))
-        );
-        if (insertErr) {
-          // Best-effort restore; staging tests must inject failures.
-          await admin.from("role_permissions").delete().eq("role_id", roleId);
-          if ((previous || []).length) {
-            await admin.from("role_permissions").insert(
-              previous.map(p => ({ role_id: roleId, permission_id: p.permission_id }))
-            );
-          }
-          return fail("Gagal menyimpan hak akses; periksa kembali konfigurasi", 500);
-        }
+      // Atomic replacement via a single database transaction.
+      // This RPC must be installed and tested in isolated staging first.
+      // Only service_role has EXECUTE; the SQL rechecks active ADMIN via actor ID.
+      const { data: changedCount, error: replaceError } = await admin.rpc(
+        "replace_role_permissions_atomic",
+        { p_actor_id: user.id, p_role_id: roleId, p_permission_ids: ids }
+      );
+      if (replaceError || changedCount !== ids.length) {
+        return fail("Gagal menyimpan hak akses. Tidak ada perubahan parsial yang diizinkan", 500);
       }
       return json({ ok: true, success: true, count: ids.length });
     }
