@@ -27,6 +27,12 @@ function makeHarness(options = {}) {
       updateUserById: async (id, fields) => { calls.push(['updateUserById', id, fields]); return { error: null }; },
       deleteUser: async id => { calls.push(['deleteUser', id]); return { error: null }; },
     } },
+    rpc: async (fn, args) => {
+      calls.push(['rpc', fn, args]);
+      if (options.rpcError) return { data: null, error: { message: 'synthetic RPC failure' } };
+      if (options.rpcCountMismatch) return { data: -1, error: null };
+      return { data: args.p_permission_ids.length, error: null };
+    },
     from(table) {
       if (table === 'profiles') return {
         select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: profile, error: null }) }) }),
@@ -170,3 +176,48 @@ test('admin can reset a password but not below 8 characters', async () => {
 });
 
 // This suite intentionally excludes production integration and atomicity testing.
+
+test('updating role permissions uses one RPC call, never split DELETE and INSERT', async () => {
+  const h = makeHarness();
+  const res = await h.send({ action: 'update_permissions', role_id: ROLE, permission_ids: [OTHER_ROLE] });
+  assert.equal(res.status, 200);
+  assert.equal(res.data.count, 1);
+  const rpc = h.calls.find(c => c[0] === 'rpc');
+  assert.equal(rpc[1], 'replace_role_permissions_atomic');
+  assert.equal(rpc[2].p_actor_id, CALLER);
+  assert.equal(rpc[2].p_role_id, ROLE);
+  assert.deepEqual(Array.from(rpc[2].p_permission_ids), [OTHER_ROLE]);
+  assert.equal(h.calls.filter(c => c[0] === 'rpc').length, 1);
+  assert.equal(h.calls.filter(c => /insert|delete/i.test(c[0])).length, 0);
+});
+
+test('permission replacement reports RPC failures without fallback writes', async () => {
+  const h = makeHarness({ rpcError: true });
+  const res = await h.send({ action: 'update_permissions', role_id: ROLE, permission_ids: [] });
+  assert.equal(res.status, 500);
+  assert.equal(h.calls.filter(c => c[0] === 'rpc').length, 1);
+  assert.equal(h.calls.filter(c => /insert|delete/i.test(c[0])).length, 0);
+});
+
+test('permission replacement refuses a mismatching RPC result', async () => {
+  const h = makeHarness({ rpcCountMismatch: true });
+  const res = await h.send({ action: 'update_permissions', role_id: ROLE, permission_ids: [] });
+  assert.equal(res.status, 500);
+});
+
+test('duplicate permission IDs are deduplicated before RPC', async () => {
+  const h = makeHarness();
+  const res = await h.send({ action: 'update_permissions', role_id: ROLE,
+    permission_ids: [OTHER_ROLE, OTHER_ROLE] });
+  assert.equal(res.status, 200);
+  const rpc = h.calls.find(c => c[0] === 'rpc');
+  assert.deepEqual(Array.from(rpc[2].p_permission_ids), [OTHER_ROLE]);
+});
+
+test('invalid permission ID does not invoke RPC', async () => {
+  const h = makeHarness();
+  const res = await h.send({ action: 'update_permissions', role_id: ROLE,
+    permission_ids: ['invalid-id'] });
+  assert.equal(res.status, 400);
+  assert.equal(h.calls.filter(c => c[0] === 'rpc').length, 0);
+});
