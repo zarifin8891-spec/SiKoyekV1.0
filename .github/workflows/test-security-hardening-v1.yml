@@ -1,0 +1,32 @@
+name: Test Security Hardening V1 (no production access)
+
+on:
+  push:
+    branches:
+      - security/hardening-v1-staging-20261108
+    paths:
+      - 'rbac-nav-v1.js'
+      - 'tests/security/**'
+      - '.github/workflows/test-security-hardening-v1.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'rbac-nav-v1.js'
+      - 'tests/security/**'
+      - '.github/workflows/test-security-hardening-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  security-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify syntax
+        run: node --check rbac-nav-v1.js
+      - name: Test RBAC permissions with synthetic users
+        run: node --test tests/security/*.test.cjs
