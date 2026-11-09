@@ -24,7 +24,7 @@
       const access=await window.SiKoyekDataAccess.resolve(db());
       if(!list.isConnected)return;
       if(!access.masterData){card.remove();return}
-      const {data,error}=await db().from('employees').select('id,code,name,is_active').order('name').order('code');
+      const {data,error}=await db().from('employees').select('id,code,name,is_active,allow_parallel_projects').order('name').order('code');
       if(error)throw error;
       if(!list.isConnected)return;
       const add=header.querySelector('button');
@@ -37,7 +37,7 @@
         button.onclick=()=>window.mdEditEmployee();
         header.appendChild(button);
       }
-      list.innerHTML=(data||[]).map(row=>`<div class="md-row"><div><strong>${esc(row.name)}</strong><small>${esc(row.code)}</small></div>
+      list.innerHTML=(data||[]).map(row=>`<div class="md-row"><div><strong>${esc(row.name)}</strong><small>${esc(row.code)}${row.allow_parallel_projects?' · Lintas proyek':''}</small></div>
         <span class="md-status ${row.is_active?'on':'off'}">${row.is_active?'AKTIF':'NONAKTIF'}</span>
         ${access.masterEdit?`<div class="md-actions"><button class="btn ghost" type="button" data-edit-employee="${esc(row.id)}">Edit</button></div>`:''}</div>`).join('')||'<div class="empty">Belum ada karyawan.</div>';
       list.onclick=event=>{
@@ -56,6 +56,7 @@
       <div class="field"><label for="md-employee-code">Kode karyawan *</label><input id="md-employee-code" name="code" maxlength="50" required value="${esc(employee?.code)}"></div>
       <div class="field"><label for="md-employee-name">Nama karyawan *</label><input id="md-employee-name" name="name" maxlength="120" required value="${esc(employee?.name)}"></div>
       <div class="field"><label for="md-employee-status">Status</label><select id="md-employee-status" name="status"><option value="active">Aktif</option><option value="inactive" ${employee?.is_active===false?'selected':''}>Nonaktif</option></select></div>
+      <div class="field"><label for="md-employee-parallel"><input id="md-employee-parallel" name="parallel" type="checkbox" style="width:auto;min-height:0" ${employee?.allow_parallel_projects?'checked':''}> Izinkan penempatan serentak di beberapa proyek (misalnya pengawas)</label></div>
       <p class="note" role="status"></p>
       <div class="formactions"><button class="btn ghost" type="button" data-employee-cancel>Batal</button><button class="btn primary" type="submit">Simpan</button></div>
       </form>`;
@@ -80,7 +81,7 @@
       event.preventDefault();
       if(saving)return;
       const values=new FormData(form);
-      const row={code:values.get('code').trim(),name:values.get('name').trim(),is_active:values.get('status')==='active'};
+      const row={code:values.get('code').trim(),name:values.get('name').trim(),is_active:values.get('status')==='active',allow_parallel_projects:values.has('parallel')};
       if(!row.code||!row.name){status.textContent='Kode dan nama karyawan wajib diisi.';return}
       saving=true;
       controls.forEach(button=>{button.disabled=true});
@@ -89,6 +90,7 @@
         const table=db().from('employees');
         const result=await (employee?table.update(row).eq('id',employee.id):table.insert(row)).select('id').maybeSingle();
         if(result.error?.code==='23505'){status.textContent='Kode karyawan sudah digunakan.';return}
+        if(result.error?.code==='23P01'){status.textContent='Akhiri periode penempatan yang bertumpang tindih sebelum menonaktifkan izin lintas proyek.';return}
         if(result.error||!result.data)throw new Error('Gagal menyimpan');
         if(form.isConnected)close();
         refreshEmployees();

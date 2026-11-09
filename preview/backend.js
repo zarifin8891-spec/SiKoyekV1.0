@@ -66,6 +66,13 @@
       return n+Number(item.weight||0)*Math.min(1,total)*100;
     },0);
   }
+  function conflictingStaff(rows, row) {
+    return rows.some(other => other !== row && other.employee_id === row.employee_id &&
+      other.project_id !== row.project_id && (!other.end_date || row.start_date <= other.end_date) &&
+      (!row.end_date || other.start_date <= row.end_date));
+  }
+  const staffOverlap=()=>({data:null,error:{code:'23P01',message:'Periode penempatan bertumpang tindih'},count:null});
+
   function makeBuilder(table){
     const spec={op:'select',filters:[],orders:[],head:false,one:false,maybe:false,limit:null,range:null};let pending;
     const matches=row=>spec.filters.every(([op,k,v])=>op==='eq'?row[k]===v:op==='neq'?row[k]!==v:op==='in'?v.includes(row[k]):op==='gte'?row[k]>=v:op==='lte'?row[k]<=v:op==='is'?row[k]===v:false);
@@ -87,7 +94,15 @@
         if(table==='project_summary')return error('Ringkasan hanya boleh dibaca');
         if(['insert','upsert'].includes(spec.op)){
           const input=Array.isArray(spec.value)?spec.value:[spec.value];
-          if(table==='project_staff_assignments'&&input.some(value=>!state.tables.employees.some(row=>row.id===value.employee_id&&row.is_active)))return error('Karyawan harus aktif untuk penempatan baru');
+          if(table==='project_staff_assignments'){
+            const proposed=[...source,...input];
+            for(const value of input){
+              const employee=state.tables.employees.find(row=>row.id===value.employee_id&&row.is_active);
+              if(!employee)return error('Karyawan harus aktif untuk penempatan baru');
+              if(Boolean(value.allow_parallel_projects)!==Boolean(employee.allow_parallel_projects))return {data:null,error:{code:'23503',message:'Data karyawan berubah'},count:null};
+              if(!employee.allow_parallel_projects&&conflictingStaff(proposed,value))return staffOverlap();
+            }
+          }
           if(table==='employees'&&input.some(value=>source.some(row=>row.code.trim().toLowerCase()===value.code.trim().toLowerCase())))return {data:null,error:{code:'23505',message:'Kode karyawan sudah digunakan'},count:null};
           if(table==='projects'&&input.some(value=>source.some(p=>p.project_code===value.project_code&&p.id!==value.id)))return {data:null,error:{code:'23505',message:'Kode proyek sudah digunakan'},count:null};
           rows=input.map(value=>{
@@ -98,7 +113,18 @@
         }else if(spec.op==='update'){
           if(table==='projects'&&spec.value.project_code&&source.some(p=>!matches(p)&&p.project_code===spec.value.project_code))return {data:null,error:{code:'23505',message:'Kode proyek sudah digunakan'},count:null};
           if(table==='employees'&&spec.value.code&&source.some(row=>!matches(row)&&row.code.trim().toLowerCase()===spec.value.code.trim().toLowerCase()))return {data:null,error:{code:'23505',message:'Kode karyawan sudah digunakan'},count:null};
-          if(table==='project_staff_assignments'&&Object.hasOwn(spec.value,'employee_id'))return error('Karyawan pada penempatan tersimpan tidak bisa diganti');
+          if(table==='project_staff_assignments'){
+            if(['employee_id','project_id','allow_parallel_projects'].some(key=>Object.hasOwn(spec.value,key)))return error('Identitas penempatan tersimpan tidak bisa diganti');
+            const updates=rows.map(row=>({...row,...spec.value}));
+            const proposed=[...source.filter(row=>!matches(row)),...updates];
+            if(updates.some(row=>
+              !state.tables.employees.find(employee=>employee.id===row.employee_id)?.allow_parallel_projects&&conflictingStaff(proposed,row)))return staffOverlap();
+          }
+          if(table==='employees'&&spec.value.allow_parallel_projects===false){
+            const staff=state.tables.project_staff_assignments;
+            const limited=new Set(rows.filter(row=>row.allow_parallel_projects).map(row=>row.id));
+            if(staff.some(row=>limited.has(row.employee_id)&&conflictingStaff(staff,row)))return staffOverlap();
+          }
           rows.forEach(row=>Object.assign(row,spec.value));
         }else{
           state.tables[table]=source.filter(row=>!matches(row));

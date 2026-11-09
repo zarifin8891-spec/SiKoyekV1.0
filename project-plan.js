@@ -135,7 +135,7 @@
   async function openAssignmentEditor({ client, projectId, point, modal, closeModal, onSaved, isCurrent }) {
     let employees = [];
     if (!point) {
-      const { data, error } = await client.from('employees').select('id,name,code')
+      const { data, error } = await client.from('employees').select('id,name,code,allow_parallel_projects')
         .eq('is_active', true).order('name').order('code');
       if (!isCurrent() || document.getElementById('modal')) return;
       if (error || !data?.length) {
@@ -164,11 +164,14 @@
           <div class="field"><label for="staff-end">Selesai</label>
             <input id="staff-end" name="end_date" type="date" value="${esc(point?.end_date)}"></div>
         </div>
+        <p class="note">Tanggal selesai dihitung sebagai hari penempatan. Jika kosong, penempatan berlaku sampai diberi tanggal selesai.</p>
         ${editorActions(point)}
       </form>`);
     bindEditor('assignment-form', client, assignmentsTable, projectId, point, closeModal, onSaved, 'Hapus penempatan ini?', input => {
+      const employee = employees.find(person => person.id === input.employee_id);
+      if (!point && !employee) return 'Pilih karyawan yang akan ditempatkan.';
       const row = {
-        ...(!point ? { employee_id: input.employee_id } : {}),
+        ...(employee ? { employee_id: employee.id, allow_parallel_projects: employee.allow_parallel_projects } : {}),
         assignment_role: input.assignment_role.trim(),
         start_date: input.start_date,
         end_date: input.end_date || null
@@ -214,6 +217,14 @@
       message.textContent = 'Memproses…';
       try {
         const { data, error } = await action.select('id').maybeSingle();
+        if (source === assignmentsTable && error?.code === '23P01') {
+          message.textContent = 'Karyawan sudah ditempatkan di proyek lain pada periode ini. Sesuaikan tanggal penempatan.';
+          return;
+        }
+        if (source === assignmentsTable && error?.code === '23503') {
+          message.textContent = 'Data karyawan berubah. Tutup dan buka kembali form penempatan.';
+          return;
+        }
         if (error || !data) {
           message.textContent = 'Perubahan gagal disimpan. Periksa izin atau muat ulang detail proyek.';
           return;

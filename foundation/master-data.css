@@ -30,5 +30,5 @@
 .md-employee-dialog h2{margin:0 0 16px}
 .md-employee-dialog .field{margin-bottom:12px}
 .md-employee-dialog label{display:block;margin-bottom:4px}
-.md-employee-dialog input,.md-employee-dialog select{width:100%;box-sizing:border-box}
+.md-employee-dialog input:not([type="checkbox"]),.md-employee-dialog select{width:100%;box-sizing:border-box}
 .md-employee-dialog .formactions{display:flex;justify-content:flex-end;gap:8px}
