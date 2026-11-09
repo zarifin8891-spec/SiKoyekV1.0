@@ -76,9 +76,12 @@ jobs:
           for source_file in health-dashboard-integration-v1.js decision-dashboard-integration-v1.js dashboard-data-fallback-v1.js laporan-v1.js laporan-unified-v3.js project-summary-v2.js; do node --check "$source_file" || exit 1; done
       - name: Test RBAC permissions with synthetic users
         run: node --test tests/security/*.test.cjs
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.5.6
+      - name: Install pinned Deno from npm
+        run: |
+          npm install --prefix "$RUNNER_TEMP/sikoyek-deno" --ignore-scripts --no-audit --no-fund @deno/linux-x64-glibc@2.5.6
+          deno_dir="$RUNNER_TEMP/sikoyek-deno/node_modules/@deno/linux-x64-glibc"
+          "$deno_dir/deno" --version
+          echo "$deno_dir" >> "$GITHUB_PATH"
       - name: Type-check the pinned Edge Function without credentials
         working-directory: supabase/functions/user-management
         run: |

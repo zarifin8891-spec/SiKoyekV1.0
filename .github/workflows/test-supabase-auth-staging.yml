@@ -32,9 +32,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - uses: supabase/setup-cli@v1
-        with:
-          version: '2.122.1'
+      - name: Install pinned Supabase CLI from npm
+        run: |
+          npm install --prefix "$RUNNER_TEMP/sikoyek-cli" --ignore-scripts --no-audit --no-fund supabase@2.122.1
+          cli_dir="$RUNNER_TEMP/sikoyek-cli/node_modules/.bin"
+          "$cli_dir/supabase" --version
+          echo "$cli_dir" >> "$GITHUB_PATH"
       - name: Start the disposable Supabase stack
         run: |
           mkdir -p "$RUNNER_TEMP/sikoyek-auth/supabase/functions"
