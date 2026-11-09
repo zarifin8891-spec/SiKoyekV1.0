@@ -63,14 +63,16 @@ const adminSession = expectStatus(await login(adminEmail), 200, 'Admin password 
 assert.equal(adminSession.user.id, admin.id);
 assert.equal(jwtSubject(adminSession.access_token), admin.id);
 expectStatus(await login(adminEmail, 'incorrect-password'), 400, 'wrong password');
-expectStatus(await edgeCall(anonKey, { action: 'create' }), 401, 'anonymous Edge access');
-expectStatus(await edgeCall('invalid.jwt.token', { action: 'create' }), 401, 'forged Edge token');
 
 const activeAdmin = expectStatus(await refresh(adminSession.refresh_token), 200, 'Admin refresh');
 assert.notEqual(activeAdmin.refresh_token, adminSession.refresh_token, 'GoTrue must rotate the refresh token');
 const adminToken = activeAdmin.access_token;
 assert.equal(jwtSubject(adminToken), admin.id);
 assert.equal(expectStatus(await request(auth + '/user', { token: adminToken }), 200, 'getUser after refresh').id, admin.id);
+
+console.log(tenant + ' PASS Admin password login, wrong password rejection and refresh rotation');
+expectStatus(await edgeCall(anonKey, { action: 'create' }), 401, 'anonymous Edge access');
+expectStatus(await edgeCall('invalid.jwt.token', { action: 'create' }), 401, 'forged Edge token');
 
 const accounts = {};
 for (const role of ['DIREKTUR', 'KEUANGAN', 'MARKETING', 'PELAKSANA']) {

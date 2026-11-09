@@ -39,6 +39,7 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/sikoyek-auth/supabase/functions"
           cp -r supabase/functions/user-management "$RUNNER_TEMP/sikoyek-auth/supabase/functions/"
+          npm ci --prefix "$RUNNER_TEMP/sikoyek-auth/supabase/functions/user-management" --ignore-scripts --no-audit --no-fund
           cat > "$RUNNER_TEMP/sikoyek-auth/supabase/config.toml" <<'TOML'
           project_id = "sikoyek-auth-stage"
 

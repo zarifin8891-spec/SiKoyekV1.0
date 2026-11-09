@@ -14,6 +14,12 @@ Status 8 November 2026 WIB. Draf untuk PR #25. Persetujuan rilis dari pemilik di
 - Staging berbasis katalog mereplikasi skema publik dan memakai stub `auth.uid()`. Login, refresh sesi, alur CRUD Auth pada Edge, serta pemulihan backup Supabase perlu diuji pada instalasi Supabase lokal terisolasi dengan pengguna sintetis. Tinjau perbedaan owner, ACL kolom, extension, indeks, dan konfigurasi platform yang tidak tercakup dalam rekonstruksi.
 - Uji untuk setiap tenant dengan Admin, Direktur, Keuangan, Marketing dan Pelaksana. Cocokkan daftar proyek, penguncian proyek, Dashboard, Health, Decision, laporan, ekspor, serta CRUD yang memang diizinkan. Uji sesi anon, token kedaluwarsa, profil dinonaktifkan, perubahan role, dan permintaan non-Admin ke Edge. Uji operasi pengelolaan pengguna dan pemulihan perubahan role saat operasi gagal.
 
+## Uji Supabase Auth di CI
+
+Workflow `.github/workflows/test-supabase-auth-staging.yml` menjalankan Supabase CLI, PostgreSQL, Auth, PostgREST dan Edge Runtime pada runner sementara untuk dua fixture sintetis. Fixture memakai deployment package repositori dan variasi alias izin tenant. Database produksi dan kredensial produksi tidak digunakan. Pengujian mengirim JWT dari Auth lokal ke REST dan Edge Function, termasuk token yang ditolak oleh pemeriksaan `getUser` di handler.
+
+Pasang dependensi Edge dari lockfile dengan `npm ci --ignore-scripts --no-audit --no-fund` di direktori `supabase/functions/user-management` sebelum membuat atau menguji bundle. Gunakan konfigurasi JWT gateway produksi yang telah ditinjau saat latihan rilis. Pengujian ini sengaja meneruskan token rusak ke handler untuk menguji penolakannya.
+
 ## Backup dan drill
 
 1. Buat direktori terenkripsi terpisah untuk masing-masing tenant. Catat tanggal WIB, ref proyek, SHA dan manifest frontend aktif, versi Edge Function dan daftar nama variabel konfigurasi, versi PostgreSQL, status migrasi, kebijakan RLS, definisi view/fungsi, dan ACL termasuk grant kolom. Ambil data produksi hanya untuk cadangan pemulihan resmi. Gunakan data sintetis untuk pengujian aplikasi.
