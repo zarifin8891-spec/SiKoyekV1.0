@@ -9,8 +9,13 @@
     const dashboard=app&&[...app.querySelectorAll('.content')].find(x=>x.querySelector('.top h1'));
     if(!dashboard)return;
     if(!client)client=window.SiKoyekBackend.getClient();
-    const {data,error}=await client.from('project_summary').select('project_code,project_name,cash_in,cash_out,net_cashflow').order('project_code');
-    if(error||!data)return;
+    if(!window.SiKoyekDataAccess)return;
+    const {summary:data,access}=await window.SiKoyekDataAccess.loadSummary(client);
+    if(!access.finance||!access.rap){
+      document.getElementById('cashflow-decision-v1-card')?.remove();
+      lastSignature='';
+      return;
+    }
     const rows=data.map(r=>{const d=window.SiKoyekCashflowDecisionEngine.evaluate(r);return {...r,decision:d}});
     const sig=JSON.stringify(rows.map(r=>[r.project_code,r.cash_in,r.cash_out,r.net_cashflow,r.decision.status]));
     if(sig===lastSignature)return;lastSignature=sig;

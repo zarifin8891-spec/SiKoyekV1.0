@@ -57,14 +57,9 @@
   async function loadData(){
     const client=window.SK?.sb||window.sb;
     if(!client)throw new Error('Supabase client belum siap.');
-    const [{data:projects,error:e1},{data:workItems,error:e2},{data:progressRecords,error:e3},{data:transactions,error:e4}]=await Promise.all([
-      client.from('projects').select('id,project_code,project_name,contract_value').order('project_code'),
-      client.from('project_work_items').select('id,project_id,weight').order('sort_order'),
-      client.from('progress_records').select('project_id,work_item_id,progress_date,progress_percentage').order('progress_date'),
-      client.from('financial_transactions').select('id,project_id,transaction_date,transaction_type,category,amount').order('transaction_date')
-    ]);
-    const err=e1||e2||e3||e4;if(err)throw err;
-    data={projects:projects||[],workItems:workItems||[],progressRecords:progressRecords||[],transactions:transactions||[]};
+    const {access,projects,items,progress,transactions}=await window.SiKoyekDataAccess.loadReport(client,
+      {contracts:true,finance:true,progress:true,items:true,require:['finance']});
+    data={access,projects,workItems:items,progressRecords:progress,transactions};
   }
 
   function normalizeText(s){return String(s||'').trim().toLowerCase().replace(/[._-]+/g,' ').replace(/\s+/g,' ')}
@@ -91,7 +86,7 @@
       const wid=String(r.work_item_id||'');
       if(!pid||!wid)continue;
       const d=String(r.progress_date||'').slice(0,10);if(!d)continue;
-      const periodPct=Number(r.progress_percentage||0);
+      const periodPct=Number(r.progress_percentage||0)*100;
       const prev=cumulativeByItem.get(wid)||0;
       const next=Math.min(100,Math.max(0,prev+periodPct));
       cumulativeByItem.set(wid,next);
@@ -121,7 +116,7 @@
       const total=Object.values(c).reduce((a,v)=>a+v,0);
       const contract=Number(p.contract_value||0);
       const progress=Math.min(100,Number(progressModel.projectProgress.get(pid)||0));
-      return {...p,contract,c,total,laba:contract-total,progress,status:progress>=99.999?'SELESAI':'BERJALAN'};
+      return {...p,contract,c,total,laba:contract-total,progress,status:data.access.progress?(progress>=99.999?'SELESAI':'BERJALAN'):(p.status==='JALAN'?'BERJALAN':p.status)};
     });
   }
 
@@ -206,11 +201,16 @@
       document.getElementById('kKpiRun').textContent=filtered.filter(r=>r.status==='BERJALAN').length;
       document.getElementById('kKpiValue').textContent=money(filtered.reduce((a,r)=>a+r.contract,0));
       document.getElementById('kKpiProfit').textContent=money(filtered.reduce((a,r)=>a+r.laba,0));
-      document.getElementById('kinerjaBody').innerHTML=filtered.length?filtered.map(r=>`<tr><td><strong>${esc(r.project_code||'-')}</strong></td><td>${esc(r.project_name||'-')}</td><td class="num">${money(r.contract)}</td><td class="num">${money(r.c.Material)}</td><td class="num">${money(r.c.Upah)}</td><td class="num">${money(r.c.Peralatan)}</td><td class="num">${money(r.c.Operasional)}</td><td class="num">${money(r.c.Subkon)}</td><td class="num">${money(r.c['Lain-lain'])}</td><td class="num">${money(r.total)}</td><td class="num">${money(r.laba)}</td><td><span class="kinerja-pill ${r.status==='SELESAI'?'done':'run'}">${r.status}</span></td></tr>`).join(''):`<tr><td colspan="12" class="kinerja-empty">Tidak ada proyek pada filter yang dipilih.</td></tr>`;
+      document.getElementById('kinerjaBody').innerHTML=filtered.length?filtered.map(r=>`<tr><td><strong>${esc(r.project_code||'-')}</strong></td><td>${esc(r.project_name||'-')}</td><td class="num">${money(r.contract)}</td><td class="num">${money(r.c.Material)}</td><td class="num">${money(r.c.Upah)}</td><td class="num">${money(r.c.Peralatan)}</td><td class="num">${money(r.c.Operasional)}</td><td class="num">${money(r.c.Subkon)}</td><td class="num">${money(r.c['Lain-lain'])}</td><td class="num">${money(r.total)}</td><td class="num">${money(r.laba)}</td><td><span class="kinerja-pill ${r.status==='SELESAI'?'done':'run'}">${esc(r.status)}</span></td></tr>`).join(''):`<tr><td colspan="12" class="kinerja-empty">Tidak ada proyek pada filter yang dipilih.</td></tr>`;
     };
 
     const rangeSelect=document.getElementById('kinerjaTrendRange'),from=document.getElementById('kinerjaTrendFrom'),to=document.getElementById('kinerjaTrendTo'),sep=document.getElementById('kinerjaTrendSep'),meta=document.getElementById('kinerjaTrendMeta');
     const updateTrend=()=>{
+      if(!data.access.progress){
+        meta.textContent='Grafik membutuhkan izin melihat progress.';
+        document.getElementById('kinerjaTrendSvg').innerHTML='';
+        return;
+      }
       let start,end;
       if(rangeSelect.value==='custom'){
         start=parseMonth(from.value);end=parseMonth(to.value);

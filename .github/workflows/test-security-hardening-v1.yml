@@ -1,0 +1,89 @@
+name: Test Security Hardening V1 (no production access)
+
+on:
+  push:
+    branches:
+      - security/hardening-v1-staging-20261108
+    paths:
+      - 'rbac-nav-v1.js'
+      - 'dashboard-graphs.js'
+      - 'index.html'
+      - 'foundation/data-access.js'
+      - 'foundation/repository.js'
+      - 'ui-form-edit-final-v5.js'
+      - 'cashflow-decision-dashboard-v1.js'
+      - 'laporan-*.js'
+      - 'core-unified-shell-v2.js'
+      - 'period-performance.js'
+      - 'health-dashboard-integration-v1.js'
+      - 'decision-dashboard-integration-v1.js'
+      - 'dashboard-data-fallback-v1.js'
+      - 'workspace.html'
+      - 'daftar-proyek.html'
+      - 'laporan.html'
+      - 'laporan-v1.js'
+      - 'laporan-unified-v3.js'
+      - 'project-summary-v2.js'
+      - 'supabase/functions/user-management/**'
+      - 'tests/security/**'
+      - '.github/workflows/test-security-hardening-v1.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'rbac-nav-v1.js'
+      - 'dashboard-graphs.js'
+      - 'index.html'
+      - 'foundation/data-access.js'
+      - 'foundation/repository.js'
+      - 'ui-form-edit-final-v5.js'
+      - 'cashflow-decision-dashboard-v1.js'
+      - 'laporan-*.js'
+      - 'core-unified-shell-v2.js'
+      - 'period-performance.js'
+      - 'health-dashboard-integration-v1.js'
+      - 'decision-dashboard-integration-v1.js'
+      - 'dashboard-data-fallback-v1.js'
+      - 'workspace.html'
+      - 'daftar-proyek.html'
+      - 'laporan.html'
+      - 'laporan-v1.js'
+      - 'laporan-unified-v3.js'
+      - 'project-summary-v2.js'
+      - 'supabase/functions/user-management/**'
+      - 'tests/security/**'
+      - '.github/workflows/test-security-hardening-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  security-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify syntax
+        run: |
+          node --check rbac-nav-v1.js
+          node --check dashboard-graphs.js
+          node --check foundation/data-access.js
+          node --check foundation/repository.js
+          node --check ui-form-edit-final-v5.js
+          node --check cashflow-decision-dashboard-v1.js
+          for source_file in laporan-*.js core-unified-shell-v2.js period-performance.js; do node --check "$source_file" || exit 1; done
+          for source_file in health-dashboard-integration-v1.js decision-dashboard-integration-v1.js dashboard-data-fallback-v1.js laporan-v1.js laporan-unified-v3.js project-summary-v2.js; do node --check "$source_file" || exit 1; done
+      - name: Test RBAC permissions with synthetic users
+        run: node --test tests/security/*.test.cjs
+      - name: Install pinned Deno from npm
+        run: |
+          npm install --prefix "$RUNNER_TEMP/sikoyek-deno" --ignore-scripts --no-audit --no-fund @deno/linux-x64-glibc@2.5.6
+          deno_dir="$RUNNER_TEMP/sikoyek-deno/node_modules/@deno/linux-x64-glibc"
+          "$deno_dir/deno" --version
+          echo "$deno_dir" >> "$GITHUB_PATH"
+      - name: Type-check the pinned Edge Function without credentials
+        working-directory: supabase/functions/user-management
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          deno check --node-modules-dir=manual --no-lock index.ts

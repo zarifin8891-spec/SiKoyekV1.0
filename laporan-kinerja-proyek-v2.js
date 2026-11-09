@@ -18,14 +18,9 @@
   async function loadData(){
     const client=window.SK?.sb||window.sb;
     if(!client)throw new Error('Supabase client belum siap.');
-    const [a,b,c,d]=await Promise.all([
-      client.from('projects').select('id,project_code,project_name,contract_value').order('project_code'),
-      client.from('project_work_items').select('id,project_id,weight').order('sort_order'),
-      client.from('progress_records').select('project_id,work_item_id,progress_date,progress_percentage').order('progress_date'),
-      client.from('financial_transactions').select('id,project_id,transaction_date,transaction_type,category,amount').order('transaction_date')
-    ]);
-    const err=a.error||b.error||c.error||d.error;if(err)throw err;
-    data={projects:a.data||[],items:b.data||[],progress:c.data||[],tx:d.data||[]};
+    const {access,projects,items,progress,transactions}=await window.SiKoyekDataAccess.loadReport(client,
+      {contracts:true,finance:true,progress:true,items:true,require:['finance']});
+    data={access,projects,items,progress,tx:transactions};
   }
 
   function progressModel(){
@@ -39,7 +34,7 @@
       if(!pid||!wid)continue;
       const d=String(r.progress_date||'').slice(0,10);if(!d)continue;
       const prev=current.get(wid)||0;
-      const next=Math.min(100,Math.max(0,prev+Number(r.progress_percentage||0)));
+      const next=Math.min(100,Math.max(0,prev+Number(r.progress_percentage||0)*100));
       current.set(wid,next);
       const delta=Math.max(0,next-prev);
       const weighted=Number(weights.get(wid)||0)*delta;
@@ -54,7 +49,7 @@
     const pm=progressModel();
     const costs=new Map();
     for(const t of data.tx){if(txType(t)!=='KELUAR')continue;const pid=String(t.project_id||'');if(!pid)continue;if(!costs.has(pid))costs.set(pid,{Material:0,Upah:0,Peralatan:0,Operasional:0,Subkon:0,'Lain-lain':0});costs.get(pid)[category(t.category)]+=amount(t)}
-    return data.projects.map(p=>{const pid=String(p.id),c=costs.get(pid)||{Material:0,Upah:0,Peralatan:0,Operasional:0,Subkon:0,'Lain-lain':0};const total=Object.values(c).reduce((a,v)=>a+v,0);const contract=Number(p.contract_value||0);const progress=Math.min(100,Number(pm.projectProgress.get(pid)||0));return{...p,contract,c,total,laba:contract-total,progress,status:progress>=99.999?'SELESAI':'BERJALAN'}});
+    return data.projects.map(p=>{const pid=String(p.id),c=costs.get(pid)||{Material:0,Upah:0,Peralatan:0,Operasional:0,Subkon:0,'Lain-lain':0};const total=Object.values(c).reduce((a,v)=>a+v,0);const contract=Number(p.contract_value||0);const progress=Math.min(100,Number(pm.projectProgress.get(pid)||0));return{...p,contract,c,total,laba:contract-total,progress,status:data.access.progress?(progress>=99.999?'SELESAI':'BERJALAN'):(p.status==='JALAN'?'BERJALAN':p.status)}});
   }
 
   function chartFrom(rows){
@@ -76,8 +71,14 @@
       <div class="kv2-sec"><div class="kv2-trend"><strong>Trend Nilai Proyek / Biaya / Laba per Bulan</strong><select id="kv2Range"><option value="6">6 Bulan</option><option value="12">1 Tahun</option></select></div><div class="kv2-meta" id="kv2Meta"></div><div class="kv2-scroll"><svg id="kv2Svg" class="kv2-chart" viewBox="0 0 960 260" preserveAspectRatio="none"></svg></div><div class="legend"><span>Nilai Proyek</span><span>Realisasi Biaya</span><span>Laba</span></div></div></div>`;
 
     const body=document.getElementById('kv2Body');
-    const paint=()=>{const s=document.getElementById('kv2Status').value;const f=rws.filter(r=>s==='all'||r.status===s);document.getElementById('kv2Total').textContent=f.length;document.getElementById('kv2Done').textContent=f.filter(r=>r.status==='SELESAI').length;document.getElementById('kv2Run').textContent=f.filter(r=>r.status==='BERJALAN').length;document.getElementById('kv2Value').textContent=money(f.reduce((a,r)=>a+r.contract,0));document.getElementById('kv2Profit').textContent=money(f.reduce((a,r)=>a+r.laba,0));body.innerHTML=f.map(r=>`<tr><td><strong>${esc(r.project_code||'-')}</strong></td><td>${esc(r.project_name||'-')}</td><td class="num">${money(r.contract)}</td><td class="num">${money(r.c.Material)}</td><td class="num">${money(r.c.Upah)}</td><td class="num">${money(r.c.Peralatan)}</td><td class="num">${money(r.c.Operasional)}</td><td class="num">${money(r.c.Subkon)}</td><td class="num">${money(r.c['Lain-lain'])}</td><td class="num">${money(r.total)}</td><td class="num">${money(r.laba)}</td><td><span class="pill">${r.status}</span></td></tr>`).join('')};
-    const draw=()=>{const range=document.getElementById('kv2Range').value;const dataRows=chartFrom(rws);const rows2=range==='12'?(()=>{const now=new Date(),from=new Date(now.getFullYear(),now.getMonth()-11,1),to=new Date(now.getFullYear(),now.getMonth()+1,0),keys=[];for(let d=new Date(from);d<=to;d.setMonth(d.getMonth()+1))keys.push(monthKey(d));const pm=progressModel();return keys.map(k=>{let v=0,c=0;for(const p of data.projects)v+=(Number(pm.monthly.get(String(p.id)+'|'+k)||0)/100)*Number(p.contract_value||0);for(const t of data.tx)if(txType(t)==='KELUAR'&&txDate(t).slice(0,7)===k)c+=amount(t);return{key:k,value:v,cost:c,profit:v-c}})})():dataRows;const svg=document.getElementById('kv2Svg'),W=960,H=260,L=55,R=15,T=15,B=32,iw=W-L-R,ih=H-T-B,max=Math.max(1,...rows2.flatMap(x=>[x.value,x.cost,x.profit]));const x=i=>L+(rows2.length===1?0:i*iw/(rows2.length-1)),y=v=>T+ih-(Math.max(0,v)/max)*ih,path=k=>rows2.map((z,i)=>`${i?'L':'M'} ${x(i).toFixed(1)} ${y(z[k]).toFixed(1)}`).join(' ');svg.innerHTML=`<g stroke="#e5e7eb"><line x1="${L}" y1="${T+ih}" x2="${W-R}" y2="${T+ih}"/></g><g fill="none" stroke-width="2"><path d="${path('value')}" style="stroke:#2563eb"/><path d="${path('cost')}" style="stroke:#dc2626"/><path d="${path('profit')}" style="stroke:#059669"/></g><g fill="#64748b" font-size="9">${rows2.map((z,i)=>`<text x="${x(i)}" y="${H-8}" text-anchor="middle">${esc(monthLabel(z.key))}</text>`).join('')}</g>`;document.getElementById('kv2Meta').textContent=`${monthLabel(rows2[0]?.key||'2026-01')} — ${monthLabel(rows2[rows2.length-1]?.key||'2026-01')}`};
+    const paint=()=>{const s=document.getElementById('kv2Status').value;const f=rws.filter(r=>s==='all'||r.status===s);document.getElementById('kv2Total').textContent=f.length;document.getElementById('kv2Done').textContent=f.filter(r=>r.status==='SELESAI').length;document.getElementById('kv2Run').textContent=f.filter(r=>r.status==='BERJALAN').length;document.getElementById('kv2Value').textContent=money(f.reduce((a,r)=>a+r.contract,0));document.getElementById('kv2Profit').textContent=money(f.reduce((a,r)=>a+r.laba,0));body.innerHTML=f.map(r=>`<tr><td><strong>${esc(r.project_code||'-')}</strong></td><td>${esc(r.project_name||'-')}</td><td class="num">${money(r.contract)}</td><td class="num">${money(r.c.Material)}</td><td class="num">${money(r.c.Upah)}</td><td class="num">${money(r.c.Peralatan)}</td><td class="num">${money(r.c.Operasional)}</td><td class="num">${money(r.c.Subkon)}</td><td class="num">${money(r.c['Lain-lain'])}</td><td class="num">${money(r.total)}</td><td class="num">${money(r.laba)}</td><td><span class="pill">${esc(r.status)}</span></td></tr>`).join('')};
+    const draw=()=>{
+      if(!data.access.progress){
+        document.getElementById('kv2Meta').textContent='Grafik membutuhkan izin melihat progress.';
+        document.getElementById('kv2Svg').innerHTML='';
+        return;
+      }
+      const range=document.getElementById('kv2Range').value;const dataRows=chartFrom(rws);const rows2=range==='12'?(()=>{const now=new Date(),from=new Date(now.getFullYear(),now.getMonth()-11,1),to=new Date(now.getFullYear(),now.getMonth()+1,0),keys=[];for(let d=new Date(from);d<=to;d.setMonth(d.getMonth()+1))keys.push(monthKey(d));const pm=progressModel();return keys.map(k=>{let v=0,c=0;for(const p of data.projects)v+=(Number(pm.monthly.get(String(p.id)+'|'+k)||0)/100)*Number(p.contract_value||0);for(const t of data.tx)if(txType(t)==='KELUAR'&&txDate(t).slice(0,7)===k)c+=amount(t);return{key:k,value:v,cost:c,profit:v-c}})})():dataRows;const svg=document.getElementById('kv2Svg'),W=960,H=260,L=55,R=15,T=15,B=32,iw=W-L-R,ih=H-T-B,max=Math.max(1,...rows2.flatMap(x=>[x.value,x.cost,x.profit]));const x=i=>L+(rows2.length===1?0:i*iw/(rows2.length-1)),y=v=>T+ih-(Math.max(0,v)/max)*ih,path=k=>rows2.map((z,i)=>`${i?'L':'M'} ${x(i).toFixed(1)} ${y(z[k]).toFixed(1)}`).join(' ');svg.innerHTML=`<g stroke="#e5e7eb"><line x1="${L}" y1="${T+ih}" x2="${W-R}" y2="${T+ih}"/></g><g fill="none" stroke-width="2"><path d="${path('value')}" style="stroke:#2563eb"/><path d="${path('cost')}" style="stroke:#dc2626"/><path d="${path('profit')}" style="stroke:#059669"/></g><g fill="#64748b" font-size="9">${rows2.map((z,i)=>`<text x="${x(i)}" y="${H-8}" text-anchor="middle">${esc(monthLabel(z.key))}</text>`).join('')}</g>`;document.getElementById('kv2Meta').textContent=`${monthLabel(rows2[0]?.key||'2026-01')} — ${monthLabel(rows2[rows2.length-1]?.key||'2026-01')}`};
     document.getElementById('kv2Status').addEventListener('change',paint);document.getElementById('kv2Range').addEventListener('change',draw);paint();draw();
   }
 

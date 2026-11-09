@@ -17,14 +17,15 @@
   async function loadData(){
     const client=window.SK?.sb||window.sb;
     if(!client)throw new Error('Supabase client belum siap.');
-    const [{data:ps,error:e1},{data:sr,error:e2}]=await Promise.all([
-      client.from('projects').select('id,project_code,project_name,contract_value').order('project_code'),
-      client.from('project_summary').select('*').order('project_code')
-    ]);
-    const err=e1||e2;
-    if(err)throw err;
-    projects=ps||[];
-    summaryRows=sr||[];
+    if(!window.SiKoyekDataAccess)throw new Error('Pengaman data belum siap.');
+    const {summary,access}=await window.SiKoyekDataAccess.loadSummary(client);
+    // A RAP/cost report must never mistake hidden values for zero.
+    if(!access.rap||!access.finance)throw new Error('Akses RAP dan Keuangan diperlukan untuk laporan biaya.');
+    summaryRows=summary||[];
+    projects=summaryRows.map(p=>({
+      id:p.project_id,project_code:p.project_code,project_name:p.project_name,
+      contract_value:p.contract_value
+    }));
   }
 
   function styles(){

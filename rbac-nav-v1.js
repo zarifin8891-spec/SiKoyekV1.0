@@ -5,10 +5,12 @@
   window.__SIKOYEK_RBAC_ENGINE_V12__=true;
 
   const MODULES={DASHBOARD:'DASHBOARD',PROJECTS:'PROJECTS',MASTER_DATA:'MASTER_DATA',PROGRESS:'PROGRESS',RAP:'RAP',KEUANGAN:'KEUANGAN',USERS:'USERS',LAPORAN:'LAPORAN'};
+  // Two tenants store the same module as KEUANGAN (MASTER) or finance (KONSTRUVA).
+  const canonicalModule=value=>{const name=String(value||'').trim().toUpperCase();return name==='FINANCE'?'KEUANGAN':name};
   const norm=v=>String(v??'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
   const attr=(el,n)=>String(el?.getAttribute?.(n)||'');
-  const canModule=module=>{const p=window.__SIKOYEK_RBAC_PERMISSIONS_V6__;const m=String(module||'').toUpperCase();return p?.role==='admin'||p?.views?.[m]===true};
-  const canAction=(module,action)=>{const p=window.__SIKOYEK_RBAC_PERMISSIONS_V6__;const m=String(module||'').toUpperCase(),a=String(action||'').toUpperCase();return p?.role==='admin'||p?.actions?.[m]?.[a]===true};
+  const canModule=module=>{const p=window.__SIKOYEK_RBAC_PERMISSIONS_V6__;const m=canonicalModule(module);return p?.role==='admin'||p?.views?.[m]===true};
+  const canAction=(module,action)=>{const p=window.__SIKOYEK_RBAC_PERMISSIONS_V6__;const m=canonicalModule(module),a=String(action||'').toUpperCase();return p?.role==='admin'||p?.actions?.[m]?.[a]===true};
   const setMeta=(el,module,action)=>{if(!el)return;if(module)el.dataset.rbacModule=String(module).toUpperCase();if(action)el.dataset.rbacAction=String(action).toUpperCase()};
 
   function classifySidebar(el){
@@ -179,7 +181,7 @@
       if(role!=='admin'){
         const {data:rps,error:re}=await client.from('role_permissions').select('permission_id').eq('role_id',profile.role_id);if(re)throw re;
         const ids=(rps||[]).map(x=>x.permission_id).filter(Boolean);
-        if(ids.length){const {data:ps,error:qe}=await client.from('permissions').select('id,module,action').in('id',ids);if(qe)throw qe;(ps||[]).forEach(p=>{const m=String(p.module||'').toUpperCase(),a=String(p.action||'').toUpperCase();if(a==='VIEW')permissions.views[m]=true;else{permissions.actions[m]??={};permissions.actions[m][a]=true}})}
+        if(ids.length){const {data:ps,error:qe}=await client.from('permissions').select('id,module,action').in('id',ids);if(qe)throw qe;(ps||[]).forEach(p=>{const m=canonicalModule(p.module),a=String(p.action||'').toUpperCase();if(a==='VIEW')permissions.views[m]=true;else{permissions.actions[m]??={};permissions.actions[m][a]=true}})}
       }
       window.__SIKOYEK_RBAC_PERMISSIONS_V6__=permissions;
       window.__SIKOYEK_RBAC_PERMISSIONS_V5__=permissions;
@@ -189,6 +191,7 @@
       window.__SIKOYEK_RBAC_PERMISSIONS_V3__=permissions;
       applyUI();
       wireSidebarNavigation();
+      window.dispatchEvent?.(new CustomEvent('sikoyek:rbac-ready'));
     }catch(e){console.warn('SiKoyek RBAC:',e)}
   }
 

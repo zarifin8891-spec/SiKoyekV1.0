@@ -28,18 +28,19 @@ jobs:
           integration = Path('health-dashboard-integration-v1.js').read_text(encoding='utf-8')
           if 'id="app"' not in html:
               raise SystemExit('FAIL: Dashboard app mount not found')
-          scripts = re.findall(r'<script[^>]+src="([^"]+)"', html)
-          health = [src for src in scripts if src.split('?')[0] == './health-dashboard-integration-v1.js']
+          script_sources = re.findall(r'<script[^>]+src="([^"]+)"', html)
+          scripts = [src.split('?', 1)[0] for src in script_sources]
+          health = [src for src in scripts if src == './health-dashboard-integration-v1.js']
           if len(health) != 1:
               raise SystemExit('FAIL: Health integration must be loaded exactly once')
           health_index = scripts.index(health[0])
-          for dependency in ['./environment.js', './foundation/config.js', './foundation/runtime.js', './foundation/backend.js']:
+          for dependency in ['./environment.js', './foundation/config.js', './foundation/runtime.js', './foundation/backend.js', './foundation/data-access.js']:
               if dependency not in scripts or scripts.index(dependency) >= health_index:
                   raise SystemExit(f'FAIL: dependency must precede Health: {dependency}')
           engine = re.search(r"const ENGINE_URL='([^']+)'", integration)
           if not engine or not Path(engine[1].split('?')[0]).is_file():
               raise SystemExit('FAIL: configured Health engine asset not found')
-          for marker in ['SiKoyekHealthEngine.evaluate', 'project_summary', 'SiKoyekBackend.getClient()', '#dashboard-health-panel']:
+          for marker in ['SiKoyekHealthEngine.evaluate', 'SiKoyekDataAccess.loadSummary', 'SiKoyekBackend.getClient()', '#dashboard-health-panel']:
               if marker not in integration:
                   raise SystemExit(f'FAIL: required integration behavior missing: {marker}')
           if 'createClient(' in integration or '.supabase.co' in integration:

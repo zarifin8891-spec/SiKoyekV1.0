@@ -8,7 +8,8 @@ assert.ok(integration.includes('Prioritas & Tindakan'),'Decision section title m
 assert.ok(!integration.includes('<th>Status</th>'),'Decision renderer must not declare a Status column');
 assert.ok(integration.includes('Masalah<br>Utama'),'Decision reason column missing');
 assert.ok(integration.includes('<th>Tindakan</th>'),'Decision action column missing');
-assert.ok(integration.includes('project_summary'),'Supabase summary source missing');
+assert.ok(integration.includes('SiKoyekDataAccess.loadSummary'),'Protected dashboard summary source missing');
+assert.ok(!integration.includes(".from('project_summary')"),'Raw financial summary view must not be requested');
 assert.ok(integration.includes('SiKoyekDecisionEngine'),'Decision engine dependency missing');
 assert.ok(integration.includes('SiKoyekHealthEngine'),'Health engine dependency missing');
 assert.ok(integration.includes("target.dataset.renderer='decision'"),'Decision renderer ownership marker missing');

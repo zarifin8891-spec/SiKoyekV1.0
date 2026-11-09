@@ -23,8 +23,8 @@
     const r=key==='custom'?{from:f.value||'',to:t.value||''}:range(key);
     if(key!=='custom'){f.value=r.from;t.value=r.to;}
     const client=window.SK?.sb||window.sb;if(!client)return;
-    const [{data:tx,error:e1},{data:projects,error:e2}]=await Promise.all([client.from('financial_transactions').select('*').order('transaction_date',{ascending:false}),client.from('projects').select('id,project_code,project_name').order('project_code')]);
-    if(e1||e2)throw(e1||e2);
+    const {transactions:tx,projects}=await window.SiKoyekDataAccess.loadReport(client,
+      {finance:true,descending:true,require:['finance']});
     const project=pr.value||'';
     const rows=(tx||[]).filter(x=>{const d=String(x.transaction_date||'').slice(0,10);return(!r.from||d>=r.from)&&(!r.to||d<=r.to)&&(!project||String(x.project_id)===String(project));});
     let income=0,expense=0;rows.forEach(x=>{const a=Number(x.amount||0);if(typeOf(x)==='in')income+=a;else if(typeOf(x)==='out')expense+=a;});

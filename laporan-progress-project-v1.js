@@ -30,14 +30,9 @@
   async function loadData(){
     const client=window.SK?.sb||window.sb;
     if(!client)throw new Error('Supabase client belum siap.');
-    const [{data:projects,error:e1},{data:workItems,error:e2},{data:progressRecords,error:e3}]=await Promise.all([
-      client.from('projects').select('id,project_code,project_name,contract_value').order('project_code'),
-      client.from('project_work_items').select('*').order('sort_order'),
-      client.from('progress_records').select('*').order('progress_date')
-    ]);
-    const err=e1||e2||e3;
-    if(err)throw err;
-    return {projects:projects||[],workItems:workItems||[],progressRecords:progressRecords||[]};
+    const {projects,items,progress}=await window.SiKoyekDataAccess.loadReport(client,
+      {items:true,progress:true,require:['progress']});
+    return {projects,workItems:items,progressRecords:progress};
   }
 
   function render(data){
@@ -85,7 +80,7 @@
     const recByItem={};
     data.progressRecords.forEach(r=>{
       if(!selectedIds.has(String(r.project_id)))return;
-      recByItem[r.work_item_id]=(recByItem[r.work_item_id]||0)+Number(r.progress_percentage||0);
+      recByItem[r.work_item_id]=(recByItem[r.work_item_id]||0)+Number(r.progress_percentage||0)*100;
     });
     const rows=data.workItems.filter(i=>String(i.project_id)===String(id)).map(i=>{
       const progress=Math.min(100,recByItem[i.id]||0);

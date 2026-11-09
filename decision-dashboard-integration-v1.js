@@ -8,8 +8,9 @@
     if(!client)client=window.SiKoyekBackend.getClient();
     busy=true;
     try{
-      const {data,error}=await client.from('project_summary').select('project_code,project_name,project_progress,cost_ratio,rap_consumption').order('project_code');
-      if(error)throw error;
+      if(!window.SiKoyekDataAccess)return;
+      const {summary:data,access}=await window.SiKoyekDataAccess.loadSummary(client);
+      if(!access.full)return;
       const rows=(data||[]).map(r=>({...r,project_progress:Number(r.project_progress||0),cost_ratio:Number(r.cost_ratio||0),rap_consumption:Number(r.rap_consumption||0)})).map(r=>{const health=window.SiKoyekHealthEngine.evaluate(r);return {...r,health,decision:window.SiKoyekDecisionEngine.evaluate(r,health)}});
       const sig=JSON.stringify(rows.map(r=>[r.project_code,r.decision.priority,r.decision.action,r.project_progress,r.cost_ratio,r.rap_consumption]));
       if(sig===lastSignature&&dashboard.querySelector('#dashboard-decision-panel')?.dataset.renderer==='decision')return;

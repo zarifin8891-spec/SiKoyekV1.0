@@ -52,8 +52,9 @@
     busy=true;
     try{
       const client=window.SiKoyekBackend.getClient();
-      const {data,error}=await client.from('project_summary').select('*').order('project_code');
-      if(error)throw error;
+      if(!window.SiKoyekDataAccess)return;
+      const {summary:data,access}=await window.SiKoyekDataAccess.loadSummary(client);
+      if(!access.full)return;
       repair(root,data||[]);
     }catch(e){console.warn('Dashboard fallback:',e)}finally{busy=false}
   }

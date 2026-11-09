@@ -25,7 +25,7 @@
   }
   function profile(){const current=session();return state.tables.profiles.find(p=>p.id===current?.user.id&&p.is_active)}
   function can(table,action){
-    const who=profile();if(!who)return false;if(who.role_id==='admin')return true;
+    const who=profile();if(!who||!state.tables.roles.some(r=>r.id===who.role_id&&r.is_active))return false;if(who.role_id==='admin')return true;
     const module=({projects:'PROJECTS',project_work_items:'PROJECTS',progress_records:'PROGRESS',project_rap:'RAP',financial_transactions:'KEUANGAN',project_categories:'MASTER_DATA',project_managers:'MASTER_DATA',transaction_categories:'MASTER_DATA',payment_methods:'MASTER_DATA'})[table];
     if(!module)return action==='VIEW';
     const p=state.tables.permissions.find(p=>p.module===module&&p.action===action);
@@ -94,6 +94,38 @@
     }
     return builder;
   }
+  async function rpc(name,args={}){
+    const allowed=(table,action='VIEW')=>can(table,action);
+    if(!allowed('projects'))return error('Akses proyek ditolak');
+    const projects=state.tables.projects;
+    const result=data=>({data:clone(data),error:null});
+    if(name==='sikoyek_secure_project_lifecycle'){
+      if(!allowed('projects','EDIT')&&!allowed('projects','DELETE'))return error('Akses lifecycle ditolak');
+      if(!Array.isArray(args.p_project_ids)||args.p_project_ids.length>100)return error('Daftar proyek tidak valid');
+      return result(projects.filter(p=>args.p_project_ids.includes(p.id)).map(p=>{
+        const {contract_value,...safe}=p;
+        const progressCount=Number(state.tables.progress_records.some(r=>r.project_id===p.id));
+        const txCount=Number(state.tables.financial_transactions.some(r=>r.project_id===p.id));
+        return {project:allowed('financial_transactions')?p:safe,progressCount,txCount,
+          started:p.status!=='RENCANA'||Number(p.project_progress||0)>0||Boolean(progressCount||txCount)};
+      }));
+    }
+    if(!allowed('financial_transactions'))return error('Akses keuangan ditolak');
+    if(name==='sikoyek_secure_project_detail')return result(projects.find(p=>p.id===args.p_project_id)||null);
+    if(name==='sikoyek_secure_project_contracts'){
+      return result(projects.map(p=>({project_id:p.id,contract_value:p.contract_value??null})));
+    }
+    if(!allowed('project_rap'))return error('Akses RAP ditolak');
+    if(name==='sikoyek_secure_project_summary'){
+      const canProgress=allowed('progress_records');
+      return result(summaries().map(row=>{
+        if(canProgress)return row;
+        const {progress_total,project_progress,health_gap,health_status,control_message,...safe}=row;
+        return safe;
+      }));
+    }
+    return error('RPC tidak tersedia pada preview: '+name);
+  }
   async function invoke(name,{body}={}){
     init();if(name!=='user-management'||profile()?.role_id!=='admin')return error('Aksi user preview tidak diizinkan');
     const tables=state.tables;
@@ -111,7 +143,7 @@
   }
   global.supabase={createClient(url,key){
     init();if(url!==config.url||key!=='preview-only')throw new Error('Preview menolak konfigurasi produksi');
-    return {from:makeBuilder,functions:{invoke},auth:{
+    return {from:makeBuilder,rpc,functions:{invoke},auth:{
       async getSession(){return {data:{session:session()},error:null}},async getUser(){return {data:{user:session()?.user||null},error:null}},
       onAuthStateChange(callback){listeners.add(callback);return {data:{subscription:{unsubscribe(){listeners.delete(callback)}}}}},
       async signInWithPassword({email,password}){init();const p=state.tables.profiles.find(p=>p.email===email&&p.is_active);if(!p||password!==(state.passwords[p.id]||'Preview123!'))return error('Email atau password preview tidak sesuai');return {data:{user:setSession(p).user,session:session()},error:null}},

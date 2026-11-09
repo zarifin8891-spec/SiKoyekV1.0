@@ -1,0 +1,103 @@
+name: Test SiKoyek with local Supabase Auth
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/test-supabase-auth-staging.yml'
+      - 'tests/security/supabase-auth-staging.mjs'
+      - 'supabase/functions/user-management/**'
+      - 'deployment-package-v1.0/*.sql'
+      - 'docs/security-hardening/STAGING_ONLY_*.sql'
+
+permissions:
+  contents: read
+
+jobs:
+  auth-staging:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'security/hardening-v1-staging-20261108'
+    name: Auth and Edge (${{ matrix.tenant }} fixture)
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        tenant: [MASTER, KONSTRUVA]
+    env:
+      STAGING_TENANT: ${{ matrix.tenant }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned Supabase CLI from npm
+        run: |
+          npm install --prefix "$RUNNER_TEMP/sikoyek-cli" --ignore-scripts --no-audit --no-fund supabase@2.122.1
+          cli_dir="$RUNNER_TEMP/sikoyek-cli/node_modules/.bin"
+          "$cli_dir/supabase" --version
+          echo "$cli_dir" >> "$GITHUB_PATH"
+      - name: Start the disposable Supabase stack
+        run: |
+          mkdir -p "$RUNNER_TEMP/sikoyek-auth/supabase/functions"
+          cp -r supabase/functions/user-management "$RUNNER_TEMP/sikoyek-auth/supabase/functions/"
+          npm ci --prefix "$RUNNER_TEMP/sikoyek-auth/supabase/functions/user-management" --ignore-scripts --no-audit --no-fund
+          cat > "$RUNNER_TEMP/sikoyek-auth/supabase/config.toml" <<'TOML'
+          project_id = "sikoyek-auth-stage"
+
+          [db]
+          major_version = 17
+
+          [auth]
+          enabled = true
+          site_url = "http://127.0.0.1:3000"
+
+          [edge_runtime]
+          enabled = true
+
+          # The handler validates the token against the real Auth getUser endpoint.
+          # The local gateway forwards malformed tokens so the test exercises that check.
+          [functions.user-management]
+          verify_jwt = false
+          TOML
+          cd "$RUNNER_TEMP/sikoyek-auth"
+          unset SUPABASE_ACCESS_TOKEN
+          supabase start > "$RUNNER_TEMP/sikoyek-start.log" 2>&1 || {
+            echo "::error::Supabase start failed. Check the service containers and runner capacity."
+            docker ps -a --format '{{.Names}} {{.Status}}'
+            grep -E '^(failed|error|WARNING|Error)' "$RUNNER_TEMP/sikoyek-start.log" | cut -c1-240 || true
+            exit 1
+          }
+          umask 077
+          supabase status -o env > "$RUNNER_TEMP/sikoyek-status.env"
+      - name: Load synthetic tenant schema and staging-only migrations
+        run: |
+          sql() {
+            docker exec -i supabase_db_sikoyek-auth-stage psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 "$@"
+          }
+          for file in deployment-package-v1.0/0[1-7]_*.sql; do
+            sql < "$file"
+          done
+          if [[ "$STAGING_TENANT" == MASTER ]]; then
+            sql -c "UPDATE public.permissions SET module='KEUANGAN', action=upper(action) WHERE module='finance';"
+          fi
+          sql -c "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO service_role;"
+          sql -c "INSERT INTO public.projects(project_code,project_name,contract_value) VALUES ('AUTH-STAGE','Synthetic Auth project',9000000);"
+          for name in full_rls_15_tables secure_financial_projection project_lifecycle_gate revoke_legacy_definers atomic_role_permissions; do
+            sql < "docs/security-hardening/STAGING_ONLY_$name.sql"
+          done
+          sql -c "NOTIFY pgrst, 'reload schema';"
+      - name: Verify real Auth sessions and account management
+        run: node tests/security/supabase-auth-staging.mjs "$RUNNER_TEMP/sikoyek-status.env" "$STAGING_TENANT"
+      - name: Show Edge boot errors before discarding staging
+        if: failure()
+        run: docker logs --tail 80 supabase_edge_runtime_sikoyek-auth-stage 2>&1
+      - name: Stop and discard the disposable stack
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/sikoyek-auth/supabase/config.toml" ]]; then
+            cd "$RUNNER_TEMP/sikoyek-auth"
+            supabase stop --no-backup
+          fi
+          rm -f "$RUNNER_TEMP/sikoyek-status.env" "$RUNNER_TEMP/sikoyek-start.log"

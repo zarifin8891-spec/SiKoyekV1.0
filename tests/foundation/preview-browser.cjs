@@ -36,6 +36,15 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   const today=await page.evaluate(()=>{const d=new Date(),pad=n=>String(n).padStart(2,'0');return{month:d.getFullYear()+'-'+pad(d.getMonth()+1)+'-01',quarter:(()=>{d.setDate(d.getDate()-89);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())})()}});
   await page.selectOption('#'+financePrefix+'Period','month');await page.waitForFunction(({prefix,value})=>document.getElementById(prefix+'From').value===value,{prefix:financePrefix,value:today.month});check('active finance report uses the selected calendar month');
   await page.selectOption('#'+financePrefix+'Period','all');await page.waitForFunction(prefix=>!document.getElementById(prefix+'From').value&&!document.getElementById(prefix+'To').value,financePrefix);check('active finance report all-period reset');
+  await page.locator('[data-report="progress"]').click();
+  await page.selectOption('#progProject',id);
+  assert.equal(await page.locator('#progKpiProject').textContent(),'10.00%');
+  check('Progress report shows the same weighted percentage as saved history');
+  await page.locator('[data-report="kinerja"]').click();
+  await page.waitForSelector('#kv2Body');
+  assert.ok((await page.locator('#kv2Body').textContent()).includes('PREVIEW-001'));
+  assert.notEqual(await page.locator('#kv2Svg').innerHTML(),'');
+  check('Admin project performance report renders contract, costs and progress chart');
   await page.evaluate(id=>openProject(id),id);await page.waitForTimeout(500);
   for(const [progress,status] of [[0.01,'AWASI'],[0,'BERISIKO']]){
    await page.evaluate(({progress})=>{state.summary.find(p=>p.project_id===state.selected).project_progress=progress;state.detail.fin=[{transaction_type:'KELUAR',category:'Material',amount:1800000}];setTab('cost')},{progress});await page.waitForSelector('#cost-control-v7');assert.ok((await page.locator('#cost-control-v7').innerText()).includes(status));check('cost V7 deployed Health threshold '+status);
@@ -43,6 +52,15 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   await enter('konstruva');assert.equal((await rows('projects')).length,6);check('KONSTRUVA data isolated from MASTER preview');
   await enter('klien-baru');assert.equal((await rows('projects')).length,6);check('new client uses same source and isolated data');
   for(const role of ['direktur','keuangan','marketing','pelaksana']){await enter('master',role);assert.equal(await page.evaluate(async()=>(await sb.auth.getSession()).data.session.user.email),role+'@preview.invalid');if(role==='pelaksana'){const rejected=await page.evaluate(()=>sb.from('projects').insert({project_code:'DENIED',project_name:'Denied'}));assert.ok(rejected.error);check('preview adapter rejects unauthorized direct write')}check('role '+role+' dashboard');}
+  await enter('master','keuangan');
+  await page.evaluate(()=>go('laporan'));
+  await page.locator('[data-report="kinerja"]').click();
+  await page.waitForSelector('#kv2Body');
+  assert.ok((await page.locator('#kv2Body').textContent()).includes('PREVIEW-001'));
+  assert.match(await page.locator('#kv2Meta').textContent(),/izin melihat progress/);
+  await page.locator('[data-report="progress"]').click();
+  await page.getByText(/tidak memiliki izin untuk membuka laporan/).waitFor();
+  check('Finance can open Kinerja without seeing restricted Progress');
   await enter('master');await page.evaluate(()=>logout());await page.waitForSelector('#email');await page.waitForTimeout(400);await page.fill('#email','admin@preview.invalid');await page.fill('#password','Preview123!');await page.click('#loginBtn');await page.waitForSelector('.dashboard-head');check('logout and preview credential login');
   await page.goto(origin+'/');await page.selectOption('#tenant','master');await page.click('#reset');await page.selectOption('#role','admin');await page.click('#open');await page.waitForSelector('.dashboard-head');assert.equal((await rows('projects')).length,6);check('reset selected tenant restores seed');
   await page.goto(origin+'/');await page.setViewportSize({width:390,height:844});assert.ok(await page.locator('#open').isVisible());await page.screenshot({path:path.join(path.dirname(output),'preview-portal.png'),fullPage:true});check('mobile preview portal');
