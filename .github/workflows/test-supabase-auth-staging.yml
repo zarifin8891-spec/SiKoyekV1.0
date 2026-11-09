@@ -86,6 +86,9 @@ jobs:
           sql -c "NOTIFY pgrst, 'reload schema';"
       - name: Verify real Auth sessions and account management
         run: node tests/security/supabase-auth-staging.mjs "$RUNNER_TEMP/sikoyek-status.env" "$STAGING_TENANT"
+      - name: Show Edge boot errors before discarding staging
+        if: failure()
+        run: docker logs --tail 80 supabase_edge_runtime_sikoyek-auth-stage 2>&1
       - name: Stop and discard the disposable stack
         if: always()
         run: |
