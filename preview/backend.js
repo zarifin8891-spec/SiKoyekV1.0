@@ -11,6 +11,8 @@
     storeKey='sikoyek-preview-data-v1-'+config.id;sessionKey=config.storageKey;
     try{state=JSON.parse(localStorage.getItem(storeKey)||'null')}catch(_){ }
     if(!state?.tables){state={tables:global.SiKoyekPreviewSeed(),passwords:{}};save()}
+    state.tables.project_milestones ||= [];
+    state.tables.project_staff_assignments ||= [];
     if(!sessionStorage.getItem(sessionKey)&&sessionStorage.getItem('sikoyek-preview-role-'+config.id)&&!sessionStorage.getItem(sessionKey+'-out')){
       const role=sessionStorage.getItem('sikoyek-preview-role-'+config.id),profile=state.tables.profiles.find(p=>p.role_id===role&&p.is_active);
       if(profile)setSession(profile);
@@ -26,6 +28,7 @@
   function profile(){const current=session();return state.tables.profiles.find(p=>p.id===current?.user.id&&p.is_active)}
   function can(table,action){
     const who=profile();if(!who||!state.tables.roles.some(r=>r.id===who.role_id&&r.is_active))return false;if(who.role_id==='admin')return true;
+    if(['project_milestones','project_staff_assignments'].includes(table))return can('projects','VIEW')&&(action==='VIEW'||can('projects','EDIT'));
     const module=({projects:'PROJECTS',project_work_items:'PROJECTS',progress_records:'PROGRESS',project_rap:'RAP',financial_transactions:'KEUANGAN',project_categories:'MASTER_DATA',project_managers:'MASTER_DATA',transaction_categories:'MASTER_DATA',payment_methods:'MASTER_DATA'})[table];
     if(!module)return action==='VIEW';
     const p=state.tables.permissions.find(p=>p.module===module&&p.action===action);
@@ -81,7 +84,7 @@
           rows.forEach(row=>Object.assign(row,spec.value));
         }else{
           state.tables[table]=source.filter(row=>!matches(row));
-          if(table==='projects')for(const name of ['project_summary','project_work_items','project_rap','progress_records','financial_transactions'])state.tables[name]=state.tables[name].filter(r=>!rows.some(p=>p.id===(r.project_id||r.id)));
+          if(table==='projects')for(const name of ['project_summary','project_work_items','project_rap','progress_records','financial_transactions','project_milestones','project_staff_assignments'])state.tables[name]=state.tables[name].filter(r=>!rows.some(p=>p.id===(r.project_id||r.id)));
         }
         if(table==='progress_records'||table==='project_work_items')for(const id of new Set(rows.map(r=>r.project_id)))syncProgress(id);
         save();

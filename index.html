@@ -25,7 +25,8 @@
 <script src="./foundation/runtime.js"></script>
 <script src="./foundation/backend.js"></script>
 <script src="./foundation/repository.js"></script>
-<script src="./foundation/data-access.js?v=2"></script>
+<script src="./foundation/data-access.js?v=3"></script>
+<script src="./project-plan.js"></script>
 </head>
 <body><div id="app"></div><script>
 const sb=window.sb=window.SiKoyekBackend.getClient();
@@ -56,7 +57,7 @@ async function loadSummary(){
 async function boot(){const {data:{session}}=await sb.auth.getSession();if(!session){document.getElementById('app').innerHTML=loginHTML();document.getElementById('togglePassword')?.addEventListener('click',togglePassword);document.getElementById('loginBtn')?.addEventListener('click',login);document.getElementById('forgotPassword')?.addEventListener('click',forgotPassword);document.getElementById('password')?.addEventListener('keydown',e=>{if(e.key==='Enter')login()});return}await loadSummary();renderApp()}
 async function go(page){state.page=page;state.selected=null;state.detail=null;await loadSummary();renderApp()}
 function renderApp(){document.getElementById('app').innerHTML=`<div class="shell">${nav(state.page)}<main class="content"><div id="page"></div></main></div>`;renderPage()}
-function renderPage(){const el=document.getElementById('page');if(state.page==='dashboard')el.innerHTML=dashboard();else if(state.page==='projects')el.innerHTML=projects();else renderDetail(el)}
+function renderPage(){const el=document.getElementById('page');if(state.page==='dashboard')el.innerHTML=dashboard();else if(state.page==='projects')el.innerHTML=projects();else {renderDetail(el)}}
 function periodMatch(x){if(!state.period.from&&!state.period.to)return true;const start=x.start_date||x.project_date||'';const end=x.end_date||x.start_date||x.project_date||'';if(!start&&!end)return true;if(state.period.from&&end&&end<state.period.from)return false;if(state.period.to&&start&&start>state.period.to)return false;return true}
 function formatDate(d){if(!d)return '-';const [y,m,day]=d.split('-');return `${day}/${m}/${y}`}
 function periodLabel(){if(!state.period.from&&!state.period.to)return 'Semua Periode';return `${formatDate(state.period.from||'0000-00-00')} s/d ${formatDate(state.period.to||'9999-12-31')}`}
@@ -67,13 +68,50 @@ function applyPreset(v){const d=new Date();let from='',to='';if(v==='thisMonth')
 function projects(){const q=state.search.toLowerCase(),a=state.summary.filter(x=>(x.project_code+' '+x.project_name).toLowerCase().includes(q));return `<div class="top"><div><h1>Projects</h1><p>Kelola proyek dan masuk ke detail operasional.</p></div><div class="actions"><input class="search" value="${esc(state.search)}" oninput="state.search=this.value;renderPage()" placeholder="Cari proyek..."><button class="btn primary" onclick="openProjectForm()">+ Proyek Baru</button></div></div><div class="card tablecard"><div class="scroll"><table class="table"><thead><tr><th>Kode</th><th>Nama Proyek</th><th>Kontrak</th><th>RAP</th><th>Progress</th><th>Cost Ratio</th><th>RAP Consumption</th><th>Health</th></tr></thead><tbody>${a.map(x=>`<tr><td>${esc(x.project_code)}</td><td><button class="linkbtn" onclick="openProject('${x.project_id}')">${esc(x.project_name)}</button></td><td>${money(x.contract_value)}</td><td>${money(x.total_rap)}</td><td>${pct(x.project_progress)}</td><td>${pct(x.cost_ratio)}</td><td>${pct(x.rap_consumption)}</td><td><span class="pill ${healthClass(x.health_status)}">${esc(x.health_status)}</span></td></tr>`).join('')||'<tr><td colspan="8" class="empty">Belum ada proyek.</td></tr>'}</tbody></table></div></div>`}
 async function openProject(id){state.page='detail';state.selected=id;state.detailTab='overview';state.detail=await getDetail(id);renderApp()}
 async function getDetail(id){
- const result=await window.SiKoyekDataAccess.loadDetail(sb,id,state.access);
+ const [result,milestones,staff]=await Promise.all([
+   window.SiKoyekDataAccess.loadDetail(sb,id,state.access),
+   state.access?.projects ? window.SiKoyekProjectPlan.load(sb,id) : null,
+   state.access?.projects ? window.SiKoyekProjectPlan.loadAssignments(sb,id) : null
+ ]);
+ result.milestones=milestones;
+ result.staff=staff;
  if(result.readError)toast(result.readError.message);
  return result;
 }
-function renderDetail(el){if(!state.detail){el.innerHTML='<div class="empty">Memuat proyek...</div>';return}if(!state.detail.project){el.innerHTML='<div class="empty">Proyek tidak tersedia untuk akun ini.</div>';return}const d=state.detail,s=state.summary.find(x=>x.project_id===state.selected);const labels={overview:'Overview',pekerjaan:'Item Pekerjaan',progress:'Progress',rap:'RAP',keuangan:'Keuangan',cost:'Cost Control'};const visibleTabs=Object.entries(labels).filter(([k])=>k==='overview'||k==='pekerjaan'||(k==='progress'&&state.access?.progress)||(k==='rap'&&state.access?.rap)||(k==='keuangan'&&state.access?.finance)||(k==='cost'&&state.access?.finance&&state.access?.rap));el.innerHTML=`<div class="top"><div class="detailtitle"><h2>${esc(d.project.project_name)}</h2><p>${esc(d.project.project_code)} • ${esc(d.project.location||'-')} • ${esc(d.project.status)}</p></div><div class="actions"><button class="btn ghost" onclick="go('projects')">← Kembali</button><button class="btn primary" onclick="openItemForm()">+ Item Pekerjaan</button><button class="btn ghost" onclick="openTxForm()">+ Transaksi</button></div></div><div class="detailgrid"><div class="card kpi"><div class="label">NILAI KONTRAK</div><div class="value">${money(d.project.contract_value)}</div></div><div class="card kpi"><div class="label">RAP</div><div class="value">${money(s?.total_rap)}</div></div><div class="card kpi"><div class="label">PROGRESS</div><div class="value">${pct(s?.project_progress)}</div></div><div class="card kpi"><div class="label">HEALTH</div><div class="value"><span class="pill ${healthClass(s?.health_status)}">${esc(s?.health_status||'-')}</span></div></div></div><div class="tabs">${visibleTabs.map(([k,v])=>`<button class="${state.detailTab===k?'active':''}" onclick="setTab('${k}')">${v}</button>`).join('')}</div><div>${detailBody(d,s)}</div>`}
+function renderDetail(el){if(!state.detail){el.innerHTML='<div class="empty">Memuat proyek...</div>';return}if(!state.detail.project){el.innerHTML='<div class="empty">Proyek tidak tersedia untuk akun ini.</div>';return}const d=state.detail,s=state.summary.find(x=>x.project_id===state.selected);const labels={overview:'Overview',pekerjaan:'Item Pekerjaan',progress:'Progress',timeline:'Timeline',milestones:'Milestone',staff:'Karyawan',rap:'RAP',keuangan:'Keuangan',cost:'Cost Control'};const visibleTabs=Object.entries(labels).filter(([k])=>['overview','pekerjaan','timeline','milestones','staff'].includes(k)||(k==='progress'&&state.access?.progress)||(k==='rap'&&state.access?.rap)||(k==='keuangan'&&state.access?.finance)||(k==='cost'&&state.access?.finance&&state.access?.rap));el.innerHTML=`<div class="top"><div class="detailtitle"><h2>${esc(d.project.project_name)}</h2><p>${esc(d.project.project_code)} • ${esc(d.project.location||'-')} • ${esc(d.project.status)}</p></div><div class="actions"><button class="btn ghost" onclick="go('projects')">← Kembali</button><button class="btn primary" onclick="openItemForm()">+ Item Pekerjaan</button><button class="btn ghost" onclick="openTxForm()">+ Transaksi</button></div></div><div class="detailgrid"><div class="card kpi"><div class="label">NILAI KONTRAK</div><div class="value">${money(d.project.contract_value)}</div></div><div class="card kpi"><div class="label">RAP</div><div class="value">${money(s?.total_rap)}</div></div><div class="card kpi"><div class="label">PROGRESS</div><div class="value">${pct(s?.project_progress)}</div></div><div class="card kpi"><div class="label">HEALTH</div><div class="value"><span class="pill ${healthClass(s?.health_status)}">${esc(s?.health_status||'-')}</span></div></div></div><div class="tabs">${visibleTabs.map(([k,v])=>`<button class="${state.detailTab===k?'active':''}" onclick="setTab('${k}')">${v}</button>`).join('')}</div><div>${detailBody(d,s)}</div>`}
 function setTab(t){state.detailTab=t;renderApp()}
-function detailBody(d,s){if(state.detailTab==='overview')return overview(d,s);if(state.detailTab==='pekerjaan')return workitems(d);if(state.detailTab==='progress')return state.access?.progress?progressView(d):overview(d,s);if(state.detailTab==='rap')return state.access?.rap?rapView(d,s):overview(d,s);if(state.detailTab==='keuangan')return state.access?.finance?financeView(d):overview(d,s);return state.access?.finance&&state.access?.rap?costView(d,s):overview(d,s)}
+function detailBody(d,s){if(['timeline','milestones','staff'].includes(state.detailTab))return renderProjectPlan(d);if(state.detailTab==='overview')return overview(d,s);if(state.detailTab==='pekerjaan')return workitems(d);if(state.detailTab==='progress')return state.access?.progress?progressView(d):overview(d,s);if(state.detailTab==='rap')return state.access?.rap?rapView(d,s):overview(d,s);if(state.detailTab==='keuangan')return state.access?.finance?financeView(d):overview(d,s);return state.access?.finance&&state.access?.rap?costView(d,s):overview(d,s)}
+function renderProjectPlan(detail){
+ const plan=window.SiKoyekProjectPlan;
+ if(state.detailTab==='staff')return plan.renderAssignments(detail,Boolean(state.access?.projectEdit));
+ if(state.detailTab==='timeline')return plan.renderTimeline(detail,Boolean(state.access?.progress));
+ const dateNow=new Date();
+ const localToday=[dateNow.getFullYear(),String(dateNow.getMonth()+1).padStart(2,'0'),String(dateNow.getDate()).padStart(2,'0')].join('-');
+ return plan.renderMilestones(detail,Boolean(state.access?.projectEdit),localToday);
+}
+document.addEventListener('click',event=>{
+ const button=event.target.closest('[data-milestone-action],[data-assignment-action]');
+ if(!button?.closest('#page')||state.page!=='detail'||!state.access?.projectEdit||!state.selected)return;
+ const action=button.dataset.assignmentAction||button.dataset.milestoneAction;
+ const tab=button.dataset.assignmentAction?'staff':'milestones';
+ if(state.detailTab!==tab||!state.detail?.[tab]||state.detail[tab].error)return;
+ const plan=window.SiKoyekProjectPlan;
+ const open=tab==='staff'?plan.openAssignmentEditor:plan.openEditor;
+ const load=tab==='staff'?plan.loadAssignments:plan.load;
+ const projectId=state.selected;
+ const point=state.detail[tab].rows.find(row=>row.id===button.dataset.id);
+ if(action==='edit'&&!point)return;
+ open({
+   client:sb,projectId,point,modal,closeModal,
+   onSaved:async()=>{
+     if(state.selected!==projectId)return;
+     const rows=await load(sb,projectId);
+     if(state.selected!==projectId)return;
+     state.detail[tab]=rows;
+     renderPage();
+   }
+ });
+});
 function overview(d,s){return `<div class="twocol"><div class="card kpi"><div class="sectiontitle"><h2>Progress</h2></div><div style="font-size:34px;font-weight:850">${pct(s?.project_progress)}</div><div class="bar" style="margin-top:12px"><i style="width:${Math.min(100,Number(s?.project_progress||0))}%"></i></div><div class="note">Progress dihitung dari bobot Item Pekerjaan.</div></div><div class="card kpi"><div class="sectiontitle"><h2>Biaya</h2></div><div class="note">Cost Ratio</div><div style="font-size:25px;font-weight:850">${pct(s?.cost_ratio)}</div><div class="note">RAP Consumption</div><div style="font-size:25px;font-weight:850">${pct(s?.rap_consumption)}</div></div></div><div class="section"><div class="card kpi"><div class="sectiontitle"><h2>Informasi Proyek</h2></div><div class="twocol"><div><div class="note">Pemilik</div><strong>${esc(d.project.owner_name||'-')}</strong></div><div><div class="note">Project Manager</div><strong>${esc(d.project.project_manager||'-')}</strong></div><div><div class="note">Mulai</div><strong>${esc(d.project.start_date||'-')}</strong></div><div><div class="note">Target Selesai</div><strong>${esc(d.project.end_date||'-')}</strong></div></div></div></div>`}
 function workitems(d){return `<div class="sectiontitle"><h2>${d.items.length} Item Pekerjaan</h2><button class="btn primary" onclick="openItemForm()">+ Tambah</button></div><div class="card tablecard"><div class="scroll"><table class="table"><thead><tr><th>No</th><th>Item Pekerjaan</th><th>Bobot</th><th>Urutan</th></tr></thead><tbody>${d.items.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.work_name)}</td><td>${pct(Number(x.weight||0)*100)}</td><td>${x.sort_order}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Belum ada item pekerjaan.</td></tr>'}</tbody></table></div></div>`}
 function progressView(d){return `<div class="sectiontitle"><h2>Riwayat Progress</h2><span class="note">Input progress berikutnya kita aktifkan setelah modul dasar ini stabil.</span></div><div class="card tablecard"><div class="scroll"><table class="table"><thead><tr><th>Tanggal</th><th>Item</th><th>Progress</th><th>Catatan</th></tr></thead><tbody>${d.progress.map(p=>{const item=d.items.find(i=>i.id===p.work_item_id);return `<tr><td>${esc(p.progress_date)}</td><td>${esc(item?.work_name||p.work_item_id)}</td><td>${pct(Number(p.progress_percentage||0)*100)}</td><td>${esc(p.notes||'')}</td></tr>`}).join('')||'<tr><td colspan="4" class="empty">Belum ada progress.</td></tr>'}</tbody></table></div></div>`}

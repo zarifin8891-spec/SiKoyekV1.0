@@ -17,5 +17,6 @@ tables.projects=tables.projects.map(p=>Object.fromEntries(projectColumns.map(key
 tables.progress_records=summary.flatMap(p=>[{id:p.project_id+'pr1',project_id:p.project_id,work_item_id:p.project_id+'i1',progress_date:'2026-10-01',progress_percentage:Math.min(1,p.project_progress/40),notes:'Data uji awal'},{id:p.project_id+'pr2',project_id:p.project_id,work_item_id:p.project_id+'i2',progress_date:'2026-10-01',progress_percentage:Math.max(0,p.project_progress-40)/60,notes:'Data uji awal'}]);
 const spending=[12000000,25000000,40000000,48000000,68000000,78000000];
 tables.financial_transactions.filter(t=>t.transaction_type==='KELUAR').forEach((t,i)=>{t.amount=spending[i]});
+tables.project_milestones=[{id:'ms0',project_id:'p0',title:'Pondasi selesai',target_date:'2026-10-15',completed_date:'2026-10-16',notes:'Data sintetis'}];
 return tables;
 };
