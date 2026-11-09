@@ -6,11 +6,22 @@ function validate(config,root){
   vm.runInNewContext(fs.readFileSync(path.join(root,'foundation/config.js'),'utf8'),sandbox);
   return sandbox.window.SiKoyekConfig;
 }
-function buildRelease({sourceRoot,outRoot,tenants,preview=false}){
+function buildRelease({sourceRoot,outRoot,tenants,preview=false,stagingLoginEndpoint}){
   sourceRoot=path.resolve(sourceRoot);outRoot=path.resolve(outRoot);
   if(outRoot===sourceRoot||outRoot.startsWith(sourceRoot+path.sep))throw new Error('Output harus berada di luar sumber');
   if(fs.existsSync(outRoot)&&fs.readdirSync(outRoot).length)throw new Error('Direktori output harus kosong');
   const ids=new Set(),directories=new Set();for(const config of tenants){validate(config,sourceRoot);const directory=config.directory||config.id;if(!/^[A-Za-z][A-Za-z0-9-]{0,63}$/.test(directory))throw new Error('Direktori lingkungan tidak valid');if(ids.has(config.id)||directories.has(directory))throw new Error('ID/direktori lingkungan duplikat');ids.add(config.id);directories.add(directory);if(preview&&config.backend!=='preview'||!preview&&config.backend!=='cloud')throw new Error('Mode paket dan backend berbeda')}
+  let stagingEndpoint;
+  if(stagingLoginEndpoint){
+    const productionHosts=new Set(['mmkusplegmittrlxqxby.supabase.co','fadxsycdgzuctvmhhjty.supabase.co']);
+    stagingEndpoint=new URL(stagingLoginEndpoint);
+    if(preview||stagingEndpoint.protocol!=='https:'||stagingEndpoint.username||stagingEndpoint.password||
+      stagingEndpoint.search||stagingEndpoint.hash||stagingEndpoint.pathname!=='/functions/v1/tenant-login'||
+      !tenants.some(tenant=>new URL(tenant.url).origin===stagingEndpoint.origin)||
+      tenants.some(tenant=>productionHosts.has(new URL(tenant.url).hostname)||!tenant.key.startsWith('sb_publishable_'))){
+      throw new Error('Login staging memerlukan proyek Supabase uji dan gateway di salah satu proyek uji');
+    }
+  }
   const files=[];
   for(const entry of fs.readdirSync(sourceRoot,{withFileTypes:true}))if(entry.isFile()&&/\.(html|js|css|png|jpe?g|svg|webp|gif|ico|woff2?)$/.test(entry.name)&&entry.name!=='environment.js')files.push(entry.name);
   for(const entry of fs.readdirSync(path.join(sourceRoot,'foundation')))if(/\.(js|css|json)$/.test(entry))files.push('foundation/'+entry);
@@ -33,24 +44,38 @@ function buildRelease({sourceRoot,outRoot,tenants,preview=false}){
       manifest.packageFiles[file]=digest(bytes);
       fs.writeFileSync(out,bytes);
     }
-    const environment='window.SIKOYEK_CONFIG = '+JSON.stringify(config,null,2)+';\n';
+    const environment='window.SIKOYEK_CONFIG = '+JSON.stringify(stagingEndpoint?{...config,stagingLogin:true}:config,null,2)+';\n';
     fs.writeFileSync(path.join(destination,'environment.js'),environment);
     if(preview){fs.cpSync(path.join(sourceRoot,'preview'),path.join(destination,'preview'),{recursive:true});}
     manifest.tenants.push({id:config.id,name:config.name,applicationRevision,configurationHash:digest(environment),entry:directory+'/index.html'});
   }
   fs.writeFileSync(path.join(outRoot,'release-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
   if(preview){for(const name of ['index.html','portal.css','portal.js'])fs.copyFileSync(path.join(sourceRoot,'preview',name),path.join(outRoot,name));}
+  else if(stagingEndpoint){
+    const config={endpoint:stagingEndpoint.href,tenants:Object.fromEntries(tenants.map(tenant=>{
+      const {url,key,storageKey}=validate(tenant,sourceRoot);
+      return [tenant.id,{url,key,storageKey,entry:'./'+(tenant.directory||tenant.id)+'/index.html'}];
+    }))};
+    const origins=[...new Set(Object.values(config.tenants).map(tenant=>tenant.url))].join(' ');
+    const loginPolicy="default-src 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'unsafe-inline'; connect-src "+origins+"; form-action 'none'; base-uri 'none'";
+    const login=fs.readFileSync(path.join(sourceRoot,'deployment/login.html'),'utf8');
+    fs.writeFileSync(path.join(outRoot,'index.html'),login.replace('<head>','<head><meta http-equiv="Content-Security-Policy" content="'+loginPolicy+'">'));
+    fs.copyFileSync(path.join(sourceRoot,'deployment/staging-login.js'),path.join(outRoot,'staging-login.js'));
+    fs.writeFileSync(path.join(outRoot,'staging-login-config.js'),'window.SiKoyekStagingLogin = '+JSON.stringify(config)+';\n');
+  }
   else{const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const links=tenants.map(config=>'<a href="./'+(config.directory||config.id)+'/">SiKoyek '+escape(config.name)+'</a>').join('');fs.writeFileSync(path.join(outRoot,'index.html'),fs.readFileSync(path.join(sourceRoot,'deployment/selector.html'),'utf8').replace('{{ENVIRONMENT_LINKS}}',links));}
   return manifest;
 }
 module.exports={buildRelease,validate};
 if(require.main===module){
   const args=process.argv.slice(2);const preview=args[0]==='--preview';if(preview)args.shift();
-  if(args.length<1)throw new Error('node deployment/build-release.cjs [--preview] /absolute/output [config.json ...]');
+  let stagingLoginEndpoint;
+  if(args[0]==='--staging-login'){args.shift();stagingLoginEndpoint=args.shift();if(!stagingLoginEndpoint||args.length<2)throw Error('Login staging memerlukan endpoint dan berkas konfigurasi uji eksplisit')}
+  if(args.length<1)throw new Error('node deployment/build-release.cjs [--preview | --staging-login endpoint] /absolute/output [config.json ...]');
   const root=path.resolve(__dirname,'..');
   const releaseLock=path.join(root,'deployment/release-lock.json');
   const configFiles=fs.existsSync(releaseLock)?JSON.parse(fs.readFileSync(releaseLock,'utf8')).configFiles:['deployment/environments/master.json','deployment/environments/konstruva.json'];
   if(!preview&&(!Array.isArray(configFiles)||!configFiles.length))throw new Error('Daftar konfigurasi rilis harus diisi');
   const tenants=preview?['master','konstruva','klien-baru'].map(id=>({id,name:id==='master'?'MASTER':id==='konstruva'?'KONSTRUVA':'KLIEN BARU',backend:'preview',url:'https://'+id+'.invalid',key:'preview-only'})):(args.slice(1).length?args.slice(1):configFiles).map(file=>JSON.parse(fs.readFileSync(file,'utf8')));
-  const result=buildRelease({sourceRoot:root,outRoot:args[0],tenants,preview});console.log(JSON.stringify({applicationRevision:result.applicationRevision,mode:result.mode,tenants:result.tenants},null,2));
+  const result=buildRelease({sourceRoot:root,outRoot:args[0],tenants,preview,stagingLoginEndpoint});console.log(JSON.stringify({applicationRevision:result.applicationRevision,mode:result.mode,tenants:result.tenants},null,2));
 }

@@ -29,7 +29,15 @@ function verifyRelease(root){
   }
   assert.ok(!fs.existsSync(path.join(app,'supabase')));assert.ok(!fs.existsSync(path.join(app,'deployment-package-v1.0')));
  }
- const selector=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const tenant of manifest.tenants)assert.ok(selector.includes('./'+tenant.entry.split('/')[0]+'/'));
+ const selector=fs.readFileSync(path.join(root,'index.html'),'utf8');
+ if(selector.includes('id="staging-login"')){
+  const sandbox={window:{}};
+  vm.runInNewContext(fs.readFileSync(path.join(root,'staging-login-config.js'),'utf8'),sandbox);
+  const config=sandbox.window.SiKoyekStagingLogin;
+  for(const tenant of manifest.tenants)assert.equal(config.tenants[tenant.id]?.entry,'./'+tenant.entry);
+  assert.ok(fs.existsSync(path.join(root,'staging-login.js')));
+ }else for(const tenant of manifest.tenants)assert.ok(selector.includes('./'+tenant.entry.split('/')[0]+'/'));
+
  return {passed:true,applicationRevision:manifest.applicationRevision,tenants:manifest.tenants.map(t=>t.id),filesPerTenant:Object.keys(manifest.packageFiles).length,assetReferences:references};
 }
 module.exports={verifyRelease};

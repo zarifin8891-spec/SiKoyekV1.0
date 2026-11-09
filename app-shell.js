@@ -24,7 +24,7 @@ function installFinancialDomMask(){
   run();
 }
 async function requireSession(){const {data,error}=await sb.auth.getSession();if(error)throw error;if(!data.session){window.location.href='index.html';return null}window.__SIKOYEK_FINANCIAL_VISIBILITY_ROLE__='';try{const {data:profile}=await sb.from('profiles').select('is_active,roles(name)').eq('id',data.session.user.id).maybeSingle();if(profile?.is_active===false){await sb.auth.signOut({scope:'local'});window.location.href='index.html';return null}window.__SIKOYEK_FINANCIAL_VISIBILITY_ROLE__=String(profile?.roles?.name||'').trim().toLowerCase()}catch(e){console.warn('SiKoyek profile visibility:',e)}installFinancialDomMask();maskFinancialDom();return data.session}
-async function logout(){await sb.auth.signOut();window.location.href='index.html'}
+async function logout(){await sb.auth.signOut();window.location.href=window.SIKOYEK_CONFIG.stagingLogin?'../':'index.html'}
 function loadCoreNavDirect(){if(document.getElementById('core-nav-direct-v2-script'))return;const s=document.createElement('script');s.id='core-nav-direct-v2-script';s.src='./core-nav-direct-v2.js?v=1';s.defer=true;document.head.appendChild(s)}
 function loadRBACNav(){if(document.getElementById('rbac-nav-v1-script')){window.applyRBACNav?.();return}const s=document.createElement('script');s.id='rbac-nav-v1-script';s.src='./rbac-nav-v1.js?v=4';s.defer=true;s.onload=()=>window.applyRBACNav?.();document.head.appendChild(s)}
 function loadRBACUiLock(){if(document.getElementById('rbac-ui-loader-v1-script')){window.applyRBACUiLock?.();return}const s=document.createElement('script');s.id='rbac-ui-loader-v1-script';s.src='./rbac-ui-loader-v1.js?v=3';s.defer=true;s.onload=()=>window.applyRBACUiLock?.();document.head.appendChild(s)}
