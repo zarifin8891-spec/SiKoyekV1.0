@@ -13,6 +13,15 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
  const rows=table=>page.evaluate(async table=>(await sb.from(table).select('*')).data,table);
  try{
   await enter('master');assert.equal((await rows('projects')).length,6);check('master seeded dashboard');
+  await page.evaluate(()=>go('master-data'));await page.waitForSelector('.md-grid');
+  const employeeCard=page.locator('.md-card').filter({has:page.getByRole('heading',{name:'Karyawan',exact:true})});
+  await employeeCard.getByRole('button',{name:'+ Tambah',exact:true}).click();
+  await page.fill('#md-employee-code','KRY-001');await page.fill('#md-employee-name','Karyawan Uji');
+  await page.locator('#md-employee-form').getByRole('button',{name:'Simpan',exact:true}).click();
+  await employeeCard.getByText('Karyawan Uji',{exact:true}).waitFor();
+  const employeeId=(await rows('employees')).find(employee=>employee.code==='KRY-001').id;
+  await page.evaluate(()=>go('projects'));
+  check('Data Master saves a reusable employee');
   await page.evaluate(()=>openProjectForm());await page.waitForSelector('#uiFinalNext');await page.click('#uiFinalNext');assert.equal((await rows('projects')).length,6);check('required validation does not save');
   await page.fill('#f_code','PREVIEW-001');await page.fill('#f_name','Proyek Uji Tambah');await page.fill('#f_contract','100000000');await page.click('#uiFinalNext');assert.equal((await rows('projects')).length,6);check('confirmation does not save until final click');await page.click('#uiFinalSave');await page.waitForSelector('#modal',{state:'detached'});
   const id=(await rows('projects')).find(p=>p.project_code==='PREVIEW-001').id;await page.evaluate(id=>openProject(id),id);await page.waitForFunction(()=>state.detail?.project?.project_code==='PREVIEW-001');assert.equal((await rows('projects')).length,7);check('project create through UI persists');
@@ -30,7 +39,7 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   check('milestone save through UI appears on project timeline');
   await page.getByRole('button',{name:'Karyawan',exact:true}).click();
   await page.getByRole('button',{name:'+ Penempatan',exact:true}).click();
-  await page.fill('#staff-name','Karyawan Uji');await page.fill('#staff-role','Pelaksana');
+  await page.selectOption('#staff-employee',employeeId);await page.fill('#staff-role','Pelaksana');
   await page.fill('#staff-start','2026-12-02');await page.fill('#staff-end','2026-12-01');
   await page.locator('#assignment-form').getByRole('button',{name:'Simpan',exact:true}).click();
   await page.getByRole('status').filter({hasText:'Tanggal selesai harus'}).waitFor();
@@ -38,7 +47,21 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   await page.locator('#assignment-form').getByRole('button',{name:'Simpan',exact:true}).click();
   await page.getByRole('row').filter({hasText:'Karyawan Uji'}).waitFor();
   check('staff assignment validates dates and appears in the correct project');
+  await page.evaluate(()=>go('master-data'));
+  await employeeCard.getByRole('button',{name:'Edit',exact:true}).click();
+  await page.fill('#md-employee-name','Karyawan Uji Baru');
+  await page.selectOption('#md-employee-status','inactive');
+  await page.locator('#md-employee-form').getByRole('button',{name:'Simpan',exact:true}).click();
+  await employeeCard.getByText('Karyawan Uji Baru',{exact:true}).waitFor();
+  await page.evaluate(id=>openProject(id),id);
+  await page.getByRole('button',{name:'Karyawan',exact:true}).click();
+  await page.getByRole('row').filter({hasText:'Karyawan Uji Baru'}).waitFor();
+  await page.getByRole('button',{name:'+ Penempatan',exact:true}).click();
+  await page.getByText(/Belum ada karyawan aktif/).waitFor();
+  await page.locator('#modal').getByRole('button',{name:'Tutup',exact:true}).click();
+  check('inactive employee keeps existing placement and cannot be assigned again');
   await page.evaluate(()=>openTxForm());await page.waitForSelector('#tx_amount');await page.selectOption('#tx_type','KELUAR');await page.waitForSelector('#tx_cat option[value="Material"]',{state:'attached'});await page.selectOption('#tx_cat','Material');await page.fill('#tx_amount','12345');await page.fill('#tx_desc','Transaksi Uji');await page.evaluate(()=>saveTx());assert.equal((await rows('financial_transactions')).filter(t=>t.project_id===id).length,1);check('financial transaction save through UI');
+  await page.evaluate(()=>go('dashboard'));await page.waitForSelector('.dashboard-head');
   await page.reload();await page.waitForSelector('.dashboard-head');assert.equal((await rows('projects')).length,7);check('preview mutations survive reload');
   await page.evaluate(id=>openProject(id),id);await page.waitForTimeout(800);assert.equal(await page.getByRole('button',{name:'Edit Proyek',exact:true}).isDisabled(),true);check('project lock after financial history');
   await page.evaluate(()=>go('users'));await page.waitForSelector('.um-grid');await page.evaluate(()=>umAdd());await page.fill('#um_name','User Baru Uji');await page.fill('#um_email','baru@preview.invalid');await page.fill('#um_password','Preview999!');await page.fill('#um_password_confirm','Preview999!');await page.selectOption('#um_role','keuangan');await page.evaluate(()=>umSaveAdd());assert.ok((await rows('profiles')).some(p=>p.email==='baru@preview.invalid'));check('user create invokes isolated preview adapter');
@@ -67,7 +90,7 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   for(const [progress,status] of [[0.01,'AWASI'],[0,'BERISIKO']]){
    await page.evaluate(({progress})=>{state.summary.find(p=>p.project_id===state.selected).project_progress=progress;state.detail.fin=[{transaction_type:'KELUAR',category:'Material',amount:1800000}];setTab('cost')},{progress});await page.waitForSelector('#cost-control-v7');assert.ok((await page.locator('#cost-control-v7').innerText()).includes(status));check('cost V7 deployed Health threshold '+status);
   }
-  await enter('konstruva');assert.equal((await rows('projects')).length,6);check('KONSTRUVA data isolated from MASTER preview');
+  await enter('konstruva');assert.equal((await rows('employees')).length,0);assert.equal((await rows('projects')).length,6);check('KONSTRUVA data isolated from MASTER preview');
   await enter('klien-baru');assert.equal((await rows('projects')).length,6);check('new client uses same source and isolated data');
   for(const role of ['direktur','keuangan','marketing','pelaksana']){await enter('master',role);assert.equal(await page.evaluate(async()=>(await sb.auth.getSession()).data.session.user.email),role+'@preview.invalid');if(role==='pelaksana'){const rejected=await page.evaluate(()=>sb.from('projects').insert({project_code:'DENIED',project_name:'Denied'}));assert.ok(rejected.error);check('preview adapter rejects unauthorized direct write')}check('role '+role+' dashboard');}
   await enter('master','keuangan');
@@ -79,6 +102,11 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   await page.locator('[data-report="progress"]').click();
   await page.getByText(/tidak memiliki izin untuk membuka laporan/).waitFor();
   check('Finance can open Kinerja without seeing restricted Progress');
+  await page.evaluate(()=>go('master-data'));
+  await employeeCard.getByText('Karyawan Uji Baru',{exact:true}).waitFor();
+  assert.equal(await employeeCard.getByRole('button',{name:'+ Tambah',exact:true}).isVisible(),false);
+  assert.equal(await employeeCard.getByRole('button',{name:'Edit',exact:true}).count(),0);
+  check('Finance has read-only access to the employee master');
   await enter('master');await page.evaluate(()=>logout());await page.waitForSelector('#email');await page.waitForTimeout(400);await page.fill('#email','admin@preview.invalid');await page.fill('#password','Preview123!');await page.click('#loginBtn');await page.waitForSelector('.dashboard-head');check('logout and preview credential login');
   await page.goto(origin+'/');await page.selectOption('#tenant','master');await page.click('#reset');await page.selectOption('#role','admin');await page.click('#open');await page.waitForSelector('.dashboard-head');assert.equal((await rows('projects')).length,6);check('reset selected tenant restores seed');
   await page.goto(origin+'/');await page.setViewportSize({width:390,height:844});assert.ok(await page.locator('#open').isVisible());await page.screenshot({path:path.join(path.dirname(output),'preview-portal.png'),fullPage:true});check('mobile preview portal');

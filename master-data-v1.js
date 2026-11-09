@@ -10,11 +10,97 @@
   async function managers(){const {data,error}=await db().from('project_managers').select('id,name,code,phone,email,sort_order,is_active').order('sort_order').order('name');if(error)throw error;return data||[]}
   function navButton(){const nav=document.querySelector('.sidebar .nav');if(!nav||nav.querySelector('[data-master-data-nav]'))return;const b=document.createElement('button');b.type='button';b.dataset.masterDataNav='1';b.textContent='Master Data';b.onclick=openMasterData;nav.appendChild(b)}
   function cleanProjectCategoryControl(){document.querySelectorAll('.category-tools,.step1-category-tools,[data-p6-cat-master]').forEach(x=>(x.closest?.('.category-tools,.step1-category-tools')||x).remove())}
-  const mdCard=(cls,title,desc,fn)=>`<section class="card md-card"><div class="md-card-head"><div><h2>${title}</h2><p>${desc}</p></div><button class="btn primary" type="button" onclick="${fn}">+ Tambah</button></div><div id="${cls}" class="md-table-wrap"><div class="empty">Memuat...</div></div></section>`;
-  function masterHTML(){return `<div class="md-page"><div class="md-top"><div><h1>Master Data</h1><p>Kelola data referensi untuk Project dan Keuangan.</p></div><button class="btn ghost" type="button" onclick="go('projects')">← Kembali ke Project</button></div><div class="md-grid">${mdCard('md-project-cats',defs.project.title,defs.project.desc,'mdAddProjectCategory()')}${mdCard('md-managers','Project Manager','Daftar Project Manager aktif.','mdAddManager()')}${mdCard('md-finance-cats',defs.finance.title,defs.finance.desc,'mdAddFinanceCategory()')}${mdCard('md-payment-methods',defs.payment.title,defs.payment.desc,'mdAddPaymentMethod()')}</div></div>`}
+  const mdCard=(cls,title,desc,fn)=>`<section class="card md-card"><div class="md-card-head"><div><h2>${title}</h2><p>${desc}</p></div>${fn?`<button class="btn primary" type="button" onclick="${fn}">+ Tambah</button>`:''}</div><div id="${cls}" class="md-table-wrap"><div class="empty">Memuat...</div></div></section>`;
+  function masterHTML(){return `<div class="md-page"><div class="md-top"><div><h1>Master Data</h1><p>Kelola data referensi untuk Project dan Keuangan.</p></div><button class="btn ghost" type="button" onclick="go('projects')">← Kembali ke Project</button></div><div class="md-grid">${mdCard('md-project-cats',defs.project.title,defs.project.desc,'mdAddProjectCategory()')}${mdCard('md-managers','Project Manager','Daftar Project Manager aktif.','mdAddManager()')}${mdCard('md-finance-cats',defs.finance.title,defs.finance.desc,'mdAddFinanceCategory()')}${mdCard('md-payment-methods',defs.payment.title,defs.payment.desc,'mdAddPaymentMethod()')}${mdCard('md-employees','Karyawan','Daftar personel untuk penempatan proyek.')}</div></div>`}
   function renderList(elId,rows,editFn,deleteFn){const w=q(elId);if(!w)return;w.innerHTML=rows.map(x=>`<div class="md-row"><div><strong>${esc(x.name)}</strong><small>Urutan ${Number(x.sort_order||0)}</small></div><span class="md-status ${x.is_active?'on':'off'}">${x.is_active?'AKTIF':'NONAKTIF'}</span><div class="md-actions"><button type="button" class="btn ghost" style="font-size:13px;padding:8px 12px" onclick="${editFn}('${x.id}')">Edit</button><button type="button" class="btn danger" style="font-size:13px;padding:8px 12px" onclick="${deleteFn}('${x.id}','${esc(x.name)}')">Hapus</button></div></div>`).join('')||'<div class="empty">Belum ada data.</div>'}
   function renderManagerList(rows,editFn,deleteFn){const w=q('md-managers');if(!w)return;w.innerHTML=rows.map(x=>`<div class="md-row md-manager-row"><div class="md-manager-order">Urutan ${Number(x.sort_order||0)}</div><div class="md-manager-code">${esc(x.code||'-')}</div><div class="md-manager-name"><strong>${esc(x.name)}</strong></div><span class="md-status ${x.is_active?'on':'off'}">${x.is_active?'AKTIF':'NONAKTIF'}</span><div class="md-actions"><button type="button" class="btn ghost" style="font-size:13px;padding:8px 12px" onclick="${editFn}('${x.id}')">Edit</button><button type="button" class="btn danger" style="font-size:13px;padding:8px 12px" onclick="${deleteFn}('${x.id}','${esc(x.name)}')">Hapus</button></div></div>`).join('')||'<div class="empty">Belum ada data.</div>'}
-  async function refresh(){try{const [pc,pm,fc,pay]=await Promise.all([list('project_categories'),managers(),list('transaction_categories'),list('payment_methods')]);renderList('md-project-cats',pc,'mdEditProjectCategory','mdDeleteProjectCategory');renderManagerList(pm,'mdEditManager','mdDeleteManager');renderList('md-finance-cats',fc,'mdEditFinanceCategory','mdDeleteFinanceCategory');renderList('md-payment-methods',pay,'mdEditPaymentMethod','mdDeletePaymentMethod')}catch(e){toast(e?.message||'Gagal memuat Master Data')}}
+  async function refresh(){refreshEmployees();try{const [pc,pm,fc,pay]=await Promise.all([list('project_categories'),managers(),list('transaction_categories'),list('payment_methods')]);renderList('md-project-cats',pc,'mdEditProjectCategory','mdDeleteProjectCategory');renderManagerList(pm,'mdEditManager','mdDeleteManager');renderList('md-finance-cats',fc,'mdEditFinanceCategory','mdDeleteFinanceCategory');renderList('md-payment-methods',pay,'mdEditPaymentMethod','mdDeletePaymentMethod')}catch(e){toast(e?.message||'Gagal memuat Master Data')}}
+  async function refreshEmployees(){
+    const list=q('md-employees');
+    if(!list)return;
+    const card=list.closest('.md-card');
+    const header=card.querySelector('.md-card-head');
+    try{
+      const access=await window.SiKoyekDataAccess.resolve(db());
+      if(!list.isConnected)return;
+      if(!access.masterData){card.remove();return}
+      const {data,error}=await db().from('employees').select('id,code,name,is_active').order('name').order('code');
+      if(error)throw error;
+      if(!list.isConnected)return;
+      const add=header.querySelector('button');
+      if(!access.masterAdd)add?.remove();
+      else if(!add){
+        const button=document.createElement('button');
+        button.className='btn primary';
+        button.type='button';
+        button.textContent='+ Tambah';
+        button.onclick=()=>window.mdEditEmployee();
+        header.appendChild(button);
+      }
+      list.innerHTML=(data||[]).map(row=>`<div class="md-row"><div><strong>${esc(row.name)}</strong><small>${esc(row.code)}</small></div>
+        <span class="md-status ${row.is_active?'on':'off'}">${row.is_active?'AKTIF':'NONAKTIF'}</span>
+        ${access.masterEdit?`<div class="md-actions"><button class="btn ghost" type="button" data-edit-employee="${esc(row.id)}">Edit</button></div>`:''}</div>`).join('')||'<div class="empty">Belum ada karyawan.</div>';
+      list.onclick=event=>{
+        const button=event.target.closest('[data-edit-employee]');
+        const row=button&&data.find(employee=>employee.id===button.dataset.editEmployee);
+        if(row)window.mdEditEmployee(row);
+      };
+    }catch(_){
+      if(list.isConnected)list.innerHTML='<div class="empty">Data karyawan belum tersedia atau gagal dimuat.</div>';
+    }
+  }
+
+  window.mdEditEmployee=function(employee){
+    const title=employee?'Edit Karyawan':'Tambah Karyawan';
+    const markup=`<form id="md-employee-form">
+      <div class="field"><label for="md-employee-code">Kode karyawan *</label><input id="md-employee-code" name="code" maxlength="50" required value="${esc(employee?.code)}"></div>
+      <div class="field"><label for="md-employee-name">Nama karyawan *</label><input id="md-employee-name" name="name" maxlength="120" required value="${esc(employee?.name)}"></div>
+      <div class="field"><label for="md-employee-status">Status</label><select id="md-employee-status" name="status"><option value="active">Aktif</option><option value="inactive" ${employee?.is_active===false?'selected':''}>Nonaktif</option></select></div>
+      <p class="note" role="status"></p>
+      <div class="formactions"><button class="btn ghost" type="button" data-employee-cancel>Batal</button><button class="btn primary" type="submit">Simpan</button></div>
+      </form>`;
+    let close=window.closeModal;
+    if(typeof window.modal==='function')window.modal(title,markup);
+    else{
+      const dialog=document.createElement('dialog');
+      dialog.className='md-employee-dialog';
+      dialog.setAttribute('aria-labelledby','md-employee-title');
+      dialog.innerHTML=`<h2 id="md-employee-title">${title}</h2>${markup}`;
+      document.body.appendChild(dialog);
+      dialog.addEventListener('close',()=>dialog.remove(),{once:true});
+      dialog.showModal();
+      close=()=>dialog.close();
+    }
+    const form=q('md-employee-form'),status=form.querySelector('[role="status"]');
+    const controls=[...form.querySelectorAll('button'),form.closest('.modalbox')?.querySelector('.modalhead button')].filter(Boolean);
+    let saving=false;
+    form.querySelector('[data-employee-cancel]').addEventListener('click',close);
+    form.closest('dialog')?.addEventListener('cancel',event=>{if(saving)event.preventDefault()});
+    form.addEventListener('submit',async event=>{
+      event.preventDefault();
+      if(saving)return;
+      const values=new FormData(form);
+      const row={code:values.get('code').trim(),name:values.get('name').trim(),is_active:values.get('status')==='active'};
+      if(!row.code||!row.name){status.textContent='Kode dan nama karyawan wajib diisi.';return}
+      saving=true;
+      controls.forEach(button=>{button.disabled=true});
+      status.textContent='Menyimpan…';
+      try{
+        const table=db().from('employees');
+        const result=await (employee?table.update(row).eq('id',employee.id):table.insert(row)).select('id').maybeSingle();
+        if(result.error?.code==='23505'){status.textContent='Kode karyawan sudah digunakan.';return}
+        if(result.error||!result.data)throw new Error('Gagal menyimpan');
+        if(form.isConnected)close();
+        refreshEmployees();
+      }catch(_){
+        status.textContent='Data karyawan gagal disimpan. Periksa izin atau coba lagi.';
+      }finally{
+        saving=false;
+        controls.forEach(button=>{button.disabled=false});
+      }
+    });
+  };
+
   function openMasterData(){state.page='master-data';state.selected=null;state.detail=null;const page=q('page');if(page){page.innerHTML=masterHTML();refresh()}document.querySelectorAll('.sidebar .nav button').forEach(b=>b.classList.remove('active'));document.querySelector('[data-master-data-nav]')?.classList.add('active');cleanProjectCategoryControl()}
   window.openMasterData=openMasterData;
   window.mdAddProjectCategory=function(){modal('Tambah Kategori Proyek',`<div class="field"><label>Nama Kategori *</label><input id="md_name"></div><div class="field"><label>Urutan</label><input id="md_sort" type="number" value="1"></div><div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn primary" onclick="mdSaveProjectCategory()">Simpan</button></div>`)};

@@ -35,7 +35,7 @@
     loadRows(client, projectId, tableName, fields, 'target_date', 'Milestone');
 
   const loadAssignments = (client, projectId) =>
-    loadRows(client, projectId, assignmentsTable, 'id,employee_name,assignment_role,start_date,end_date', 'start_date', 'Penempatan');
+    loadRows(client, projectId, assignmentsTable, 'id,employee_id,assignment_role,start_date,end_date,employees(name,code,is_active)', 'start_date', 'Penempatan');
 
   function timeline(detail, showProgress) {
     const { project, items = [], progress = [], milestones } = detail;
@@ -114,7 +114,7 @@
     const heading = `<div class="sectiontitle"><h2>Penempatan Karyawan</h2>${add}</div>`;
     if (assignments.error) return heading + `<p class="empty">${esc(assignments.error)}</p>`;
     const rows = assignments.rows.map(assignment =>
-      `<tr><td>${esc(assignment.employee_name)}</td><td>${esc(assignment.assignment_role)}</td>
+      `<tr><td>${esc(assignment.employees?.name || '—')}</td><td>${esc(assignment.assignment_role)}</td>
         <td>${date(assignment.start_date)}</td><td>${date(assignment.end_date)}</td>
         ${canEdit ? `<td><button type="button" class="btn ghost" data-assignment-action="edit" data-id="${esc(assignment.id)}">Edit</button></td>` : ''}
       </tr>`);
@@ -132,11 +132,30 @@
       </div>`;
   }
 
-  function openAssignmentEditor({ client, projectId, point, modal, closeModal, onSaved }) {
+  async function openAssignmentEditor({ client, projectId, point, modal, closeModal, onSaved, isCurrent }) {
+    let employees = [];
+    if (!point) {
+      const { data, error } = await client.from('employees').select('id,name,code')
+        .eq('is_active', true).order('name').order('code');
+      if (!isCurrent() || document.getElementById('modal')) return;
+      if (error || !data?.length) {
+        modal('Tempatkan Karyawan', `<p class="empty">${error
+          ? 'Daftar karyawan gagal dimuat.'
+          : 'Belum ada karyawan aktif. Tambahkan atau aktifkan karyawan di Data Master.'}</p>`);
+        return;
+      }
+      employees = data;
+    }
+    const employeeField = point
+      ? `<p class="note">Karyawan: ${esc(point.employees?.name || '—')}</p>`
+      : `<div class="field"><label for="staff-employee">Karyawan *</label>
+          <select id="staff-employee" name="employee_id" required>
+            <option value="">Pilih karyawan</option>
+            ${employees.map(employee => `<option value="${esc(employee.id)}">${esc(employee.name)} (${esc(employee.code)})</option>`).join('')}
+          </select></div>`;
     modal(point ? 'Edit Penempatan' : 'Tempatkan Karyawan', `
       <form id="assignment-form">
-        <div class="field"><label for="staff-name">Nama karyawan *</label>
-          <input id="staff-name" name="employee_name" maxlength="120" required value="${esc(point?.employee_name)}"></div>
+        ${employeeField}
         <div class="field"><label for="staff-role">Peran di proyek *</label>
           <input id="staff-role" name="assignment_role" maxlength="100" required value="${esc(point?.assignment_role)}"></div>
         <div class="formgrid">
@@ -149,12 +168,12 @@
       </form>`);
     bindEditor('assignment-form', client, assignmentsTable, projectId, point, closeModal, onSaved, 'Hapus penempatan ini?', input => {
       const row = {
-        employee_name: input.employee_name.trim(),
+        ...(!point ? { employee_id: input.employee_id } : {}),
         assignment_role: input.assignment_role.trim(),
         start_date: input.start_date,
         end_date: input.end_date || null
       };
-      if (!row.employee_name || !row.assignment_role) return 'Nama dan peran karyawan wajib diisi.';
+      if (!row.assignment_role) return 'Peran karyawan wajib diisi.';
       if (row.end_date && row.end_date < row.start_date) return 'Tanggal selesai harus pada atau setelah tanggal mulai.';
       return row;
     });

@@ -25,7 +25,7 @@
 <script src="./foundation/runtime.js"></script>
 <script src="./foundation/backend.js"></script>
 <script src="./foundation/repository.js"></script>
-<script src="./foundation/data-access.js?v=3"></script>
+<script src="./foundation/data-access.js?v=4"></script>
 <script src="./project-plan.js"></script>
 </head>
 <body><div id="app"></div><script>
@@ -103,6 +103,7 @@ document.addEventListener('click',event=>{
  if(action==='edit'&&!point)return;
  open({
    client:sb,projectId,point,modal,closeModal,
+   isCurrent:()=>state.page==='detail'&&state.selected===projectId&&state.detailTab===tab,
    onSaved:async()=>{
      if(state.selected!==projectId)return;
      const rows=await load(sb,projectId);
@@ -110,7 +111,7 @@ document.addEventListener('click',event=>{
      state.detail[tab]=rows;
      renderPage();
    }
- });
+ })?.catch(()=>toast('Daftar karyawan gagal dimuat.'));
 });
 function overview(d,s){return `<div class="twocol"><div class="card kpi"><div class="sectiontitle"><h2>Progress</h2></div><div style="font-size:34px;font-weight:850">${pct(s?.project_progress)}</div><div class="bar" style="margin-top:12px"><i style="width:${Math.min(100,Number(s?.project_progress||0))}%"></i></div><div class="note">Progress dihitung dari bobot Item Pekerjaan.</div></div><div class="card kpi"><div class="sectiontitle"><h2>Biaya</h2></div><div class="note">Cost Ratio</div><div style="font-size:25px;font-weight:850">${pct(s?.cost_ratio)}</div><div class="note">RAP Consumption</div><div style="font-size:25px;font-weight:850">${pct(s?.rap_consumption)}</div></div></div><div class="section"><div class="card kpi"><div class="sectiontitle"><h2>Informasi Proyek</h2></div><div class="twocol"><div><div class="note">Pemilik</div><strong>${esc(d.project.owner_name||'-')}</strong></div><div><div class="note">Project Manager</div><strong>${esc(d.project.project_manager||'-')}</strong></div><div><div class="note">Mulai</div><strong>${esc(d.project.start_date||'-')}</strong></div><div><div class="note">Target Selesai</div><strong>${esc(d.project.end_date||'-')}</strong></div></div></div></div>`}
 function workitems(d){return `<div class="sectiontitle"><h2>${d.items.length} Item Pekerjaan</h2><button class="btn primary" onclick="openItemForm()">+ Tambah</button></div><div class="card tablecard"><div class="scroll"><table class="table"><thead><tr><th>No</th><th>Item Pekerjaan</th><th>Bobot</th><th>Urutan</th></tr></thead><tbody>${d.items.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.work_name)}</td><td>${pct(Number(x.weight||0)*100)}</td><td>${x.sort_order}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Belum ada item pekerjaan.</td></tr>'}</tbody></table></div></div>`}
@@ -146,7 +147,7 @@ boot();
 <script src="./ui-form-step1.js?v=2"></script>
 <script src="./ui-form-pass7.js?v=1"></script>
 <script src="./ui-form-pass8.js?v=1"></script>
-<script src="./master-data-v1.js?v=1"></script>
+<script src="./master-data-v1.js?v=7"></script>
 <script src="./master-data-compact-runtime-v8.js?v=8" defer></script><script src="./foundation/master-modal.js"></script><script src="./foundation/master-data-save-fix.js"></script>
 </body>
 </html>

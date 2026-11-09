@@ -13,6 +13,14 @@
     if(!state?.tables){state={tables:global.SiKoyekPreviewSeed(),passwords:{}};save()}
     state.tables.project_milestones ||= [];
     state.tables.project_staff_assignments ||= [];
+    state.tables.employees ||= [];
+    const legacyAssignments=state.tables.project_staff_assignments.filter(row=>!row.employee_id&&row.employee_name);
+    for(const row of legacyAssignments){
+      state.tables.employees.push({id:row.id,code:'LAMA-'+row.id,name:row.employee_name,is_active:true});
+      row.employee_id=row.id;
+      delete row.employee_name;
+    }
+    if(legacyAssignments.length)save();
     if(!sessionStorage.getItem(sessionKey)&&sessionStorage.getItem('sikoyek-preview-role-'+config.id)&&!sessionStorage.getItem(sessionKey+'-out')){
       const role=sessionStorage.getItem('sikoyek-preview-role-'+config.id),profile=state.tables.profiles.find(p=>p.role_id===role&&p.is_active);
       if(profile)setSession(profile);
@@ -27,7 +35,13 @@
   }
   function profile(){const current=session();return state.tables.profiles.find(p=>p.id===current?.user.id&&p.is_active)}
   function can(table,action){
-    const who=profile();if(!who||!state.tables.roles.some(r=>r.id===who.role_id&&r.is_active))return false;if(who.role_id==='admin')return true;
+    const who=profile();if(!who||!state.tables.roles.some(r=>r.id===who.role_id&&r.is_active))return false;
+    if(table==='employees'&&action==='DELETE')return false;
+    if(who.role_id==='admin')return true;
+    if(table==='employees'){
+      const permission=operation=>state.tables.role_permissions.some(link=>link.role_id===who.role_id&&state.tables.permissions.some(p=>p.id===link.permission_id&&p.module==='MASTER_DATA'&&p.action===operation));
+      return action==='VIEW'?permission('VIEW')||can('projects','VIEW'):permission('VIEW')&&permission(action);
+    }
     if(['project_milestones','project_staff_assignments'].includes(table))return can('projects','VIEW')&&(action==='VIEW'||can('projects','EDIT'));
     const module=({projects:'PROJECTS',project_work_items:'PROJECTS',progress_records:'PROGRESS',project_rap:'RAP',financial_transactions:'KEUANGAN',project_categories:'MASTER_DATA',project_managers:'MASTER_DATA',transaction_categories:'MASTER_DATA',payment_methods:'MASTER_DATA'})[table];
     if(!module)return action==='VIEW';
@@ -56,7 +70,7 @@
     const spec={op:'select',filters:[],orders:[],head:false,one:false,maybe:false,limit:null,range:null};let pending;
     const matches=row=>spec.filters.every(([op,k,v])=>op==='eq'?row[k]===v:op==='neq'?row[k]!==v:op==='in'?v.includes(row[k]):op==='gte'?row[k]>=v:op==='lte'?row[k]<=v:op==='is'?row[k]===v:false);
     const builder={
-      select(cols='*',options={}){spec.head=Boolean(options.head);return builder},
+      select(cols='*',options={}){spec.columns=cols;spec.head=Boolean(options.head);return builder},
       eq(k,v){spec.filters.push(['eq',k,v]);return builder},neq(k,v){spec.filters.push(['neq',k,v]);return builder},in(k,v){spec.filters.push(['in',k,v]);return builder},gte(k,v){spec.filters.push(['gte',k,v]);return builder},lte(k,v){spec.filters.push(['lte',k,v]);return builder},is(k,v){spec.filters.push(['is',k,v]);return builder},
       order(k,options={}){spec.orders.push([k,options.ascending!==false]);return builder},limit(n){spec.limit=n;return builder},range(start,end){spec.range=[start,end];return builder},
       single(){spec.one=true;return builder},maybeSingle(){spec.one=true;spec.maybe=true;return builder},
@@ -73,6 +87,8 @@
         if(table==='project_summary')return error('Ringkasan hanya boleh dibaca');
         if(['insert','upsert'].includes(spec.op)){
           const input=Array.isArray(spec.value)?spec.value:[spec.value];
+          if(table==='project_staff_assignments'&&input.some(value=>!state.tables.employees.some(row=>row.id===value.employee_id&&row.is_active)))return error('Karyawan harus aktif untuk penempatan baru');
+          if(table==='employees'&&input.some(value=>source.some(row=>row.code.trim().toLowerCase()===value.code.trim().toLowerCase())))return {data:null,error:{code:'23505',message:'Kode karyawan sudah digunakan'},count:null};
           if(table==='projects'&&input.some(value=>source.some(p=>p.project_code===value.project_code&&p.id!==value.id)))return {data:null,error:{code:'23505',message:'Kode proyek sudah digunakan'},count:null};
           rows=input.map(value=>{
             const existing=spec.op==='upsert'?source.find(r=>spec.conflict.split(',').every(k=>r[k]===value[k])):null;
@@ -81,6 +97,8 @@
           });
         }else if(spec.op==='update'){
           if(table==='projects'&&spec.value.project_code&&source.some(p=>!matches(p)&&p.project_code===spec.value.project_code))return {data:null,error:{code:'23505',message:'Kode proyek sudah digunakan'},count:null};
+          if(table==='employees'&&spec.value.code&&source.some(row=>!matches(row)&&row.code.trim().toLowerCase()===spec.value.code.trim().toLowerCase()))return {data:null,error:{code:'23505',message:'Kode karyawan sudah digunakan'},count:null};
+          if(table==='project_staff_assignments'&&Object.hasOwn(spec.value,'employee_id'))return error('Karyawan pada penempatan tersimpan tidak bisa diganti');
           rows.forEach(row=>Object.assign(row,spec.value));
         }else{
           state.tables[table]=source.filter(row=>!matches(row));
@@ -89,6 +107,10 @@
         if(table==='progress_records'||table==='project_work_items')for(const id of new Set(rows.map(r=>r.project_id)))syncProgress(id);
         save();
       }
+      if(table==='project_staff_assignments'&&spec.columns?.includes('employees('))rows=rows.map(row=>{
+        const employee=state.tables.employees.find(person=>person.id===row.employee_id);
+        return {...row,employees:employee?{name:employee.name,code:employee.code,is_active:employee.is_active}:null};
+      });
       if(table==='profiles')rows=rows.map(p=>({...p,roles:state.tables.roles.find(r=>r.id===p.role_id)||null}));
       for(const [key,asc] of [...spec.orders].reverse())rows.sort((a,b)=>(a[key]>b[key]?1:a[key]<b[key]?-1:0)*(asc?1:-1));
       const count=rows.length;if(spec.range)rows=rows.slice(spec.range[0],spec.range[1]+1);if(spec.limit!==null)rows=rows.slice(0,spec.limit);

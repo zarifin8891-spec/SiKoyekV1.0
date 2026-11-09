@@ -6,7 +6,7 @@
   'use strict';
   const SAFE_PROJECT_COLUMNS='id,project_code,project_name,project_date,start_date,end_date,status,owner_name,location,project_manager,category';
   const canonical=s=>{const x=String(s||'').trim().toUpperCase();return x==='FINANCE'?'KEUANGAN':x};
-  const denied=()=>({projects:false,projectEdit:false,finance:false,rap:false,progress:false,full:false,users:false});
+  const denied=()=>({projects:false,projectEdit:false,masterData:false,masterAdd:false,masterEdit:false,finance:false,rap:false,progress:false,full:false,users:false});
   async function resolve(client){
     try{
       const {data:{user},error:ue}=await client.auth.getUser();
@@ -28,8 +28,8 @@
         String(p.action||'').toUpperCase()===action
       );
       const projects=can('PROJECTS'),finance=can('KEUANGAN'),rap=can('RAP'),
-        progress=can('PROGRESS'),users=can('USERS');
-      return {projects,projectEdit:projects&&can('PROJECTS','EDIT'),finance,rap,progress,users,full:projects&&finance&&rap&&progress};
+        progress=can('PROGRESS'),users=can('USERS'),masterData=can('MASTER_DATA');
+      return {projects,projectEdit:projects&&can('PROJECTS','EDIT'),masterData,masterAdd:masterData&&can('MASTER_DATA','ADD'),masterEdit:masterData&&can('MASTER_DATA','EDIT'),finance,rap,progress,users,full:projects&&finance&&rap&&progress};
     }catch(e){
       console.warn('SiKoyek data-access permission resolution failed',e);
       return denied();

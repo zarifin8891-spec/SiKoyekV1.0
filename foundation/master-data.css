@@ -24,3 +24,11 @@
 .secondary-page .md-card{border-radius:16px}
 .secondary-page .um-page{gap:18px}
 @media(max-width:780px){.secondary-page .shell{grid-template-columns:1fr}.secondary-page .sidebar{position:sticky;top:0;z-index:5;flex-direction:row;align-items:center;padding:10px}.secondary-page .sidebrand{padding:0 10px}.secondary-page .nav{display:flex;overflow:auto}.secondary-page .content{padding:17px}.secondary-page .content>.top{flex-direction:column}.secondary-page .locked-actions{width:100%}.secondary-page .locked-userinfo{flex:1}}
+
+.md-employee-dialog{width:min(480px,calc(100% - 32px));border:1px solid var(--line,#dbe4ed);border-radius:14px;padding:20px;box-sizing:border-box}
+.md-employee-dialog::backdrop{background:rgba(15,23,42,.45)}
+.md-employee-dialog h2{margin:0 0 16px}
+.md-employee-dialog .field{margin-bottom:12px}
+.md-employee-dialog label{display:block;margin-bottom:4px}
+.md-employee-dialog input,.md-employee-dialog select{width:100%;box-sizing:border-box}
+.md-employee-dialog .formactions{display:flex;justify-content:flex-end;gap:8px}
