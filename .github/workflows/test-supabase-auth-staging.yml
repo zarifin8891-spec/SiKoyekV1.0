@@ -1,8 +1,8 @@
 name: Test SiKoyek with local Supabase Auth
 
 on:
-  push:
-    branches: [security/hardening-v1-staging-20261108]
+  pull_request:
+    branches: [main]
     paths:
       - '.github/workflows/test-supabase-auth-staging.yml'
       - 'tests/security/supabase-auth-staging.mjs'
@@ -15,6 +15,7 @@ permissions:
 
 jobs:
   auth-staging:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'security/hardening-v1-staging-20261108'
     name: Auth and Edge (${{ matrix.tenant }} fixture)
     runs-on: ubuntu-latest
     timeout-minutes: 18

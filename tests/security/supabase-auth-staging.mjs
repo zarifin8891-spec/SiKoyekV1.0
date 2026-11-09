@@ -104,6 +104,16 @@ for (const [role, account] of Object.entries(accounts)) {
 }
 console.log(tenant + ' PASS real password login, refresh rotation, Edge authorization and RLS for five roles');
 
+// A second Admin proves that suspension defeats a JWT that previously passed the Edge check.
+const secondAdminEmail = 'second-admin-' + randomUUID() + '@' + domain;
+const secondAdmin = expectStatus(await edgeCall(adminToken, {
+  action: 'create', email: secondAdminEmail, password, role_id: roleIds.ADMIN, full_name: 'Second staging Admin',
+}), 200, 'create second Admin');
+const secondAdminSession = expectStatus(await login(secondAdminEmail), 200, 'second Admin sign-in');
+expectStatus(await edgeCall(secondAdminSession.access_token, { action: 'update', id: secondAdmin.user_id, full_name: 'Active Admin' }), 200, 'active second Admin can use Edge');
+expectStatus(await edgeCall(adminToken, { action: 'update', id: secondAdmin.user_id, is_active: false }), 200, 'suspend second Admin');
+expectStatus(await edgeCall(secondAdminSession.access_token, { action: 'update', id: secondAdmin.user_id, full_name: 'Denied' }), 403, 'suspended Admin cannot use Edge with previous JWT');
+
 const target = accounts.MARKETING;
 const oldTargetToken = target.session.access_token;
 expectStatus(await edgeCall(adminToken, {
