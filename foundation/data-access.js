@@ -35,6 +35,19 @@
       return denied();
     }
   }
+  async function loadStaffCounts(client, access){
+    if(!access?.projects)return null;
+    try{
+      const {data,error}=await client.rpc('sikoyek_project_staff_headcount');
+      return !error && Number.isSafeInteger(data?.total) && data.projects ? data : null;
+    }catch(_){
+      return null;
+    }
+  }
+  function staffCount(counts, projectId){
+    const value=projectId==null?counts?.total:counts?counts.projects[projectId]??0:null;
+    return Number.isSafeInteger(value)?value:'—';
+  }
   async function loadSummary(client,access){
     access=access||await resolve(client);
     if(!access.projects)return {summary:[],access};
@@ -117,5 +130,5 @@
       progress:progressRows.data||[],transactions:transactions.data||[]};
   }
 
-  window.SiKoyekDataAccess={resolve,loadSummary,loadDetail,loadReport};
+  window.SiKoyekDataAccess={resolve,loadSummary,loadDetail,loadReport,loadStaffCounts,staffCount};
 })();

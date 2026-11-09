@@ -81,6 +81,23 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   await employeeForm.getByRole('status').filter({hasText:'Akhiri periode penempatan'}).waitFor();
   await employeeForm.getByRole('button',{name:'Batal',exact:true}).click();
   check('only an explicit employee exception permits overlapping projects');
+  const todayWib=await page.evaluate(()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()));
+  for(const projectId of ['p0',id]){
+    await openStaff(projectId);
+    await page.getByRole('button',{name:'+ Penempatan',exact:true}).click();
+    await page.selectOption('#staff-employee',employeeId);await page.fill('#staff-role','Pengawas Hari Ini');
+    await page.fill('#staff-start',todayWib);await page.fill('#staff-end',todayWib);await saveAssignment();
+    await assignment.waitFor({state:'detached'});
+    assert.equal(await page.locator('[data-staff-detail]').textContent(),'1');
+  }
+  await page.evaluate(()=>go('dashboard'));
+  await page.locator('[data-staff-total]').waitFor();
+  assert.equal(await page.locator('[data-staff-total]').textContent(),'1');
+  await page.evaluate(()=>go('projects'));
+  await page.locator('[data-staff-count]').first().waitFor();
+  assert.equal(await page.getByRole('row').filter({hasText:'PREVIEW-001'}).locator('[data-staff-count]').textContent(),'1');
+  assert.equal((await page.locator('[data-staff-count]').allTextContents()).filter(value=>value==='1').length,2);
+  check('Dashboard counts one person across two projects, while each project counts one');
   await page.evaluate(()=>go('master-data'));
   await employeeCard.getByRole('button',{name:'Edit',exact:true}).click();
   await page.fill('#md-employee-name','Karyawan Uji Baru');
@@ -89,7 +106,8 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   await employeeCard.getByText('Karyawan Uji Baru',{exact:true}).waitFor();
   await page.evaluate(id=>openProject(id),id);
   await page.getByRole('button',{name:'Karyawan',exact:true}).click();
-  await page.getByRole('row').filter({hasText:'Karyawan Uji Baru'}).waitFor();
+  await page.getByRole('row').filter({hasText:'Karyawan Uji Baru'}).first().waitFor();
+  assert.equal(await page.locator('[data-staff-detail]').textContent(),'0');
   await page.getByRole('button',{name:'+ Penempatan',exact:true}).click();
   await page.getByText(/Belum ada karyawan aktif/).waitFor();
   await page.locator('#modal').getByRole('button',{name:'Tutup',exact:true}).click();

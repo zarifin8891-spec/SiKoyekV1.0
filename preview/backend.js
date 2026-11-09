@@ -150,6 +150,19 @@
     if(!allowed('projects'))return error('Akses proyek ditolak');
     const projects=state.tables.projects;
     const result=data=>({data:clone(data),error:null});
+    if(name==='sikoyek_project_staff_headcount'){
+      const day=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+      const active=new Set(state.tables.employees.filter(employee=>employee.is_active).map(employee=>employee.id));
+      const visibleProjects=new Set(projects.map(project=>project.id));
+      const total=new Set(),byProject=new Map();
+      for(const row of state.tables.project_staff_assignments){
+        if(!active.has(row.employee_id)||!visibleProjects.has(row.project_id)||row.start_date>day||(row.end_date&&row.end_date<day))continue;
+        total.add(row.employee_id);
+        if(!byProject.has(row.project_id))byProject.set(row.project_id,new Set());
+        byProject.get(row.project_id).add(row.employee_id);
+      }
+      return result({total:total.size,projects:Object.fromEntries([...byProject].map(([id,employees])=>[id,employees.size]))});
+    }
     if(name==='sikoyek_secure_project_lifecycle'){
       if(!allowed('projects','EDIT')&&!allowed('projects','DELETE'))return error('Akses lifecycle ditolak');
       if(!Array.isArray(args.p_project_ids)||args.p_project_ids.length>100)return error('Daftar proyek tidak valid');

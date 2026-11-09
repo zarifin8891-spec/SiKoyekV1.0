@@ -21,14 +21,13 @@
       .projects-page-table-v2.table td{padding:5px 10px!important;line-height:1.1!important}
 
       .projects-page-table-v2.table th:nth-child(1),.projects-page-table-v2.table td:nth-child(1){width:7%!important}
-      .projects-page-table-v2.table th:nth-child(2),.projects-page-table-v2.table td:nth-child(2){width:27%!important}
+      .projects-page-table-v2.table th:nth-child(2),.projects-page-table-v2.table td:nth-child(2){width:19%!important}
       .projects-page-table-v2.table th:nth-child(3),.projects-page-table-v2.table td:nth-child(3){width:10%!important}
       .projects-page-table-v2.table th:nth-child(4),.projects-page-table-v2.table td:nth-child(4){width:10%!important}
       .projects-page-table-v2.table th:nth-child(5),.projects-page-table-v2.table td:nth-child(5){width:9%!important}
       .projects-page-table-v2.table th:nth-child(6),.projects-page-table-v2.table td:nth-child(6){width:8%!important}
       .projects-page-table-v2.table th:nth-child(7),.projects-page-table-v2.table td:nth-child(7){width:9%!important}
       .projects-page-table-v2.table th:nth-child(8),.projects-page-table-v2.table td:nth-child(8){width:10%!important}
-      .projects-page-table-v2.table th:nth-child(9),.projects-page-table-v2.table td:nth-child(9){width:10%!important}
 
       .projects-page-table-v2.table th:nth-child(6),
       .projects-page-table-v2.table th:nth-child(7){white-space:normal!important;line-height:1.02!important;text-align:left!important}
@@ -48,6 +47,8 @@
       }
       .projects-page-table-v2.table .p5-lock-note{display:none!important}
       .projects-page-table-v2.table th:last-child,.projects-page-table-v2.table td:last-child{text-align:center!important}
+
+      .projects-page-table-v2.table th[data-staff-column],.projects-page-table-v2.table td[data-staff-count]{width:8%!important;text-align:right!important}
 
       @media(max-width:1100px){
         .projects-page-table-v2.table{min-width:1050px!important}
