@@ -22,7 +22,7 @@
         reason='RAP Consumption jauh melampaui Progress.';
         action='Periksa pemakaian RAP dan identifikasi item pekerjaan yang mengonsumsi RAP paling cepat.';
       }
-    }else if(status==='PERLU PENGAWASAN'){
+    }else if(status==='PERLU PENGAWASAN'||status==='AWASI'){
       priority='SEDANG';
       if(progress<=0.01 && (cost>0.01 || rap>0.01)){
         reason='Sudah ada konsumsi biaya/RAP sementara progress proyek masih nol.';

@@ -17,6 +17,8 @@ assert.equal(warningCost.priority,'SEDANG');
 assert.match(warningCost.reason,/Cost Ratio/i);
 assert.match(warningCost.action,/realisasi biaya/i);
 
+assert.equal(evaluate({project_progress:30,cost_ratio:22.73,rap_consumption:31.25},health('AWASI')).priority,'SEDANG');
+
 const warningZero=evaluate({project_progress:0,cost_ratio:0.1,rap_consumption:0},health('PERLU PENGAWASAN'));
 assert.match(warningZero.reason,/biaya\/RAP/i);
 assert.match(warningZero.action,/Validasi transaksi/i);

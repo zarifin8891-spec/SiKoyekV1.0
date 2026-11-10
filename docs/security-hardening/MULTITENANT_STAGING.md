@@ -32,8 +32,14 @@ Konfigurasi memakai format `deployment/environments/*.json` dengan URL proyek uj
 
 Uji browser memakai simulasi SDK dan mencakup kedua akun, pemuatan ulang sesi, keluar, serta akun tanpa keanggotaan. PostgreSQL lokal memeriksa fungsi identitas perusahaan dan pemisahan data. Uji Supabase Auth sungguhan masih diperlukan pada skema staging lengkap.
 
+## Dashboard dan laporan
+
+Fixture memasang view pelaporan referensi dan lima RPC yang membatasi proyek ke perusahaan aktif dari sesi. Batas tambahan pada referensi progres mencegah catatan proyek sendiri memakai item kerja perusahaan lain. Ringkasan menyembunyikan progress dan Health jika role hanya punya izin Keuangan.
+
+Uji PostgreSQL mencakup kontrak, ringkasan, detail, Cost Control, dan pengecekan siklus proyek. Uji browser memuat hasil SQL sintetis untuk memastikan panel Health, Decision Engine, Kinerja Proyek, dan Laporan Keuangan menampilkan perusahaan yang sesuai. Definisi view dan fungsi pada dump skema produksi masih perlu dicocokkan saat latihan migrasi.
+
 ## Tahap integrasi berikutnya
 
-1. Uji RPC finansial, Dashboard, Health, Decision Engine, dan seluruh laporan dengan skema yang lebih lengkap. Periksa setiap fungsi berhak istimewa yang mengakses data perusahaan.
+1. Cocokkan skema aktual kedua sumber, termasuk view, fungsi berhak istimewa, dan format data lama. Uji perubahan pada salinan terisolasi.
 2. Jalankan pengujian aplikasi dengan Supabase Auth dan API staging.
 3. Cocokkan data dari kedua sumber, termasuk benturan email, kode dan ID. Siapkan pemetaan impor, backup, latihan pemulihan, dan verifikasi sebelum mengajukan persetujuan perubahan produksi.

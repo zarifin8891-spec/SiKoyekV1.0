@@ -3,7 +3,7 @@
   let healthClient=null,lastSignature='',busy=false;
 
   function esc(s){return String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
-  function dashboardEl(){return [...document.querySelectorAll('.content')].find(x=>x.querySelector('.top h1')?.textContent.trim().toLowerCase()==='dashboard')}
+  function dashboardEl(){return document.getElementById('dashboard-health-panel')?.closest('.content')}
 
   function syncDashboardRows(){
     const dashboard=dashboardEl();
@@ -88,8 +88,8 @@
     try{
       if(!window.SiKoyekDataAccess)return;
       const {summary:data,access}=await window.SiKoyekDataAccess.loadSummary(healthClient);
-      if(!access.full)return;
-      const rows=(data||[]).map(r=>({...r,project_progress:Number(r.project_progress||0),cost_ratio:Number(r.cost_ratio||0),rap_consumption:Number(r.rap_consumption||0)})).map(r=>({...r,health:window.SiKoyekHealthEngine.evaluate(r)}));
+      if(!access.full||dashboard!==dashboardEl())return;
+      const rows=(data||[]).filter(row=>!window.periodMatch||window.periodMatch(row)).map(r=>({...r,project_progress:Number(r.project_progress||0),cost_ratio:Number(r.cost_ratio||0),rap_consumption:Number(r.rap_consumption||0)})).map(r=>({...r,health:window.SiKoyekHealthEngine.evaluate(r)}));
       const sig=JSON.stringify(rows.map(r=>[r.project_code,r.health.status,r.project_progress,r.cost_ratio,r.rap_consumption]));
       const cardExists=dashboard.querySelector('#dashboard-health-panel')?.dataset.renderer==='health';
       if(sig===lastSignature&&cardExists){syncDashboardLayout();return}
@@ -102,7 +102,7 @@
     const dashboard=dashboardEl();const card=dashboard?.querySelector('#dashboard-health-panel');if(!card)return;
     const priority=[...rows].sort((a,b)=>{const rank={red:3,amber:2,green:1};return rank[b.health.level]-rank[a.health.level]||b.project_progress-a.project_progress}).slice(0,5);
     card.dataset.renderer='health';
-    card.innerHTML=`<div class="sectiontitle"><h2>Kondisi Proyek</h2><span class="note">Progress vs Rasio Biaya & RAP Terpakai</span></div><div class="card tablecard"><div class="scroll"><table class="table"><colgroup><col style="width:45%"><col style="width:12%"><col style="width:13%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr><th>Proyek</th><th>Progress</th><th>Rasio<br>Biaya</th><th>RAP<br>Terpakai</th><th>Status</th></tr></thead><tbody>${priority.map(r=>`<tr><td><strong>${esc(r.project_code)}</strong> — ${esc(r.project_name)}</td><td>${r.project_progress.toFixed(2)}%</td><td>${r.cost_ratio.toFixed(2)}%</td><td>${r.rap_consumption.toFixed(2)}%</td><td><span class="pill ${r.health.level}">${r.health.status}</span></td></tr>`).join('')||'<tr><td colspan="5" class="empty">Belum ada data proyek.</td></tr>'}</tbody></table></div></div>`;
+    card.innerHTML=`<div class="sectiontitle"><h2>Kondisi Proyek</h2><span class="note">Progress vs Rasio Biaya & RAP Terpakai</span></div><div class="card tablecard"><div class="scroll"><table class="table"><colgroup><col style="width:45%"><col style="width:12%"><col style="width:13%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr><th>Proyek</th><th>Progress</th><th>Rasio<br>Biaya</th><th>RAP<br>Terpakai</th><th>Status</th></tr></thead><tbody>${priority.map(r=>`<tr><td><button class="linkbtn" onclick="openProject('${r.project_id}')">${esc(r.project_code)} — ${esc(r.project_name)}</button></td><td>${r.project_progress.toFixed(2)}%</td><td>${r.cost_ratio.toFixed(2)}%</td><td>${r.rap_consumption.toFixed(2)}%</td><td><span class="pill ${r.health.level}">${r.health.status}</span></td></tr>`).join('')||'<tr><td colspan="5" class="empty">Belum ada data proyek.</td></tr>'}</tbody></table></div></div>`;
     syncDashboardLayout();
   }
 

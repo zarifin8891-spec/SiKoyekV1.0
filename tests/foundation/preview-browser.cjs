@@ -13,6 +13,17 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
  const rows=table=>page.evaluate(async table=>(await sb.from(table).select('*')).data,table);
  try{
   await enter('master');assert.equal((await rows('projects')).length,6);check('master seeded dashboard');
+  await page.locator('#dashboard-health-panel[data-renderer="health"]').waitFor();
+  await page.locator('#dashboard-decision-panel[data-renderer="decision"]').waitFor();
+  await page.evaluate(()=>setPeriod('1900-01-01','1900-01-01'));
+  await page.locator('#dashboard-health-panel[data-renderer="health"]').getByText('Belum ada data proyek.').waitFor();
+  await page.locator('#dashboard-decision-panel[data-renderer="decision"]').waitFor();
+  assert.equal(await page.locator('#dashboard-decision-panel tbody button').count(),0);
+  await page.evaluate(()=>clearPeriod());
+  await page.locator('#dashboard-decision-panel[data-renderer="decision"] tbody button').first().waitFor();
+  await page.locator('#dashboard-decision-panel tbody tr').filter({hasText:'Proyek Uji 2'}).getByText('SEDANG',{exact:true}).waitFor();
+  check('Health and Decision panels use their engines and honor the Dashboard period');
+
   await page.evaluate(()=>go('master-data'));await page.waitForSelector('.md-grid');
   const employeeCard=page.locator('.md-card').filter({has:page.getByRole('heading',{name:'Karyawan',exact:true})});
   await employeeCard.getByRole('button',{name:'+ Tambah',exact:true}).click();

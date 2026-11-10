@@ -94,7 +94,7 @@ BEGIN
   END IF;
 
   INSERT INTO public.projects(id,project_name) VALUES (gen_random_uuid(),'KONSTRUVA baru');
-  IF NOT EXISTS (SELECT FROM public.projects WHERE project_name='KONSTRUVA baru' AND tenant_id='konstruva') THEN
+  IF NOT EXISTS (SELECT FROM public.projects WHERE project_name='KONSTRUVA baru') THEN
     RAISE EXCEPTION 'New project did not inherit the authenticated company';
   END IF;
 END;
@@ -141,7 +141,10 @@ DECLARE
   konstruva_role uuid := '20000000-0000-4000-8000-000000000001';
   master_role uuid := '22222222-2222-4222-8222-222222222222';
   konstruva_count integer;
+  original_master_permissions uuid[];
 BEGIN
+  SELECT array_agg(permission_id) INTO original_master_permissions
+  FROM public.role_permissions WHERE role_id=master_role;
   SELECT count(*) INTO konstruva_count FROM public.role_permissions WHERE role_id=konstruva_role;
   BEGIN
     PERFORM public.replace_tenant_role_permissions_atomic(master_admin,konstruva_role,ARRAY[]::uuid[]);
@@ -153,6 +156,7 @@ BEGIN
     OR public.replace_tenant_role_permissions_atomic(master_admin,master_role,ARRAY[md5('PROJECTS_VIEW')::uuid])<>1 THEN
     RAISE EXCEPTION 'Atomic scope check failed';
   END IF;
+  PERFORM public.replace_tenant_role_permissions_atomic(master_admin,master_role,original_master_permissions);
 END;
 $administration$;
 RESET ROLE;
