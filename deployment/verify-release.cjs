@@ -13,6 +13,7 @@ function verifyRelease(root){
   vm.runInNewContext(environment,sandbox);
   vm.runInNewContext(fs.readFileSync(path.join(app,'foundation/config.js'),'utf8'),sandbox);
   assert.equal(sandbox.window.SiKoyekConfig.id,tenant.id);assert.equal(sandbox.window.SiKoyekConfig.backend,'cloud');
+  assert.equal(sandbox.window.SiKoyekConfig.multiTenant,manifest.sharedStaging===true);
   for(const [file,hash] of Object.entries(manifest.packageFiles)){
    assert.ok(!path.isAbsolute(file)&&!file.split('/').includes('..'));const bytes=fs.readFileSync(path.join(app,file));
    assert.equal(digest(bytes),hash,file);assert.deepEqual(bytes,fs.readFileSync(path.join(root,reference,file)),file);
@@ -30,7 +31,10 @@ function verifyRelease(root){
   assert.ok(!fs.existsSync(path.join(app,'supabase')));assert.ok(!fs.existsSync(path.join(app,'deployment-package-v1.0')));
  }
  const selector=fs.readFileSync(path.join(root,'index.html'),'utf8');
- if(selector.includes('id="staging-login"')){
+ if(manifest.sharedStaging){
+  assert.equal(manifest.tenants.length,1);
+  assert.ok(selector.includes('url=./'+manifest.tenants[0].entry));
+ }else if(selector.includes('id="staging-login"')){
   const sandbox={window:{}};
   vm.runInNewContext(fs.readFileSync(path.join(root,'staging-login-config.js'),'utf8'),sandbox);
   const config=sandbox.window.SiKoyekStagingLogin;

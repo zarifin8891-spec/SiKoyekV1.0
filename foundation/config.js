@@ -14,6 +14,7 @@
   }
   if(input.backend==='preview')allowedKey=input.key==='preview-only';
   if(!allowedKey)throw new Error('Browser hanya boleh memakai publishable/anon key');
-  const config=Object.freeze({id:input.id,name:String(input.name||input.id),backend:input.backend,url:url.origin,key:input.key,storageKey:input.backend==='preview'?'sikoyek-preview-session-'+input.id:'sb-'+url.hostname.split('.')[0]+'-auth-token'});
+  if(input.multiTenant!==undefined && input.multiTenant!==true)throw new Error('Mode perusahaan tidak valid');
+  const config=Object.freeze({id:input.id,name:String(input.name||input.id),backend:input.backend,multiTenant:input.multiTenant===true,url:url.origin,key:input.key,storageKey:input.backend==='preview'?'sikoyek-preview-session-'+input.id:'sb-'+url.hostname.split('.')[0]+'-auth-token'});
   Object.defineProperty(global,'SiKoyekConfig',{value:config,writable:false,configurable:false});
 })(window);

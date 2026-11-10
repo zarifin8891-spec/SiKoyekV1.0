@@ -19,3 +19,49 @@ test('configured client resolves the tenant and rejects explicit access to anoth
  window.SiKoyekBackend.getClient();assert.equal(captured[0],config.url);assert.equal(captured[1],config.key);assert.equal(captured[2].auth.storageKey,config.storageKey);assert.equal(captured[2].auth.storage,window.sessionStorage);
  assert.throws(()=>window.SiKoyekBackend.getClient('https://different.supabase.co',config.key),/lingkungan aktif/);
 });
+
+test('shared login resolves company on sign-in and session restore and clears it on logout',async()=>{
+ let current=null,company=null,changes=[],checks=0;
+ const raw={
+  auth:{
+   onAuthStateChange(fn){changes.push(fn)},
+   async getSession(){return {data:{session:current},error:null}},
+   async signInWithPassword({email}){
+    current={access_token:email,user:{id:email}};
+    for(const fn of changes)fn('SIGNED_IN',current);
+    return {data:{session:current,user:current.user},error:null};
+   },
+   async signOut(){current=null;for(const fn of changes)fn('SIGNED_OUT',null);return {error:null}}
+  },
+  async rpc(name,...params){
+   assert.equal(name,'sikoyek_current_company');
+   assert.equal(params.length,0);
+   checks++;
+   return {data:company,error:null};
+  },
+  functions:{invoke(){throw Error('Privileged Edge function must stay disabled')}}
+ };
+ const config={url:'https://shared-test.supabase.co',key:'sb_publishable_fixture',storageKey:'shared-staging',multiTenant:true};
+ const window={SiKoyekConfig:config,sessionStorage:{},supabase:{createClient:()=>raw}};
+ vm.runInNewContext(fs.readFileSync('foundation/backend.js','utf8'),{window,structuredClone});
+ const client=window.SiKoyekBackend.getClient();
+ for(const id of ['master','konstruva']){
+  company={id,name:id.toUpperCase()};
+  const login=await client.auth.signInWithPassword({email:id+'@preview.invalid',password:'synthetic'});
+  assert.equal(login.error,null);
+  assert.equal(client.company.id,id);
+  assert.equal((await client.auth.getSession()).data.session.user.id,id+'@preview.invalid');
+ }
+ assert.equal(checks,4);
+ assert.ok((await client.functions.invoke('user-management')).error);
+ company=null;
+ assert.equal((await client.auth.getSession()).data.session,null);
+ assert.equal(client.company,null);
+ const rejected=await client.auth.signInWithPassword({email:'unassigned@preview.invalid',password:'synthetic'});
+ assert.match(rejected.error.message,/perusahaan aktif/);
+ assert.equal(current,null);
+ company={id:'master',name:'MASTER'};
+ await client.auth.signInWithPassword({email:'master@preview.invalid',password:'synthetic'});
+ await client.auth.signOut();
+ assert.equal(client.company,null);
+});

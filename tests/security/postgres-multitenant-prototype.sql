@@ -119,3 +119,14 @@ CREATE POLICY tenant_roles_boundary ON public.role_permissions AS RESTRICTIVE TO
     SELECT FROM public.roles AS role
     WHERE role.id=role_id AND role.tenant_id=(SELECT sikoyek_authz.current_tenant())
   ));
+
+-- Exposes the same membership enforced by RLS, with no caller-supplied tenant.
+CREATE FUNCTION public.sikoyek_current_company()
+RETURNS jsonb LANGUAGE sql STABLE SECURITY INVOKER SET search_path=''
+AS $company$
+  SELECT jsonb_build_object('id',tenant.id,'name',tenant.name)
+  FROM public.tenants AS tenant
+  WHERE tenant.id=(SELECT sikoyek_authz.current_tenant())
+$company$;
+REVOKE ALL ON FUNCTION public.sikoyek_current_company() FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.sikoyek_current_company() TO authenticated;

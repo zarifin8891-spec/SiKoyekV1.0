@@ -29,6 +29,7 @@ DO $master$
 DECLARE affected int;
 BEGIN
   IF (SELECT array_agg(name) FROM public.tenants) IS DISTINCT FROM ARRAY['MASTER']
+    OR public.sikoyek_current_company() IS DISTINCT FROM '{"id":"master","name":"MASTER"}'::jsonb
     OR (SELECT array_agg(project_name) FROM public.projects) IS DISTINCT FROM ARRAY['TEST PROJECT']
     OR (SELECT sum(amount) FROM public.financial_transactions) IS DISTINCT FROM 10000::numeric
     OR (SELECT array_agg(name) FROM public.employees) IS DISTINCT FROM ARRAY['Personel MASTER']
@@ -82,6 +83,7 @@ SELECT set_config('request.jwt.claim.sub','20000000-0000-4000-8000-000000000002'
 DO $konstruva$
 BEGIN
   IF (SELECT array_agg(name) FROM public.tenants) IS DISTINCT FROM ARRAY['KONSTRUVA']
+    OR public.sikoyek_current_company() IS DISTINCT FROM '{"id":"konstruva","name":"KONSTRUVA"}'::jsonb
     OR (SELECT array_agg(project_name) FROM public.projects) IS DISTINCT FROM ARRAY['Proyek KONSTRUVA']
     OR (SELECT sum(amount) FROM public.financial_transactions) IS DISTINCT FROM 25000::numeric
     OR (SELECT array_agg(name) FROM public.employees) IS DISTINCT FROM ARRAY['Personel KONSTRUVA']
@@ -110,9 +112,18 @@ $worker$;
 SELECT set_config('request.jwt.claim.sub','88888888-8888-4888-8888-888888888888',false);
 DO $inactive$
 BEGIN
-  IF EXISTS (SELECT FROM public.tenants) OR EXISTS (SELECT FROM public.projects) THEN
+  IF EXISTS (SELECT FROM public.tenants) OR EXISTS (SELECT FROM public.projects)
+    OR public.sikoyek_current_company() IS NOT NULL THEN
     RAISE EXCEPTION 'Inactive account retains company access';
   END IF;
 END;
 $inactive$;
+SELECT set_config('request.jwt.claim.sub','30000000-0000-4000-8000-000000000001',false);
+DO $unassigned$
+BEGIN
+  IF public.sikoyek_current_company() IS NOT NULL THEN
+    RAISE EXCEPTION 'Account without membership resolved to a company';
+  END IF;
+END;
+$unassigned$;
 RESET ROLE;

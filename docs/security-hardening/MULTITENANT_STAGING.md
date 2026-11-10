@@ -19,8 +19,21 @@ psql "$SIKOYEK_DISPOSABLE_TEST_URL" -X -f tests/security/postgres-multitenant-ru
 
 Uji memeriksa kedua Admin, izin Pelaksana, akun nonaktif, baca dan tulis lintas perusahaan, serta agregat jumlah karyawan. Identitas pengguna disimulasikan melalui `auth.uid()` milik fixture.
 
+## Satu halaman login
+
+Build staging menerima satu konfigurasi proyek uji. Halaman masuk memakai Supabase Auth dari proyek tersebut. Setelah autentikasi, aplikasi memanggil `sikoyek_current_company()` tanpa mengirim ID perusahaan. Fungsi membaca perusahaan aktif milik akun dari database dan mengikuti kebijakan akses yang sama. Sesi tanpa perusahaan aktif gagal membuka aplikasi.
+
+```sh
+node deployment/build-release.cjs --shared-staging /absolute/output /absolute/shared-test.json
+node deployment/verify-release.cjs /absolute/output
+```
+
+Konfigurasi memakai format `deployment/environments/*.json` dengan URL proyek uji dan publishable key. Opsi ini menolak referensi produksi MASTER dan KONSTRUVA. Browser staging menonaktifkan panggilan Edge Function administratif sampai fungsi tersebut memeriksa perusahaan di server. Deploy fungsi administratif ke proyek bersama hanya setelah pemeriksaan itu lulus.
+
+Uji browser memakai simulasi SDK dan mencakup kedua akun, pemuatan ulang sesi, keluar, serta akun tanpa keanggotaan. PostgreSQL lokal memeriksa fungsi identitas perusahaan dan pemisahan data. Uji Supabase Auth sungguhan masih diperlukan pada skema staging lengkap.
+
 ## Tahap integrasi berikutnya
 
-1. Sambungkan satu Supabase Auth ke profil perusahaan dan gunakan satu halaman masuk. Verifikasi sesi, akun tanpa perusahaan, logout, dan akun nonaktif.
-2. Terapkan batas perusahaan ke jalur API yang berjalan dengan hak istimewa. Uji fungsi pengelolaan pengguna dan role, RPC finansial, Dashboard, Health, Decision Engine, dan seluruh laporan memakai skema yang lebih lengkap.
+1. Terapkan batas perusahaan ke fungsi pengelolaan pengguna dan role. Uji RPC finansial, Dashboard, Health, Decision Engine, dan seluruh laporan dengan skema yang lebih lengkap.
+2. Jalankan pengujian aplikasi dengan Supabase Auth dan API staging.
 3. Cocokkan data dari kedua sumber, termasuk benturan email, kode dan ID. Siapkan pemetaan impor, backup, latihan pemulihan, dan verifikasi sebelum mengajukan persetujuan perubahan produksi.
