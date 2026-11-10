@@ -8,6 +8,9 @@ on:
       - 'tests/security/supabase-shared-auth-staging.mjs'
       - 'tests/security/postgres-multitenant-*.sql'
       - 'supabase/functions/user-management*/**'
+  pull_request:
+    branches: [feature/sikoyek-project-timeline-milestones]
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 permissions:
@@ -15,6 +18,7 @@ permissions:
 
 jobs:
   shared-auth:
+    if: github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'feature/sikoyek-multi-tenant-foundation')
     runs-on: ubuntu-latest
     timeout-minutes: 18
     steps:
