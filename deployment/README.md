@@ -48,6 +48,6 @@ Daftar pelanggan yang ikut rilis berada pada `release-lock.json.configFiles`. Un
 
 ## Dasbor Kontrol Proyek
 
-Preview menampilkan modul jadwal, stok, penempatan, dokumen, dan observasi lapangan dengan data sintetis. Untuk uji Supabase, gunakan database uji yang sudah menjalankan skema dasar SiKoyek dan periksa riwayat migrasinya. Terapkan migrasi baru `20261110105355_dashboard_project_control.sql` satu kali pada database tersebut. Rilis frontend bergantung pada ketersediaan tabel tambahan di setiap lingkungan yang akan menerimanya.
+Preview menampilkan modul jadwal, stok, penempatan, dokumen, dan observasi lapangan dengan data sintetis. Untuk uji Supabase, gunakan database uji yang sudah menjalankan skema dasar SiKoyek dan periksa riwayat migrasinya. Terapkan migrasi baru `20261110113304_dashboard_project_control.sql` satu kali pada database tersebut. Rilis frontend bergantung pada ketersediaan tabel tambahan di setiap lingkungan yang akan menerimanya.
 
 Modul lapangan memakai izin Progress yang sudah ada. Dokumen memakai izin Laporan. Dengan izin bawaan, perubahan tautan dokumen hanya tersedia untuk Admin. Penempatan memakai kode pekerja untuk menghitung pekerja unik per hari. Stok merupakan saldo yang dicatat per proyek dan cuaca merupakan observasi lapangan. Berkas dokumen tetap disimpan di lokasi HTTPS yang ditautkan.
