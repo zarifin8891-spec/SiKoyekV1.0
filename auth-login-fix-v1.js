@@ -58,8 +58,7 @@
         const {data,error}=await client.auth.signInWithPassword({email,password});
         if(error) throw error;
         if(!data?.user) throw new Error('Login gagal: user tidak ditemukan.');
-        await window.loadSummary?.();
-        window.renderApp?.();
+        await window.enterAuthenticatedApp(data.user);
       }catch(error){
         errEl.textContent=error?.message||'Login gagal.';
         fresh.disabled=false;
