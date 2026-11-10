@@ -103,7 +103,17 @@
       return proxy;
     }
     return new Proxy(raw,{get(target,name){if(name==='auth')return auth;if(name==='company')return company;if(name==='from')return table=>query(raw.from(table),table);
-      if(name==='functions')return new Proxy(target.functions,{get(f,key){if(key==='invoke')return async(...args)=>{if(multiTenant)return {data:null,error:new Error('Fungsi administrasi belum tersedia di staging bersama.')};invalidate();try{return await f.invoke(...args)}finally{invalidate()}};return f[key]}});
+      if(name==='functions')return new Proxy(target.functions,{get(f,key){
+        if(key!=='invoke')return f[key];
+        return async(functionName,...args)=>{
+          if(multiTenant){
+            if(functionName!=='user-management')return {data:null,error:new Error('Fungsi belum tersedia di staging bersama.')};
+            functionName='user-management-shared';
+          }
+          invalidate();
+          try{return await f.invoke(functionName,...args)}finally{invalidate()}
+        };
+      }});
       if(name==='rpc')return (...args)=>query(target.rpc(...args),'rpc:'+args[0],[['rpc',args]],true);if(name==='invalidateReads')return invalidate;const value=target[name];return typeof value==='function'?value.bind(target):value}});
   }
   function getClient(url,key,options={}){

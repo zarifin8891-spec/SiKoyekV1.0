@@ -127,3 +127,40 @@ BEGIN
 END;
 $unassigned$;
 RESET ROLE;
+
+-- Match Supabase's server-only service role in this disposable PostgreSQL fixture.
+ALTER ROLE service_role BYPASSRLS;
+GRANT SELECT ON public.profiles, public.roles, public.permissions TO service_role;
+GRANT UPDATE ON public.profiles TO service_role;
+GRANT UPDATE ON public.roles TO service_role;
+GRANT SELECT, INSERT, DELETE ON public.role_permissions TO service_role;
+SET ROLE service_role;
+DO $administration$
+DECLARE
+  master_admin uuid := '11111111-1111-4111-8111-111111111111';
+  konstruva_role uuid := '20000000-0000-4000-8000-000000000001';
+  master_role uuid := '22222222-2222-4222-8222-222222222222';
+  konstruva_count integer;
+BEGIN
+  SELECT count(*) INTO konstruva_count FROM public.role_permissions WHERE role_id=konstruva_role;
+  BEGIN
+    PERFORM public.replace_tenant_role_permissions_atomic(master_admin,konstruva_role,ARRAY[]::uuid[]);
+    RAISE EXCEPTION 'Admin changed another company role';
+  EXCEPTION WHEN insufficient_privilege THEN NULL;
+  END;
+
+  IF (SELECT count(*) FROM public.role_permissions WHERE role_id=konstruva_role)<>konstruva_count
+    OR public.replace_tenant_role_permissions_atomic(master_admin,master_role,ARRAY[md5('PROJECTS_VIEW')::uuid])<>1 THEN
+    RAISE EXCEPTION 'Atomic scope check failed';
+  END IF;
+END;
+$administration$;
+RESET ROLE;
+DO $execute_acl$
+BEGIN
+  IF has_function_privilege('authenticated','public.replace_tenant_role_permissions_atomic(uuid,uuid,uuid[])','EXECUTE')
+    OR has_function_privilege('anon','public.replace_tenant_role_permissions_atomic(uuid,uuid,uuid[])','EXECUTE') THEN
+    RAISE EXCEPTION 'Company role mutation is exposed to a browser role';
+  END IF;
+END;
+$execute_acl$;

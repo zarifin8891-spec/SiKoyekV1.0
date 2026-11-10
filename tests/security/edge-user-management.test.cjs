@@ -7,9 +7,10 @@ const vm = require('node:vm');
 const { stripTypeScriptTypes } = require('node:module');
 
 // Tests execute the staged Edge handler with synthetic clients; they do NOT call Supabase.
-const filepath = path.resolve(__dirname, '../../supabase/functions/user-management/index.ts');
+const filepath = path.resolve(__dirname, '../../supabase/functions/user-management/handler.ts');
 const source = stripTypeScriptTypes(fs.readFileSync(filepath, 'utf8')
-  .replace(/^import \{ createClient,[^\n]+\n/m, ''));
+  .replace(/^import \{ createClient,[^\n]+\n/m, '')
+  .replace(/^export function /m, 'function '));
 
 const CALLER = '11111111-1111-4111-8111-111111111111';
 const ROLE = '22222222-2222-4222-8222-222222222222';
@@ -17,8 +18,16 @@ const OTHER_ROLE = '33333333-3333-4333-8333-333333333333';
 const USER = '44444444-4444-4444-8444-444444444444';
 
 function makeHarness(options = {}) {
-  let handler;
   const calls = [];
+  const scope = options.shared ? 'master' : null;
+  const read = resolve => {
+    const filters = {};
+    const query = {
+      eq(key,value){filters[key]=value;return query},
+      async maybeSingle(){return {data:resolve(filters),error:null}}
+    };
+    return query;
+  };
   const adminRole = options.adminRole ?? { name: 'ADMIN', is_active: true };
   const profile = options.profile ?? { id: CALLER, role: 'STAFF', role_id: ROLE, is_active: true, roles: adminRole };
   const admin = {
@@ -35,16 +44,26 @@ function makeHarness(options = {}) {
     },
     from(table) {
       if (table === 'profiles') return {
-        select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: profile, error: null }) }) }),
+        select: () => read(({id,tenant_id})=>{
+          if(id===CALLER)return !scope||tenant_id===scope?profile:null;
+          return scope&&tenant_id===scope&&options.foreignUser!==true&&id===USER?{id}:null;
+        }),
         insert: async fields => { calls.push(['insertProfile', fields]); return { error: null }; },
-        update: fields => ({ eq: async (_field, id) => { calls.push(['updateProfile', id, fields]); return { error: null }; } }),
+        update: fields => ({
+          eq(_field,id){
+            if(!scope){calls.push(['updateProfile',id,fields]);return Promise.resolve({error:null})}
+            return {eq(key,tenant){return {select(){return {async maybeSingle(){
+              calls.push(['updateProfile',id,fields,key,tenant]);return {data:{id},error:null};
+            }}}}}};
+          }
+        }),
       };
       if (table === 'roles') return {
-        select: () => ({ eq: (_field, id) => ({ maybeSingle: async () => ({
-          data: id === ROLE || id === OTHER_ROLE
-            ? { id, name: id === ROLE ? 'ADMIN' : 'PELAKSANA', is_active: true } : null,
-          error: null,
-        }) }) }),
+        select: () => read(({id,tenant_id})=>{
+          const valid=id===ROLE||id===OTHER_ROLE;
+          const allowed=!scope||tenant_id===scope&&!(id===OTHER_ROLE&&options.foreignRole);
+          return valid&&allowed?{id,name:id===ROLE?'ADMIN':'PELAKSANA',is_active:true}:null;
+        }),
       };
       if (table === 'permissions') return {
         select: () => ({ in: async (_field, ids) => ({ data: ids.map(id => ({ id })), error: null }) }),
@@ -58,19 +77,22 @@ function makeHarness(options = {}) {
     },
   };
   const userClient = {
+    rpc: async fn => {
+      assert.equal(fn,'sikoyek_current_company');
+      return {data:options.noCompany?null:{id:scope},error:null};
+    },
     auth: { getUser: async () => ({
       data: { user: options.authed === false ? null : { id: CALLER } },
       error: null,
     }) },
   };
   const Deno = {
-    env: { get: key => ({ SUPABASE_URL: 'https://test.invalid', SUPABASE_ANON_KEY: 'anon',
+    env: { get: key => ({ SUPABASE_URL: options.url || 'https://test.invalid', SUPABASE_ANON_KEY: 'anon',
       SUPABASE_SERVICE_ROLE_KEY: 'server-secret' })[key] },
-    serve: callback => { handler = callback; },
   };
   const createClient = (_url, key) => key === 'anon' ? userClient : admin;
-  vm.runInNewContext(source, { Deno, createClient, Response, Date, console, String, Object, Array, Set }, {
-    filename: 'user-management/index.ts',
+  const handler=vm.runInNewContext(source+'\ncreateUserManagementHandler(shared)', { shared:Boolean(scope),Deno,createClient,Response,Date,console,String,Object,Array,Set,URL }, {
+    filename: 'user-management/handler.ts',
   });
   const send = async (body, method = 'POST', bearer = true) => {
     const req = new Request('https://test.invalid/functions/v1/user-management', {
@@ -220,4 +242,47 @@ test('invalid permission ID does not invoke RPC', async () => {
     permission_ids: ['invalid-id'] });
   assert.equal(res.status, 400);
   assert.equal(h.calls.filter(c => c[0] === 'rpc').length, 0);
+});
+
+test('shared Admin cannot update, reset, or delete an account in another company', async () => {
+  for (const body of [
+    {action:'update',full_name:'Changed'},
+    {action:'reset_password',password:'synthetic-password'},
+    {action:'delete'}
+  ]){
+    const h=makeHarness({shared:true,foreignUser:true});
+    assert.equal((await h.send({...body,id:USER,tenant_id:'konstruva'})).status,403);
+    assert.equal(h.calls.length,0);
+  }
+});
+
+test('shared Admin cannot assign a role or change permissions in another company', async () => {
+  const h=makeHarness({shared:true,foreignRole:true});
+  for (const body of [
+    {action:'create',email:'synthetic@preview.invalid',password:'synthetic-password',full_name:'Synthetic'},
+    {action:'update',id:USER},
+    {action:'update_permissions',permission_ids:[]}
+  ]) assert.equal((await h.send({...body,role_id:OTHER_ROLE})).status,400);
+  assert.equal(h.calls.length,0);
+});
+
+test('shared administration uses the verified company for all permitted operations', async () => {
+  const h=makeHarness({shared:true});
+  assert.equal((await h.send({action:'create',email:'synthetic@preview.invalid',password:'synthetic-password',
+    full_name:'Synthetic',role_id:OTHER_ROLE,tenant_id:'konstruva'})).status,200);
+  assert.equal(h.calls.find(call=>call[0]==='insertProfile')[1].tenant_id,'master');
+  assert.equal((await h.send({action:'update',id:USER,full_name:'Changed'})).status,200);
+  assert.deepEqual(h.calls.find(call=>call[0]==='updateProfile').slice(3),['tenant_id','master']);
+  assert.equal((await h.send({action:'reset_password',id:USER,password:'synthetic-password'})).status,200);
+  assert.equal((await h.send({action:'delete',id:USER})).status,200);
+  assert.equal((await h.send({action:'update_permissions',role_id:OTHER_ROLE,permission_ids:[]})).status,200);
+  assert.equal(h.calls.find(call=>call[0]==='rpc')[1],'replace_tenant_role_permissions_atomic');
+});
+
+test('shared endpoint refuses accounts without a company and refuses production references', async () => {
+  for(const options of [{noCompany:true},{url:'https://mmkusplegmittrlxqxby.supabase.co'}]){
+    const h=makeHarness({shared:true,...options});
+    assert.equal((await h.send({action:'delete',id:USER})).status,403);
+    assert.equal(h.calls.length,0);
+  }
 });

@@ -39,7 +39,7 @@ test('shared login resolves company on sign-in and session restore and clears it
    checks++;
    return {data:company,error:null};
   },
-  functions:{invoke(){throw Error('Privileged Edge function must stay disabled')}}
+  functions:{async invoke(name){assert.equal(name,'user-management-shared');return {data:{ok:true},error:null}}}
  };
  const config={url:'https://shared-test.supabase.co',key:'sb_publishable_fixture',storageKey:'shared-staging',multiTenant:true};
  const window={SiKoyekConfig:config,sessionStorage:{},supabase:{createClient:()=>raw}};
@@ -53,7 +53,8 @@ test('shared login resolves company on sign-in and session restore and clears it
   assert.equal((await client.auth.getSession()).data.session.user.id,id+'@preview.invalid');
  }
  assert.equal(checks,4);
- assert.ok((await client.functions.invoke('user-management')).error);
+ assert.equal((await client.functions.invoke('user-management')).error,null);
+ assert.ok((await client.functions.invoke('unscoped-admin')).error);
  company=null;
  assert.equal((await client.auth.getSession()).data.session,null);
  assert.equal(client.company,null);

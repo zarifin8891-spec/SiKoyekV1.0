@@ -28,12 +28,12 @@ node deployment/build-release.cjs --shared-staging /absolute/output /absolute/sh
 node deployment/verify-release.cjs /absolute/output
 ```
 
-Konfigurasi memakai format `deployment/environments/*.json` dengan URL proyek uji dan publishable key. Opsi ini menolak referensi produksi MASTER dan KONSTRUVA. Browser staging menonaktifkan panggilan Edge Function administratif sampai fungsi tersebut memeriksa perusahaan di server. Deploy fungsi administratif ke proyek bersama hanya setelah pemeriksaan itu lulus.
+Konfigurasi memakai format `deployment/environments/*.json` dengan URL proyek uji dan publishable key. Opsi ini menolak referensi produksi MASTER dan KONSTRUVA. Browser staging mengarahkan administrasi ke `user-management-shared`. Pada proyek bersama, pasang hanya endpoint ini dan RPC izin role khusus perusahaan. Endpoint membaca perusahaan dari akun terverifikasi dan menolak target akun atau role milik perusahaan lain. Uji jalur Edge memakai backend sintetis.
 
 Uji browser memakai simulasi SDK dan mencakup kedua akun, pemuatan ulang sesi, keluar, serta akun tanpa keanggotaan. PostgreSQL lokal memeriksa fungsi identitas perusahaan dan pemisahan data. Uji Supabase Auth sungguhan masih diperlukan pada skema staging lengkap.
 
 ## Tahap integrasi berikutnya
 
-1. Terapkan batas perusahaan ke fungsi pengelolaan pengguna dan role. Uji RPC finansial, Dashboard, Health, Decision Engine, dan seluruh laporan dengan skema yang lebih lengkap.
+1. Uji RPC finansial, Dashboard, Health, Decision Engine, dan seluruh laporan dengan skema yang lebih lengkap. Periksa setiap fungsi berhak istimewa yang mengakses data perusahaan.
 2. Jalankan pengujian aplikasi dengan Supabase Auth dan API staging.
 3. Cocokkan data dari kedua sumber, termasuk benturan email, kode dan ID. Siapkan pemetaan impor, backup, latihan pemulihan, dan verifikasi sebelum mengajukan persetujuan perubahan produksi.

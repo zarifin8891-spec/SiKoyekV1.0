@@ -87,6 +87,7 @@ GRANT EXECUTE ON FUNCTION sikoyek_authz.current_tenant() TO authenticated;
 ALTER TABLE public.tenants ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.tenants FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON public.tenants TO authenticated;
+GRANT SELECT, UPDATE ON public.tenants TO service_role;
 CREATE POLICY own_tenant ON public.tenants FOR SELECT TO authenticated
   USING (id=(SELECT sikoyek_authz.current_tenant()));
 
@@ -130,3 +131,38 @@ AS $company$
 $company$;
 REVOKE ALL ON FUNCTION public.sikoyek_current_company() FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.sikoyek_current_company() TO authenticated;
+
+-- Service-role-only wrapper for the existing atomic replacement.
+CREATE FUNCTION public.replace_tenant_role_permissions_atomic(
+  p_actor_id uuid, p_role_id uuid, p_permission_ids uuid[]
+)
+RETURNS integer LANGUAGE plpgsql SECURITY INVOKER SET search_path=''
+AS $permissions$
+DECLARE actor_tenant text;
+BEGIN
+  SELECT profile.tenant_id INTO actor_tenant
+  FROM public.profiles AS profile
+  JOIN public.roles AS actor_role ON actor_role.id=profile.role_id AND actor_role.tenant_id=profile.tenant_id
+  JOIN public.tenants AS company ON company.id=profile.tenant_id
+  WHERE profile.id=p_actor_id AND profile.is_active AND actor_role.is_active
+    AND company.is_active AND upper(actor_role.name)='ADMIN'
+  FOR SHARE OF profile, company;
+
+  IF actor_tenant IS NULL THEN
+    RAISE EXCEPTION 'Caller is not an active company administrator' USING ERRCODE='42501';
+  END IF;
+
+  PERFORM 1 FROM public.roles
+  WHERE id=p_role_id AND tenant_id=actor_tenant AND is_active
+  FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Target role is unavailable for this company' USING ERRCODE='42501';
+  END IF;
+
+  RETURN public.replace_role_permissions_atomic(p_actor_id,p_role_id,p_permission_ids);
+END;
+$permissions$;
+
+REVOKE ALL ON FUNCTION public.replace_tenant_role_permissions_atomic(uuid,uuid,uuid[])
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.replace_tenant_role_permissions_atomic(uuid,uuid,uuid[]) TO service_role;
