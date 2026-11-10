@@ -1,0 +1,102 @@
+name: Test shared SiKoyek with real local Auth
+
+on:
+  push:
+    branches: [feature/sikoyek-multi-tenant-foundation]
+    paths:
+      - '.github/workflows/test-shared-supabase-auth.yml'
+      - 'tests/security/supabase-shared-auth-staging.mjs'
+      - 'tests/security/postgres-multitenant-*.sql'
+      - 'supabase/functions/user-management*/**'
+  pull_request:
+    branches: [feature/sikoyek-project-timeline-milestones]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shared-auth:
+    if: github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'feature/sikoyek-multi-tenant-foundation')
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned Supabase CLI
+        run: |
+          npm install --prefix "$RUNNER_TEMP/sikoyek-cli" --ignore-scripts --no-audit --no-fund supabase@2.122.1
+          echo "$RUNNER_TEMP/sikoyek-cli/node_modules/.bin" >> "$GITHUB_PATH"
+      - name: Start local stack for synthetic data only
+        run: |
+          stack="$RUNNER_TEMP/sikoyek-shared-auth"
+          edge="$stack/supabase/functions/user-management-shared"
+          mkdir -p "$edge"
+          cp supabase/functions/user-management/{handler.ts,package.json,package-lock.json} "$edge/"
+          sed 's|../user-management/handler.ts|./handler.ts|' supabase/functions/user-management-shared/index.ts > "$edge/index.ts"
+          npm ci --prefix "$edge" --ignore-scripts --no-audit --no-fund
+          cat > "$stack/supabase/config.toml" <<'TOML'
+          project_id = "sikoyek-shared-auth"
+
+          [db]
+          major_version = 17
+
+          [auth]
+          enabled = true
+          site_url = "http://127.0.0.1:3000"
+
+          [edge_runtime]
+          enabled = true
+
+          [functions.user-management-shared]
+          verify_jwt = false
+          TOML
+          cd "$stack"
+          unset SUPABASE_ACCESS_TOKEN
+          umask 077
+          supabase start > "$RUNNER_TEMP/sikoyek-shared-start.log" 2>&1 || {
+            docker ps -a --format '{{.Names}} {{.Status}}'
+            grep -E '^(failed|error|WARNING|Error)' "$RUNNER_TEMP/sikoyek-shared-start.log" | cut -c1-240 || true
+            exit 1
+          }
+          supabase status -o env > "$RUNNER_TEMP/sikoyek-shared-status.env"
+      - name: Load synthetic shared schema
+        run: |
+          sql() {
+            docker exec -i supabase_db_sikoyek-shared-auth psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 "$@"
+          }
+          for file in deployment-package-v1.0/0[1-7]_*.sql; do sql < "$file"; done
+          sql -c "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO service_role;"
+          sql -c "INSERT INTO public.projects(project_code,project_name,contract_value) VALUES ('MASTER-UJI','Master synthetic',123456);"
+          for name in full_rls_15_tables secure_financial_projection project_lifecycle_gate revoke_legacy_definers atomic_role_permissions; do
+            sql < "docs/security-hardening/STAGING_ONLY_$name.sql"
+          done
+          for file in supabase/migrations/20261109*.sql; do sql -1 -f /dev/stdin < "$file"; done
+          for file in tests/security/postgres-multitenant-{prototype,reporting}.sql; do
+            sql -1 -c "SET LOCAL sikoyek.disposable_fixture='on';" -f /dev/stdin < "$file"
+          done
+          sql <<'SQL'
+          INSERT INTO public.roles (tenant_id,name) VALUES ('konstruva','ADMIN'),('konstruva','PELAKSANA');
+          INSERT INTO public.role_permissions (role_id,permission_id)
+          SELECT target.id, links.permission_id
+          FROM public.roles target
+          JOIN public.roles source ON source.tenant_id='master' AND source.name=target.name
+          JOIN public.role_permissions links ON links.role_id=source.id
+          WHERE target.tenant_id='konstruva';
+          NOTIFY pgrst, 'reload schema';
+          SQL
+      - name: Verify Auth, RLS and tenant administration
+        run: node tests/security/supabase-shared-auth-staging.mjs "$RUNNER_TEMP/sikoyek-shared-status.env"
+      - name: Discard the isolated stack
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/sikoyek-shared-auth/supabase/config.toml" ]]; then
+            cd "$RUNNER_TEMP/sikoyek-shared-auth"
+            supabase stop --no-backup
+          fi
+          rm -f "$RUNNER_TEMP/sikoyek-shared-status.env" "$RUNNER_TEMP/sikoyek-shared-start.log"

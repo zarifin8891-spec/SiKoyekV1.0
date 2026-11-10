@@ -83,7 +83,7 @@
     }
   }
 
-  function unifiedRenderApp(){
+  function unifiedRenderApp(){if(window.SiKoyekConfig?.multiTenant&&!sb.company)return;
     const app=document.getElementById('app');if(!app)return;
     app.innerHTML=`<div class="shell">${nav(state.page)}<main class="content"><div id="page"></div></main></div>`;
     unifiedRenderPage();

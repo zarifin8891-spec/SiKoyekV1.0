@@ -6,14 +6,19 @@ function validate(config,root){
   vm.runInNewContext(fs.readFileSync(path.join(root,'foundation/config.js'),'utf8'),sandbox);
   return sandbox.window.SiKoyekConfig;
 }
-function buildRelease({sourceRoot,outRoot,tenants,preview=false,stagingLoginEndpoint}){
+function buildRelease({sourceRoot,outRoot,tenants,preview=false,stagingLoginEndpoint,sharedStaging=false}){
   sourceRoot=path.resolve(sourceRoot);outRoot=path.resolve(outRoot);
   if(outRoot===sourceRoot||outRoot.startsWith(sourceRoot+path.sep))throw new Error('Output harus berada di luar sumber');
   if(fs.existsSync(outRoot)&&fs.readdirSync(outRoot).length)throw new Error('Direktori output harus kosong');
   const ids=new Set(),directories=new Set();for(const config of tenants){validate(config,sourceRoot);const directory=config.directory||config.id;if(!/^[A-Za-z][A-Za-z0-9-]{0,63}$/.test(directory))throw new Error('Direktori lingkungan tidak valid');if(ids.has(config.id)||directories.has(directory))throw new Error('ID/direktori lingkungan duplikat');ids.add(config.id);directories.add(directory);if(preview&&config.backend!=='preview'||!preview&&config.backend!=='cloud')throw new Error('Mode paket dan backend berbeda')}
+  const productionHosts=new Set(['mmkusplegmittrlxqxby.supabase.co','fadxsycdgzuctvmhhjty.supabase.co']);
+  if(sharedStaging&&(preview||stagingLoginEndpoint||tenants.length!==1||
+    tenants.some(tenant=>productionHosts.has(new URL(tenant.url).hostname)))){
+    throw Error('Staging bersama memerlukan satu proyek Supabase uji');
+  }
+  if(!sharedStaging&&tenants.some(tenant=>tenant.multiTenant))throw Error('Mode perusahaan harus memakai build staging bersama');
   let stagingEndpoint;
   if(stagingLoginEndpoint){
-    const productionHosts=new Set(['mmkusplegmittrlxqxby.supabase.co','fadxsycdgzuctvmhhjty.supabase.co']);
     stagingEndpoint=new URL(stagingLoginEndpoint);
     if(preview||stagingEndpoint.protocol!=='https:'||stagingEndpoint.username||stagingEndpoint.password||
       stagingEndpoint.search||stagingEndpoint.hash||stagingEndpoint.pathname!=='/functions/v1/tenant-login'||
@@ -28,7 +33,7 @@ function buildRelease({sourceRoot,outRoot,tenants,preview=false,stagingLoginEndp
   files.sort();const hashes=Object.fromEntries(files.map(file=>[file,digest(fs.readFileSync(path.join(sourceRoot,file)))]));
   const applicationRevision=digest(JSON.stringify(hashes));
   fs.mkdirSync(outRoot,{recursive:true});
-  const manifest={applicationRevision,mode:preview?'preview':'cloud',tenants:[],sourceFiles:hashes,packageFiles:{}};
+  const manifest={applicationRevision,mode:preview?'preview':'cloud',...(sharedStaging&&{sharedStaging:true}),tenants:[],sourceFiles:hashes,packageFiles:{}};
   const policy="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'none'; frame-src 'none'; worker-src 'none'; object-src 'none'; form-action 'none'; base-uri 'self'";
   for(const config of tenants){
     const directory=config.directory||config.id,destination=path.join(outRoot,directory);fs.mkdirSync(destination,{recursive:true});
@@ -44,13 +49,17 @@ function buildRelease({sourceRoot,outRoot,tenants,preview=false,stagingLoginEndp
       manifest.packageFiles[file]=digest(bytes);
       fs.writeFileSync(out,bytes);
     }
-    const environment='window.SIKOYEK_CONFIG = '+JSON.stringify(stagingEndpoint?{...config,stagingLogin:true}:config,null,2)+';\n';
+    const environment='window.SIKOYEK_CONFIG = '+JSON.stringify(sharedStaging?{...config,multiTenant:true}:stagingEndpoint?{...config,stagingLogin:true}:config,null,2)+';\n';
     fs.writeFileSync(path.join(destination,'environment.js'),environment);
     if(preview){fs.cpSync(path.join(sourceRoot,'preview'),path.join(destination,'preview'),{recursive:true});}
     manifest.tenants.push({id:config.id,name:config.name,applicationRevision,configurationHash:digest(environment),entry:directory+'/index.html'});
   }
   fs.writeFileSync(path.join(outRoot,'release-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
   if(preview){for(const name of ['index.html','portal.css','portal.js'])fs.copyFileSync(path.join(sourceRoot,'preview',name),path.join(outRoot,name));}
+  else if(sharedStaging){
+    const entry='./'+manifest.tenants[0].entry;
+    fs.writeFileSync(path.join(outRoot,'index.html'),`<!doctype html><html lang="id"><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=${entry}"><title>SiKoyek · Staging</title><a href="${entry}">Masuk ke SiKoyek</a></html>`);
+  }
   else if(stagingEndpoint){
     const config={endpoint:stagingEndpoint.href,tenants:Object.fromEntries(tenants.map(tenant=>{
       const {url,key,storageKey}=validate(tenant,sourceRoot);
@@ -69,13 +78,15 @@ function buildRelease({sourceRoot,outRoot,tenants,preview=false,stagingLoginEndp
 module.exports={buildRelease,validate};
 if(require.main===module){
   const args=process.argv.slice(2);const preview=args[0]==='--preview';if(preview)args.shift();
+  const sharedStaging=args[0]==='--shared-staging';
+  if(sharedStaging){args.shift();if(args.length!==2)throw Error('Tentukan direktori output dan satu konfigurasi proyek uji')}
   let stagingLoginEndpoint;
   if(args[0]==='--staging-login'){args.shift();stagingLoginEndpoint=args.shift();if(!stagingLoginEndpoint||args.length<2)throw Error('Login staging memerlukan endpoint dan berkas konfigurasi uji eksplisit')}
-  if(args.length<1)throw new Error('node deployment/build-release.cjs [--preview | --staging-login endpoint] /absolute/output [config.json ...]');
+  if(args.length<1)throw new Error('node deployment/build-release.cjs [--preview | --shared-staging | --staging-login endpoint] /absolute/output [config.json ...]');
   const root=path.resolve(__dirname,'..');
   const releaseLock=path.join(root,'deployment/release-lock.json');
   const configFiles=fs.existsSync(releaseLock)?JSON.parse(fs.readFileSync(releaseLock,'utf8')).configFiles:['deployment/environments/master.json','deployment/environments/konstruva.json'];
   if(!preview&&(!Array.isArray(configFiles)||!configFiles.length))throw new Error('Daftar konfigurasi rilis harus diisi');
   const tenants=preview?['master','konstruva','klien-baru'].map(id=>({id,name:id==='master'?'MASTER':id==='konstruva'?'KONSTRUVA':'KLIEN BARU',backend:'preview',url:'https://'+id+'.invalid',key:'preview-only'})):(args.slice(1).length?args.slice(1):configFiles).map(file=>JSON.parse(fs.readFileSync(file,'utf8')));
-  const result=buildRelease({sourceRoot:root,outRoot:args[0],tenants,preview,stagingLoginEndpoint});console.log(JSON.stringify({applicationRevision:result.applicationRevision,mode:result.mode,tenants:result.tenants},null,2));
+  const result=buildRelease({sourceRoot:root,outRoot:args[0],tenants,preview,stagingLoginEndpoint,sharedStaging});console.log(JSON.stringify({applicationRevision:result.applicationRevision,mode:result.mode,tenants:result.tenants},null,2));
 }

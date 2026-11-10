@@ -6,10 +6,69 @@
   const clients=new Map();
   let factory=(url,key,options)=>global.supabase.createClient(url,key,options);
   function registerBackend(next){if(clients.size)throw new Error('Backend already initialized');factory=next}
-  function wrapClient(raw){
+  function wrapClient(raw, multiTenant=false){
     const flights=new Map();let generation=0;
     const invalidate=()=>{generation++;flights.clear()};
     raw.auth.onAuthStateChange?.(invalidate);
+    let company=null;
+    let activeToken=null;
+    let activeUser=null;
+    const companyChecks=new Map();
+    const companyError=()=>new Error('Akun belum terhubung ke perusahaan aktif atau akses gagal diverifikasi.');
+
+    if(multiTenant)raw.auth.onAuthStateChange?.((_event,session)=>{
+      const token=session?.access_token||null;
+      activeToken=token;
+      const user=session?.user?.id||null;
+      if(user!==activeUser||!token)company=null;
+      activeUser=user;
+    });
+
+    async function verifyCompany(session){
+      const token=session?.access_token;
+      if(!token)return false;
+      activeToken=token;
+      const user=session.user?.id||null;
+      if(user!==activeUser)company=null;
+      activeUser=user;
+      let check=companyChecks.get(token);
+      if(!check){
+        check=(async()=>{
+          try{
+            const {data,error}=await raw.rpc('sikoyek_current_company');
+            if(activeToken!==token)return false;
+            company=!error&&typeof data?.id==='string'&&data.id&&typeof data.name==='string'&&data.name
+              ? Object.freeze({id:data.id,name:data.name})
+              : null;
+            return company!==null;
+          }catch(_){
+            if(activeToken===token)company=null;
+            return false;
+          }
+        })();
+        companyChecks.set(token,check);
+        check.finally(()=>companyChecks.delete(token));
+      }
+      return check;
+    }
+
+    const auth=multiTenant?new Proxy(raw.auth,{get(target,name){
+      if(name==='getSession')return async()=>{
+        const result=await target.getSession();
+        if(!result.data?.session||result.error){company=null;return result;}
+        if(await verifyCompany(result.data.session))return result;
+        return {data:{session:null},error:null};
+      };
+      if(name==='signInWithPassword')return async credentials=>{
+        const result=await target.signInWithPassword(credentials);
+        if(result.error)return result;
+        if(await verifyCompany(result.data?.session))return result;
+        if(activeToken===result.data?.session?.access_token)await target.signOut({scope:'local'});
+        return {data:{user:null,session:null},error:companyError()};
+      };
+      const value=target[name];
+      return typeof value==='function'?value.bind(target):value;
+    }}):raw.auth;
     function query(target,table,operations=[],write=false){
       let isolated=false,executed;
       const proxy=new Proxy({}, {get(_,name){
@@ -43,8 +102,18 @@
       }});
       return proxy;
     }
-    return new Proxy(raw,{get(target,name){if(name==='from')return table=>query(raw.from(table),table);
-      if(name==='functions')return new Proxy(target.functions,{get(f,key){if(key==='invoke')return async(...args)=>{invalidate();try{return await f.invoke(...args)}finally{invalidate()}};return f[key]}});
+    return new Proxy(raw,{get(target,name){if(name==='auth')return auth;if(name==='company')return company;if(name==='from')return table=>query(raw.from(table),table);
+      if(name==='functions')return new Proxy(target.functions,{get(f,key){
+        if(key!=='invoke')return f[key];
+        return async(functionName,...args)=>{
+          if(multiTenant){
+            if(functionName!=='user-management')return {data:null,error:new Error('Fungsi belum tersedia di staging bersama.')};
+            functionName='user-management-shared';
+          }
+          invalidate();
+          try{return await f.invoke(functionName,...args)}finally{invalidate()}
+        };
+      }});
       if(name==='rpc')return (...args)=>query(target.rpc(...args),'rpc:'+args[0],[['rpc',args]],true);if(name==='invalidateReads')return invalidate;const value=target[name];return typeof value==='function'?value.bind(target):value}});
   }
   function getClient(url,key,options={}){
@@ -56,7 +125,7 @@
     }
     if(global.SiKoyekConfig&&(url!==global.SiKoyekConfig.url||key!==global.SiKoyekConfig.key))throw new Error('Client harus memakai backend lingkungan aktif');
     const id=url+'|'+key;
-    if(!clients.has(id))clients.set(id,wrapClient(factory(url,key,{...options,auth:{...options.auth,persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:global.sessionStorage}})));
+    if(!clients.has(id))clients.set(id,wrapClient(factory(url,key,{...options,auth:{...options.auth,persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:global.sessionStorage}}),global.SiKoyekConfig?.multiTenant));
     return clients.get(id);
   }
   global.SiKoyekBackend={getClient,registerBackend,wrapClient};
