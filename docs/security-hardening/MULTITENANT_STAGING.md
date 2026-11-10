@@ -58,3 +58,9 @@ psql "$SIKOYEK_DISPOSABLE_TEST_URL" -X -f tests/security/postgres-multitenant-re
 - Periksa profil tanpa Auth, Auth tanpa profil, email bentrok, nilai wajib yang kosong, dan nilai numerik yang dapat dibulatkan atau melampaui presisi target. Tentukan penanganannya sebelum memindahkan akun atau data.
 - Jalankan rekonsiliasi setelah impor. Cocokkan jumlah akun dan data referensi, lalu pastikan jumlah proyek, nilai kontrak, RAP, transaksi, dan progress MASTER tetap sama. Verifikasi RLS dari kedua akun setelah impor dan pastikan user tanpa perusahaan tetap tertolak.
 - Ambil backup konsisten kedua sumber, verifikasi bahwa backup dapat dipulihkan pada lingkungan terpisah, dan siapkan rollback sebelum meminta persetujuan rilis. Latihan sintetis tidak menguji pemulihan backup aktual, migrasi Supabase Auth, atau deployment.
+
+## Uji Supabase Auth dan pemulihan backup
+
+Workflow **Test shared SiKoyek with real local Auth** menjalankan satu stack Supabase dengan dua perusahaan sintetis di runner. Uji mencakup login, rotasi token, profil tanpa perusahaan, pemisahan proyek dan kontrak, serta reset dan hapus akun melalui Edge Function. Workflow memakai data contoh tanpa menghubungkan proyek Supabase aktif.
+
+Backup aktual harus dipulihkan di komputer yang menyimpan salinan cadangan. Periksa SHA-256 semua file dan siapkan dua tujuan lokal sekali pakai dengan PostgreSQL 17 dan skema Supabase Auth yang kompatibel. Pulihkan role, skema, dan data secara berurutan dalam satu transaksi dengan berhenti saat ada galat. Riwayat migrasi perlu pemeriksaan terpisah terhadap struktur bawaan pada target. Catat hasil agregat jumlah proyek, profil, akun Auth, transaksi dan progress. Simpan file backup, nilai kredensial, dan isi baris di komputer lokal. Uji pemulihan aktual dinyatakan lulus setelah kedua cadangan bisa dimuat dan rekonsiliasi cocok dengan snapshot masing-masing.
