@@ -39,7 +39,7 @@
   }
 
   function ensureCoreItems(){
-    const nav=document.querySelector('.sidebar .nav');if(!nav)return;
+    const nav=document.querySelector('.sidebar .nav');if(!nav||nav.closest('.control-sidebar'))return;
     const hasText=t=>[...nav.querySelectorAll('a,button')].some(x=>norm(x.textContent)===t);
     if(!hasText('daftar_user')&&typeof window.openUserManagement==='function'){
       const b=document.createElement('button');b.type='button';b.dataset.usersNav='1';b.textContent='Daftar User';b.onclick=()=>window.openUserManagement();nav.appendChild(b);
@@ -106,7 +106,7 @@
     document.querySelectorAll('[data-rbac-module]').forEach(el=>{
       const m=String(el.dataset.rbacModule||'').toUpperCase(),a=String(el.dataset.rbacAction||'VIEW').toUpperCase();
       if(!m)return;
-      if(el.closest('.sidebar')){el.style.display=canView(m)?'':'none';el.style.removeProperty('pointer-events');return;}
+      if(el.closest('.sidebar')){if(!el.closest('.control-sidebar'))el.style.display=canView(m)?'':'none';el.style.removeProperty('pointer-events');return;}
       if(a==='VIEW'){if(!canView(m))disable(el)}else if(!canAct(m,a))disable(el);
     });
     window.__SIKOYEK_RBAC_APPLIED_V8__=true;
@@ -121,7 +121,7 @@
       if(role!=='admin'){
         const {data:rps,error:re}=await client.from('role_permissions').select('permission_id').eq('role_id',profile.role_id);if(re)throw re;
         const ids=(rps||[]).map(x=>x.permission_id).filter(Boolean);
-        if(ids.length){const {data:ps,error:qe}=await client.from('permissions').select('id,module,action').in('id',ids);if(qe)throw qe;(ps||[]).forEach(x=>{const m=String(x.module||'').toUpperCase(),a=String(x.action||'').toUpperCase();if(a==='VIEW')out.views[m]=true;else{out.actions[m]??={};out.actions[m][a]=true}})}
+        if(ids.length){const {data:ps,error:qe}=await client.from('permissions').select('id,module,action').in('id',ids);if(qe)throw qe;(ps||[]).forEach(x=>{const key=String(x.module||'').toUpperCase(),m=key==='FINANCE'?M.KEUANGAN:key,a=String(x.action||'').toUpperCase();if(a==='VIEW')out.views[m]=true;else{out.actions[m]??={};out.actions[m][a]=true}})}
       }
       window.__SIKOYEK_RBAC_PERMISSIONS_V6__=out;apply();
     }catch(e){console.warn('SiKoyek RBAC direct:',e)}

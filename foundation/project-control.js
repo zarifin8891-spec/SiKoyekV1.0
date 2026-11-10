@@ -1,0 +1,492 @@
+(function (global) {
+  'use strict';
+
+  const modules = {
+    schedule: {
+      title: 'Jadwal & Milestones', permission: 'PROGRESS', icon: 'calendar',
+      tables: {
+        project_progress_targets: ['Target Kurva-S', 'target_date',
+          ['target_date', 'Tanggal target', 'date'], ['target_percent', 'Target kumulatif (%)', 'number', 0, 100]],
+        project_milestones: ['Milestones', 'due_date',
+          ['name', 'Milestone', 'text'], ['due_date', 'Tenggat', 'date'], ['completed_on', 'Tanggal selesai', 'date', null, null, true]]
+      }
+    },
+    materials: {
+      title: 'Material & Logistik', permission: 'PROGRESS', icon: 'layers',
+      tables: {
+        project_material_stocks: ['Saldo material per proyek', 'name',
+          ['name', 'Material', 'text'], ['unit', 'Satuan', 'text'], ['quantity', 'Saldo', 'number', 0], ['minimum_quantity', 'Stok minimum', 'number', 0]]
+      }
+    },
+    resources: {
+      title: 'Tenaga Kerja & Alat', permission: 'PROGRESS', icon: 'users',
+      tables: {
+        project_worker_assignments: ['Penempatan tenaga kerja', 'starts_on',
+          ['worker_code', 'Kode pekerja', 'text'], ['worker_name', 'Nama pekerja', 'text'],
+          ['starts_on', 'Mulai', 'date'], ['ends_on', 'Selesai', 'date', null, null, true]],
+        project_equipment_assignments: ['Penempatan alat', 'starts_on',
+          ['equipment_code', 'Kode alat', 'text'], ['name', 'Nama alat', 'text'],
+          ['starts_on', 'Mulai', 'date'], ['ends_on', 'Selesai', 'date', null, null, true]]
+      }
+    },
+    reports: {
+      title: 'Laporan & Dokumen', permission: 'LAPORAN', icon: 'document',
+      tables: {
+        project_document_links: ['Tautan dokumen proyek', 'title',
+          ['title', 'Judul dokumen', 'text'], ['url', 'URL HTTPS', 'url']]
+      }
+    },
+    field: {
+      title: 'Log Lapangan', permission: 'PROGRESS', icon: 'activity',
+      tables: {
+        project_field_logs: ['Aktivitas lapangan', 'logged_at',
+          ['logged_at', 'Waktu aktivitas', 'datetime-local'], ['description', 'Aktivitas', 'text']],
+        project_weather_observations: ['Observasi cuaca lapangan', 'observed_at',
+          ['observed_at', 'Waktu observasi', 'datetime-local'], ['condition', 'Kondisi cuaca', 'text'],
+          ['temperature_c', 'Suhu (°C)', 'number', -60, 65, true]]
+      }
+    }
+  };
+
+  const icons = {
+    dashboard: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+    project: '<rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4h8v3m-13 6h18"/>',
+    calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18"/>',
+    budget: '<rect x="3" y="5" width="18" height="15" rx="2"/><path d="M21 10h-7v5h7"/>',
+    layers: '<path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/>',
+    users: '<circle cx="9" cy="7" r="3"/><path d="M3 20v-3a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v3m2-16a3 3 0 0 1 0 6m1 3a5 5 0 0 1 3 5v2"/>',
+    document: '<path d="M6 3h8l4 4v14H6zm7 0v5h5M9 12h6m-6 4h6"/>',
+    activity: '<path d="M3 12h4l3-7 4 14 3-7h4"/>',
+    settings: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>',
+    menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
+    search: '<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/>'
+  };
+  const icon = name => `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${icons[name]}</svg>`;
+  const number = new Intl.NumberFormat('id-ID', {maximumFractionDigits: 1});
+  const compact = new Intl.NumberFormat('id-ID', {notation: 'compact', maximumFractionDigits: 1});
+  const dateLabel = new Intl.DateTimeFormat('id-ID', {dateStyle: 'long'});
+  const timeLabel = new Intl.DateTimeFormat('id-ID', {dateStyle: 'short', timeStyle: 'short'});
+  const isoLocal = (date = new Date()) => {
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
+  };
+  const percentage = value => number.format(value) + '%';
+  const currency = value => 'Rp ' + compact.format(value);
+  const active = p => ['JALAN', 'RENCANA'].includes(p.status);
+  const message = text => `<p class="control-note">${esc(text)}</p>`;
+  const options = rows => rows.map(p => `<option value="${esc(p.project_id)}">${esc(p.project_name || p.project_code)}</option>`).join('');
+  let chartProject = '';
+  let identity = '';
+  let admin = false;
+  let access = new Set();
+
+  const can = (permission, action = 'VIEW') => admin || access.has(permission + '.' + action);
+
+  async function setIdentity(user) {
+    identity = user?.user_metadata?.full_name || user?.email || '';
+    admin = false;
+    access = new Set();
+    if (!user?.id) return;
+    try {
+      const {data: profile} = await sb.from('profiles')
+        .select('full_name,is_active,role_id,roles(name,is_active)').eq('id', user.id).maybeSingle();
+      if (!profile?.is_active || !profile.roles?.is_active) return;
+      identity = profile.full_name || identity;
+      admin = profile.roles.name.trim().toLowerCase() === 'admin';
+      if (admin) return;
+      const {data: grants} = await sb.from('role_permissions').select('permission_id').eq('role_id', profile.role_id);
+      if (!grants?.length) return;
+      const {data: permissions} = await sb.from('permissions').select('module,action').in('id', grants.map(grant => grant.permission_id));
+      access = new Set((permissions || []).map(row => {
+        const key = row.module.toUpperCase();
+        return (key === 'FINANCE' ? 'KEUANGAN' : key) + '.' + row.action.toUpperCase();
+      }));
+    } catch {
+      // The backend also checks every new table operation.
+    }
+  }
+
+  function nav(page) {
+    const entries = [
+      ['dashboard', 'Dasbor Utama', 'dashboard', 'DASHBOARD', "go('dashboard')"],
+      ['projects', 'Proyek Aktif', 'project', 'PROJECTS', "state.activeOnly=true;go('projects')"],
+      ['schedule', modules.schedule.title, 'calendar', 'PROGRESS', "go('schedule')"],
+      ['budget', 'Anggaran & Biaya', 'budget', 'KEUANGAN', "go('budget')"],
+      ['materials', modules.materials.title, 'layers', 'PROGRESS', "go('materials')"],
+      ['resources', modules.resources.title, 'users', 'PROGRESS', "go('resources')"],
+      ['reports', modules.reports.title, 'document', 'LAPORAN', "go('reports')"],
+      ['field', modules.field.title, 'activity', 'PROGRESS', "go('field')"],
+      ['master-data', 'Pengaturan', 'settings', 'MASTER_DATA', "go('master-data')"],
+      ['users', 'Daftar User', 'users', 'USERS', "go('users')"]
+    ];
+    return `<aside class="sidebar control-sidebar">
+      <div class="control-brand"><span>${icon('project')}</span><strong>SiKoyek</strong><small>V1.0</small></div>
+      <button class="control-menu" type="button" aria-expanded="false" aria-controls="control-nav" onclick="SiKoyekControl.toggleMenu(this)">${icon('menu')} Menu</button>
+      <nav id="control-nav" class="nav" aria-label="Menu utama">
+        ${entries.filter(([key, , , permission]) => key === 'budget' ? can('RAP') || can('KEUANGAN') : can(permission)).map(([key, label, glyph, permission, action]) => {
+          const selected = key === page || key === 'projects' && page === 'detail' || key === 'reports' && page === 'laporan';
+          return `<button type="button" data-rbac-module="${permission}" ${key === 'master-data' ? 'data-master-data-nav' : key === 'users' ? 'data-users-nav' : ''}
+            class="${selected ? 'active' : ''}" ${selected ? 'aria-current="page"' : ''} onclick="${action}">${icon(glyph)}<span>${label}</span></button>`;
+        }).join('')}
+      </nav><div class="sidefoot">Sistem Kontrol Proyek</div>
+    </aside>`;
+  }
+
+  function toggleMenu(button) {
+    const open = button.getAttribute('aria-expanded') === 'true';
+    button.setAttribute('aria-expanded', String(!open));
+    button.closest('.sidebar').classList.toggle('control-open', !open);
+  }
+
+  function card(label, value, detail, glyph, id = '') {
+    return `<section class="control-card control-kpi">${icon(glyph)}<h2>${label}</h2>
+      <strong ${id ? `id="${id}"` : ''}>${value}</strong><div class="control-note">${detail}</div></section>`;
+  }
+
+  function tableRows(rows) {
+    return rows.slice(0, 8).map(p => `<tr>
+      <td><button type="button" class="control-link" data-project="${esc(p.project_id)}">${esc(p.project_name || p.project_code)}</button></td>
+      <td>${esc(p.location || '—')}</td><td class="control-number">${money(p.total_realization ?? p.cash_out ?? 0)}</td>
+      <td class="control-number"><progress max="100" value="${Number(p.project_progress || 0)}"></progress> ${percentage(p.project_progress || 0)}</td>
+      <td><span class="control-badge ${healthClass(p.health_status)}">${esc(p.health_status || p.status || '—')}</span></td>
+    </tr>`).join('') || '<tr><td colspan="5">Tidak ada proyek untuk ditampilkan.</td></tr>';
+  }
+
+  function dashboard(root) {
+    const rows = state.summary.filter(periodMatch);
+    const open = rows.filter(active);
+    const running = open.filter(p => p.status === 'JALAN').length;
+    const progress = open.length ? open.reduce((total, p) => total + Number(p.project_progress || 0), 0) / open.length : 0;
+    const budget = rows.reduce((total, p) => total + Number(p.total_rap || 0), 0);
+    const spent = rows.reduce((total, p) => total + Number(p.total_realization ?? p.cash_out ?? 0), 0);
+    const current = rows.find(p => p.project_id === chartProject) || open[0] || rows[0];
+    chartProject = current?.project_id || '';
+    root.innerHTML = `<div class="control-dashboard">
+      <header class="control-head dashboard-head"><div><h1>Dasbor Kontrol Proyek</h1><p>${dateLabel.format(new Date())}</p></div>
+        <div class="control-actions">
+          <label class="control-search">${icon('search')}<input type="search" placeholder="Pencarian proyek" aria-label="Pencarian proyek"></label>
+          <div class="control-identity" title="${esc(identity)}">${icon('users')}<span>${esc(identity || 'Akun SiKoyek')}</span></div>
+          ${can('PROJECTS', 'ADD') ? '<button type="button" class="control-button primary" onclick="openProjectForm()">+ Proyek Baru</button>' : ''}
+          <button type="button" class="control-button" onclick="logout()">Keluar</button>
+        </div>
+      </header>
+      <div class="control-kpis">
+        ${card('Total Proyek Aktif', `${open.length} Proyek`, `${running} Berjalan · ${open.length - running} Persiapan`, 'project')}
+        ${card('Rata-rata Progress Fisik', open.length ? percentage(progress) : '—', `<progress max="100" value="${progress}" aria-label="Rata-rata progress fisik"></progress>`, 'activity')}
+        ${card('Anggaran Terpakai', currency(spent), `/ ${currency(budget)} RAP · ${budget ? percentage(spent / budget * 100) : 'RAP belum tersedia'}`, 'budget')}
+        ${card('Tenaga Kerja Aktif', '—', 'Penempatan di proyek aktif hari ini', 'users', 'control-worker-count')}
+      </div>
+      <div class="control-columns">
+        <div class="control-stack">
+          <section class="control-card"><header class="control-section-head"><h2>Kurva-S &amp; Kemajuan Proyek</h2>
+            <select class="control-select" aria-label="Proyek Kurva-S" ${current ? '' : 'disabled'}><option value="" hidden>Pilih proyek</option>${options(rows)}</select>
+          </header><div class="control-curve" aria-live="polite">${message(current ? 'Memuat Kurva-S…' : 'Belum ada proyek.')}</div></section>
+          <section class="control-card control-project-list"><header class="control-section-head"><h2>Daftar Proyek Utama</h2>
+            <button type="button" class="control-link" onclick="state.activeOnly=false;go('projects')">Lihat semua</button></header>
+            <div class="control-table-wrap"><table class="control-table"><thead><tr><th>Nama Proyek</th><th>Lokasi</th>
+              <th class="control-number">Biaya Aktual</th><th class="control-number">Progress</th><th>Status</th></tr></thead>
+              <tbody>${tableRows(rows)}</tbody></table></div>
+          </section>
+        </div>
+        <aside class="control-stack" aria-label="Ringkasan lapangan">
+          <section class="control-card"><h2>Cuaca Lapangan Hari Ini</h2><div data-panel="weather">${message('Memuat observasi…')}</div></section>
+          <section class="control-card"><h2>Log &amp; Aktivitas Lapangan</h2><div data-panel="logs">${message('Memuat aktivitas…')}</div></section>
+          <section class="control-card"><h2>Stok Material Kritis</h2><div data-panel="stocks">${message('Memuat stok…')}</div></section>
+        </aside>
+      </div>
+      <details class="control-card control-legacy"><summary>Analisis dan kontrol SiKoyek</summary>${legacyDashboard()}</details>
+    </div>`;
+
+    const view = root.querySelector('.control-dashboard');
+    const search = view.querySelector('input[type=search]');
+    search.addEventListener('input', () => {
+      const query = search.value.trim().toLocaleLowerCase('id-ID');
+      view.querySelector('tbody').innerHTML = tableRows(rows.filter(p => [p.project_name, p.project_code, p.location]
+        .some(value => String(value || '').toLocaleLowerCase('id-ID').includes(query))));
+    });
+    view.querySelector('.control-project-list').addEventListener('click', event => {
+      const button = event.target.closest('[data-project]');
+      if (button) openProject(button.dataset.project);
+    });
+    const select = view.querySelector('select.control-select');
+    select.value = chartProject;
+    select.addEventListener('change', () => {
+      chartProject = select.value;
+      loadSite(view, rows.find(p => p.project_id === chartProject));
+    });
+    loadSite(view, current);
+    loadWorkerCount(view, open);
+  }
+
+  async function rowsFor(table, configure = query => query) {
+    const rows = [];
+    const size = 500;
+    for (let offset = 0; ; offset += size) {
+      const {data, error} = await configure(sb.from(table).select('*')).order('id').range(offset, offset + size - 1);
+      if (error) throw new Error(error.message);
+      rows.push(...data);
+      if (data.length < size) return rows;
+    }
+  }
+
+  async function loadWorkerCount(view, open) {
+    const box = view.querySelector('#control-worker-count');
+    if (!can('PROGRESS')) {
+      box.title = 'Data penempatan memerlukan akses Progress.';
+      return;
+    }
+    if (!open.length) {
+      box.textContent = '0 Orang';
+      return;
+    }
+    try {
+      const date = isoLocal().slice(0, 10);
+      const ids = new Set(open.map(p => p.project_id));
+      const workers = await rowsFor('project_worker_assignments', query => query.lte('starts_on', date));
+      const live = workers.filter(row => ids.has(row.project_id) && (!row.ends_on || row.ends_on >= date));
+      box.textContent = `${new Set(live.map(row => row.worker_code.trim().toUpperCase())).size} Orang`;
+    } catch {
+      box.title = 'Data penempatan tenaga kerja belum dapat dimuat.';
+    }
+  }
+
+  function actualSeries(items, records, startDate) {
+    const weights = new Map(items.map(item => [item.id, Number(item.weight)]));
+    const totals = new Map(), points = new Map();
+    let progress = 0;
+    for (const row of [...records].sort((a, b) => a.progress_date.localeCompare(b.progress_date))) {
+      const item = row.work_item_id, before = totals.get(item) || 0;
+      const after = Math.min(1, before + Number(row.progress_percentage));
+      totals.set(item, after);
+      progress += (after - before) * (weights.get(item) || 0) * 100;
+      points.set(row.progress_date, progress);
+    }
+    const series = Array.from(points, ([date, value]) => ({date, value}));
+    if (series.length && startDate && startDate < series[0].date) series.unshift({date: startDate, value: 0});
+    return series;
+  }
+
+  function drawCurve(target, actual) {
+    const all = [...target, ...actual];
+    if (!all.length) return message('Belum ada target atau catatan progress untuk proyek ini.');
+    const time = date => Date.parse(date + 'T00:00:00Z');
+    const start = all.reduce((first, point) => Math.min(first, time(point.date)), Infinity);
+    const end = all.reduce((last, point) => Math.max(last, time(point.date)), -Infinity);
+    const x = date => 55 + (end === start ? 315 : (time(date) - start) / (end - start) * 635);
+    const y = value => 222 - Math.max(0, Math.min(value, 100)) * 1.96;
+    const draw = (series, kind) => `<polyline class="control-line ${kind}" points="${series.map(p => `${x(p.date)},${y(p.value)}`).join(' ')}"/>${
+      series.map(p => `<circle class="control-dot ${kind}" cx="${x(p.date)}" cy="${y(p.value)}" r="3"><title>${esc(p.date)} · ${percentage(p.value)}</title></circle>`).join('')}`;
+    const ticks = end === start ? [start] : Array.from({length: 5}, (_, i) => start + (end - start) * i / 4);
+    const tickFormat = new Intl.DateTimeFormat('id-ID', {day: 'numeric', month: 'short', timeZone: 'UTC'});
+    return `<div class="control-legend"><span class="target">Target${target.length ? ' · ' + percentage(target.at(-1).value) : ' · belum ada data'}</span>
+      <span class="actual">Realisasi${actual.length ? ' · ' + percentage(actual.at(-1).value) : ' · belum ada data'}</span></div>
+      <svg class="control-chart" viewBox="0 0 730 255" role="img" aria-label="Kurva progress kumulatif target dan realisasi">
+        ${[0, 20, 40, 60, 80, 100].map(value => `<line x1="55" x2="690" y1="${y(value)}" y2="${y(value)}"/><text x="44" y="${y(value) + 4}" text-anchor="end">${value}%</text>`).join('')}
+        ${ticks.map(t => `<text x="${x(new Date(t).toISOString().slice(0, 10))}" y="246" text-anchor="middle">${tickFormat.format(t)}</text>`).join('')}
+        ${draw(target, 'target')}${draw(actual, 'actual')}
+      </svg>`;
+  }
+
+  async function loadSite(view, project) {
+    const chart = view.querySelector('.control-curve');
+    const panel = key => view.querySelector(`[data-panel="${key}"]`);
+    const id = project?.project_id;
+    if (!id) {
+      for (const key of ['weather', 'logs', 'stocks']) panel(key).innerHTML = message('Pilih proyek untuk melihat data lapangan.');
+      return;
+    }
+    const selection = Symbol();
+    view.controlSelection = selection;
+    chart.innerHTML = message('Memuat Kurva-S…');
+    for (const key of ['weather', 'logs', 'stocks']) panel(key).innerHTML = message('Memuat data lapangan…');
+    const valid = () => view.isConnected && view.controlSelection === selection;
+    const read = table => rowsFor(table, query => query.eq('project_id', id));
+    const latest = async (table, date, limit) => {
+      const {data, error} = await sb.from(table).select('*').eq('project_id', id).lte(date, new Date().toISOString()).order(date, {ascending: false}).order('id').limit(limit);
+      if (error) throw new Error(error.message);
+      return data;
+    };
+    const render = async (element, task, build, errorText) => {
+      try {
+        const data = await task;
+        if (valid()) element.innerHTML = build(data);
+      } catch {
+        if (valid()) element.innerHTML = message(errorText);
+      }
+    };
+    if (!can('PROGRESS')) {
+      for (const key of ['weather', 'logs', 'stocks']) panel(key).innerHTML = message('Data lapangan memerlukan akses Progress.');
+      chart.innerHTML = message('Kurva-S memerlukan akses Progress.');
+      return;
+    }
+    const curve = Promise.allSettled([read('project_progress_targets'), read('project_work_items'), read('progress_records')]);
+    await Promise.all([
+      render(chart, curve, ([target, items, records]) => {
+        const planned = (target.value || []).map(row => ({date: row.target_date, value: Number(row.target_percent)}))
+          .sort((a, b) => a.date.localeCompare(b.date));
+        const actual = items.value && records.value ? actualSeries(items.value, records.value, project.start_date) : [];
+        const missing = [target, items, records].some(result => result.status === 'rejected');
+        const warning = missing ? message('Sebagian data Kurva-S belum dapat dimuat.') : '';
+        return warning + drawCurve(planned, actual);
+      }),
+      render(panel('weather'), latest('project_weather_observations', 'observed_at', 1), observations => {
+        const row = observations.find(value => isoLocal(new Date(value.observed_at)).slice(0, 10) === isoLocal().slice(0, 10));
+        return row ? `<p>${esc(project.location || project.project_name)} · ${esc(row.condition)}
+          ${row.temperature_c == null ? '' : ' · ' + number.format(row.temperature_c) + '°C'}</p>
+          ${message('Observasi ' + timeLabel.format(new Date(row.observed_at)))}` : message('Belum ada observasi cuaca hari ini.');
+      }, 'Observasi cuaca belum dapat dimuat.'),
+      render(panel('logs'), latest('project_field_logs', 'logged_at', 4), logs => logs.length ?
+        `<ul class="control-timeline">${logs.map(row => `<li>${esc(row.description)}<small>${timeLabel.format(new Date(row.logged_at))}</small></li>`).join('')}</ul>` :
+        message('Belum ada aktivitas lapangan.'), 'Log lapangan belum dapat dimuat.'),
+      render(panel('stocks'), read('project_material_stocks'), stocks => {
+        const critical = stocks.filter(row => Number(row.quantity) <= Number(row.minimum_quantity))
+          .sort((a, b) => a.quantity / (a.minimum_quantity || 1) - b.quantity / (b.minimum_quantity || 1));
+        if (!stocks.length) return message('Belum ada data stok material.');
+        if (!critical.length) return message('Tidak ada stok pada atau di bawah ambang minimum.');
+        return `<ul class="control-stocks">${critical.slice(0, 3).map(row => {
+          const ratio = Number(row.minimum_quantity) > 0 ? row.quantity / row.minimum_quantity * 100 : 0;
+          return `<li><span class="control-ring" style="--stock:${ratio}%">${percentage(ratio)}</span><strong>${esc(row.name)}</strong>
+            <small>${number.format(row.quantity)} / ${number.format(row.minimum_quantity)} ${esc(row.unit)}</small></li>`;
+        }).join('')}</ul>`;
+      }, 'Stok material belum dapat dimuat.')
+    ]);
+  }
+
+  function fieldHTML(field, row) {
+    const [key, label, type, min, max, optional] = field;
+    let value = row?.[key] ?? '';
+    if (value && type === 'datetime-local') value = isoLocal(new Date(value));
+    return `<label>${label}<input name="${key}" type="${type}" value="${esc(value)}" ${optional ? '' : 'required'}
+      ${type === 'number' ? 'step="0.01"' : ''} ${min == null ? '' : `min="${min}"`} ${max == null ? '' : `max="${max}"`}></label>`;
+  }
+
+  function cell(field, value) {
+    if (value == null || value === '') return '—';
+    if (field[2] === 'number') return number.format(value);
+    if (field[2] === 'datetime-local') return timeLabel.format(new Date(value));
+    if (field[2] === 'url' && /^https:\/\/[^\s]+$/i.test(value)) {
+      return `<a href="${esc(value)}" target="_blank" rel="noopener noreferrer">Buka dokumen</a>`;
+    }
+    return esc(value);
+  }
+
+  async function mountTable(section, table, definition, id, permission) {
+    const [title, sort, ...fields] = definition;
+    const render = async (editing = null) => {
+      section.innerHTML = `<h2>${title}</h2>${message('Memuat data…')}`;
+      let rows;
+      try {
+        rows = await rowsFor(table, query => query.eq('project_id', id).order(sort));
+      } catch {
+        section.innerHTML = `<h2>${title}</h2>${message('Data belum dapat dimuat. Periksa akses dan migrasi database versi uji.')}`;
+        return;
+      }
+      const write = editing ? 'EDIT' : 'ADD';
+      section.innerHTML = `<h2>${title}</h2><form class="control-form" ${can(permission, write) ? '' : 'hidden'}>${fields.map(field => fieldHTML(field, editing)).join('')}
+        <div class="control-form-actions"><button class="control-button primary" data-rbac-module="${permission}" data-rbac-action="${write}">${editing ? 'Simpan Perubahan' : 'Tambah'}</button>
+        ${editing ? '<button type="button" class="control-button" data-cancel>Batal</button>' : ''}</div>
+        <p class="control-form-message" role="status"></p></form>
+        <div class="control-table-wrap"><table class="control-table"><thead><tr>${fields.map(field => `<th class="${field[2] === 'number' ? 'control-number' : ''}">${field[1]}</th>`).join('')}<th>Aksi</th></tr></thead>
+          <tbody>${rows.map((row, i) => `<tr>${fields.map(field => `<td class="${field[2] === 'number' ? 'control-number' : ''}">${cell(field, row[field[0]])}</td>`).join('')}
+            <td class="control-row-actions"><button class="control-link" ${can(permission, 'EDIT') ? '' : 'hidden'} data-edit="${i}" data-rbac-module="${permission}" data-rbac-action="EDIT">Edit</button>
+              <button class="control-link" ${can(permission, 'DELETE') ? '' : 'hidden'} data-delete="${i}" data-rbac-module="${permission}" data-rbac-action="DELETE">Hapus</button></td></tr>`).join('') ||
+              `<tr><td colspan="${fields.length + 1}">Belum ada data.</td></tr>`}</tbody></table></div>`;
+      const form = section.querySelector('form');
+      const status = section.querySelector('[role=status]');
+      const submit = form.querySelector('button');
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (submit.disabled) return;
+        const data = new FormData(form);
+        const payload = {};
+        for (const [key, label, type, , , optional] of fields) {
+          const input = data.get(key).trim();
+          if ((!input && !optional) || (type === 'url' && !/^https:\/\/[^\s]+$/i.test(input))) {
+            status.textContent = `Periksa kembali ${label}.`;
+            return;
+          }
+          payload[key] = !input ? null : type === 'number' ? Number(input) :
+            type === 'datetime-local' ? new Date(input).toISOString() : input;
+        }
+        submit.disabled = true;
+        try {
+          const request = editing ? sb.from(table).update(payload).eq('id', editing.id).eq('project_id', id) :
+            sb.from(table).insert({...payload, project_id: id});
+          const {data: saved, error} = await request.select('id').maybeSingle();
+          if (error || !saved) throw new Error(error?.message || 'Perubahan tidak tersimpan. Periksa hak akses.');
+          await render();
+        } catch (error) {
+          status.textContent = error.message;
+        } finally {
+          submit.disabled = false;
+        }
+      });
+      section.querySelector('[data-cancel]')?.addEventListener('click', () => render());
+      section.querySelectorAll('[data-edit]').forEach(button => button.addEventListener('click', () => render(rows[Number(button.dataset.edit)])));
+      section.querySelectorAll('[data-delete]').forEach(button => button.addEventListener('click', async () => {
+        if (!global.confirm('Hapus catatan ini?')) return;
+        button.disabled = true;
+        try {
+          const row = rows[Number(button.dataset.delete)];
+          const {data: removed, error} = await sb.from(table).delete().eq('id', row.id).eq('project_id', id).select('id').maybeSingle();
+          if (error || !removed) throw new Error(error?.message || 'Catatan tidak terhapus. Periksa hak akses.');
+          await render();
+        } catch (error) {
+          status.textContent = error.message;
+        } finally {
+          button.disabled = false;
+        }
+      }));
+      global.applyRBACNav?.();
+    };
+    await render();
+  }
+
+  function showModule(root, page) {
+    if (page === 'budget') {
+      root.innerHTML = `<div class="control-module"><header class="control-head"><div><h1>Anggaran &amp; Biaya</h1>
+        <p>Kelola anggaran dan arus kas proyek melalui modul SiKoyek.</p></div></header>
+        <div class="control-card control-budget-actions">
+          ${can('RAP') ? '<a class="control-button" href="./rap.html">Buka RAP</a>' : ''}
+          ${can('KEUANGAN') ? '<a class="control-button" href="./keuangan.html">Buka Keuangan Proyek</a>' : ''}
+          ${can('RAP') || can('KEUANGAN') ? '' : message('Akses ke menu ini belum diberikan.')}
+        </div></div>`;
+      return;
+    }
+    const config = modules[page], projects = state.summary;
+    if (!can(config.permission)) {
+      root.innerHTML = message('Akses ke menu ini belum diberikan.');
+      return;
+    }
+    root.innerHTML = `<div class="control-module"><header class="control-head"><div><h1>${config.title}</h1>
+      <p>Pilih proyek untuk melihat dan mengelola data.</p></div>
+      ${page === 'reports' ? '<button type="button" class="control-button" data-open-report>Buka Laporan SiKoyek</button>' : ''}</header>
+      <label class="control-project-select">Proyek <select class="control-select" ${projects.length ? '' : 'disabled'}>
+        <option value="" hidden>Pilih proyek</option>${options(projects)}</select></label>
+      <div class="control-module-tables"></div></div>`;
+    root.querySelector('[data-open-report]')?.addEventListener('click', () => go('laporan'));
+    const select = root.querySelector('select'), tables = root.querySelector('.control-module-tables');
+    select.value = projects.some(row => row.project_id === chartProject) ? chartProject : projects[0]?.project_id || '';
+    const load = () => {
+      tables.replaceChildren();
+      if (!select.value) {
+        tables.innerHTML = message('Belum ada proyek.');
+        return;
+      }
+      chartProject = select.value;
+      for (const [table, definition] of Object.entries(config.tables)) {
+        const section = document.createElement('section');
+        section.className = 'control-card';
+        tables.append(section);
+        mountTable(section, table, definition, select.value, config.permission);
+      }
+    };
+    select.addEventListener('change', load);
+    load();
+  }
+
+  global.SiKoyekControl = {
+    nav, toggleMenu, dashboard, module: showModule, isModule: page => page === 'budget' || Object.hasOwn(modules, page),
+    setIdentity
+  };
+})(window);

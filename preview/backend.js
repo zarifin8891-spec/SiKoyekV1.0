@@ -10,7 +10,9 @@
     if(config?.backend!=='preview'||!config.url.endsWith('.invalid'))throw new Error('Adapter preview hanya boleh memakai lingkungan uji');
     storeKey='sikoyek-preview-data-v1-'+config.id;sessionKey=config.storageKey;
     try{state=JSON.parse(localStorage.getItem(storeKey)||'null')}catch(_){ }
-    if(!state?.tables){state={tables:global.SiKoyekPreviewSeed(),passwords:{}};save()}
+    const seed=global.SiKoyekPreviewSeed();
+    if(!state?.tables){state={tables:seed,passwords:{}};save()}
+    else for(const [name,rows] of Object.entries(seed))if(!Object.hasOwn(state.tables,name))state.tables[name]=rows;
     if(!sessionStorage.getItem(sessionKey)&&sessionStorage.getItem('sikoyek-preview-role-'+config.id)&&!sessionStorage.getItem(sessionKey+'-out')){
       const role=sessionStorage.getItem('sikoyek-preview-role-'+config.id),profile=state.tables.profiles.find(p=>p.role_id===role&&p.is_active);
       if(profile)setSession(profile);
@@ -26,8 +28,10 @@
   function profile(){const current=session();return state.tables.profiles.find(p=>p.id===current?.user.id&&p.is_active)}
   function can(table,action){
     const who=profile();if(!who)return false;if(who.role_id==='admin')return true;
-    const module=({projects:'PROJECTS',project_work_items:'PROJECTS',progress_records:'PROGRESS',project_rap:'RAP',financial_transactions:'KEUANGAN',project_categories:'MASTER_DATA',project_managers:'MASTER_DATA',transaction_categories:'MASTER_DATA',payment_methods:'MASTER_DATA'})[table];
+    const fieldTables=['project_progress_targets','project_milestones','project_material_stocks','project_worker_assignments','project_equipment_assignments','project_field_logs','project_weather_observations'];
+    const module=fieldTables.includes(table)?'PROGRESS':({project_document_links:'LAPORAN',projects:'PROJECTS',project_work_items:'PROJECTS',progress_records:'PROGRESS',project_rap:'RAP',financial_transactions:'KEUANGAN',project_categories:'MASTER_DATA',project_managers:'MASTER_DATA',transaction_categories:'MASTER_DATA',payment_methods:'MASTER_DATA'})[table];
     if(!module)return action==='VIEW';
+    if(table==='project_document_links'&&action!=='VIEW')return false;
     const p=state.tables.permissions.find(p=>p.module===module&&p.action===action);
     return state.tables.role_permissions.some(r=>r.role_id===who.role_id&&r.permission_id===p?.id);
   }

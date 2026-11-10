@@ -45,3 +45,9 @@ Workflow `prepare-foundation-release.yml` menghasilkan artifact CI tanpa publika
 Pada 07 Oktober 2026 pengguna mengizinkan rollout frontend bersama. `pages-common.yml` menjadi satu publisher pada push Main dan dispatch manual. Dua publisher lama tetap diarsipkan. `release-lock.json` mencatat fingerprint aplikasi yang sudah diuji; perubahan aplikasi dengan fingerprint berbeda gagal sebelum publikasi sampai lock diperbarui setelah validasi. Workflow selalu menjalankan tes/verifikasi dan menyimpan cadangan sebelum memublikasikan.
 
 Daftar pelanggan yang ikut rilis berada pada `release-lock.json.configFiles`. Untuk pelanggan baru, tambahkan konfigurasi backend miliknya ke daftar ini; builder dan publisher otomatis menyertakan pelanggan tersebut dalam paket dari sumber aplikasi yang sama. Jangan memakai preview sebagai konfigurasi produksi. Provisioning backend tetap proses terpisah; pipeline ini tidak mengubah database.
+
+## Dasbor Kontrol Proyek
+
+Preview menampilkan modul jadwal, stok, penempatan, dokumen, dan observasi lapangan dengan data sintetis. Untuk uji Supabase, gunakan database uji yang sudah menjalankan skema dasar SiKoyek dan periksa riwayat migrasinya. Terapkan migrasi baru `20261110105355_dashboard_project_control.sql` satu kali pada database tersebut. Rilis frontend bergantung pada ketersediaan tabel tambahan di setiap lingkungan yang akan menerimanya.
+
+Modul lapangan memakai izin Progress yang sudah ada. Dokumen memakai izin Laporan. Dengan izin bawaan, perubahan tautan dokumen hanya tersedia untuk Admin. Penempatan memakai kode pekerja untuk menghitung pekerja unik per hari. Stok merupakan saldo yang dicatat per proyek dan cuaca merupakan observasi lapangan. Berkas dokumen tetap disimpan di lokasi HTTPS yang ditautkan.

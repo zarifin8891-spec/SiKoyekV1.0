@@ -3,7 +3,7 @@
   let healthClient=null,lastSignature='',busy=false;
 
   function esc(s){return String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
-  function dashboardEl(){return [...document.querySelectorAll('.content')].find(x=>x.querySelector('.top h1')?.textContent.trim().toLowerCase()==='dashboard')}
+  function dashboardEl(){return document.querySelector('.control-legacy') || [...document.querySelectorAll('.content')].find(x=>x.querySelector('.top h1')?.textContent.trim().toLowerCase()==='dashboard')}
 
   function syncDashboardRows(){
     const dashboard=dashboardEl();
