@@ -43,3 +43,18 @@ Uji PostgreSQL mencakup kontrak, ringkasan, detail, Cost Control, dan pengecekan
 1. Cocokkan skema aktual kedua sumber, termasuk view, fungsi berhak istimewa, dan format data lama. Uji perubahan pada salinan terisolasi.
 2. Jalankan pengujian aplikasi dengan Supabase Auth dan API staging.
 3. Cocokkan data dari kedua sumber, termasuk benturan email, kode dan ID. Siapkan pemetaan impor, backup, latihan pemulihan, dan verifikasi sebelum mengajukan persetujuan perubahan produksi.
+
+## Latihan impor sesuai audit skema
+
+Jalankan latihan terpisah pada database PostgreSQL 17 lokal yang kosong. Gunakan cluster sekali pakai karena skrip membuat role database uji. Latihan memakai skema referensi lengkap, penyesuaian nullability dan presisi dari MASTER, serta data sintetis KONSTRUVA. Skrip menutup tahap impor dengan rollback.
+
+```sh
+psql "$SIKOYEK_DISPOSABLE_TEST_URL" -X -f tests/security/postgres-multitenant-rehearsal.sql
+```
+
+- Selesaikan pembatasan RLS, akses view finansial, dan panggilan langsung ke fungsi status lama sebelum kedua perusahaan berbagi database.
+- Nama role, kode proyek, nama kategori, metode bayar, dan kode serta nama pengawas memiliki keunikan per perusahaan. Email login dan identitas pengguna tetap unik di layanan Auth bersama.
+- Cocokkan role berdasarkan nama perusahaan dan role. Cocokkan izin berdasarkan modul dan aksi yang dinormalisasi. Audit menemukan pasangan izin yang sama pada saat pemeriksaan. Ulangi perbandingan pada snapshot yang akan dimigrasikan.
+- Periksa profil tanpa Auth, Auth tanpa profil, email bentrok, nilai wajib yang kosong, dan nilai numerik yang dapat dibulatkan atau melampaui presisi target. Tentukan penanganannya sebelum memindahkan akun atau data.
+- Jalankan rekonsiliasi setelah impor. Cocokkan jumlah akun dan data referensi, lalu pastikan jumlah proyek, nilai kontrak, RAP, transaksi, dan progress MASTER tetap sama. Verifikasi RLS dari kedua akun setelah impor dan pastikan user tanpa perusahaan tetap tertolak.
+- Ambil backup konsisten kedua sumber, verifikasi bahwa backup dapat dipulihkan pada lingkungan terpisah, dan siapkan rollback sebelum meminta persetujuan rilis. Latihan sintetis tidak menguji pemulihan backup aktual, migrasi Supabase Auth, atau deployment.
