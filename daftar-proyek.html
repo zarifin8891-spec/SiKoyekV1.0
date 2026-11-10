@@ -3,18 +3,21 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SiKoyek V1.0 — Daftar Proyek</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 
 
 <link rel="stylesheet" href="./foundation/tokens.css">
 <link rel="stylesheet" href="./foundation/master-data.css">
+<link rel="stylesheet" href="./foundation/visual.css">
 <script src="./environment.js"></script>
 <script src="./foundation/config.js"></script>
 <script src="./foundation/runtime.js"></script>
+<script src="./foundation/visual.js" defer></script>
 <script src="./foundation/backend.js"></script>
 <script src="./foundation/repository.js"></script>
 </head>
-<body class="secondary-page">
+<body class="secondary-page sk-theme">
 <div class="shell">
   <aside class="sidebar">
     <div class="sidebrand">SiKoyek <b>V1.0</b></div>
@@ -55,7 +58,12 @@
     const {data:profile}=await window.SK.sb.from('profiles').select('roles(name)').eq('id',session.user.id).maybeSingle();
     document.querySelector('.locked-user-main')?.replaceChildren(document.createTextNode(session.user?.user_metadata?.full_name||session.user?.email||'Pengguna'));
     document.querySelector('.locked-user-role')?.replaceChildren(document.createTextNode(profile?.roles?.name?'Role: '+String(profile.roles.name).toUpperCase():'Pengguna'));
-  }catch(e){document.getElementById('page').innerHTML='<div class="card"><div class="empty">Gagal memuat daftar proyek: '+esc(e?.message||e)+'</div></div>'}
+  }catch(e){
+    const errorCard=document.createElement('div');
+    errorCard.className='card empty';
+    errorCard.textContent='Gagal memuat daftar proyek: '+(e?.message||e);
+    document.getElementById('page').replaceChildren(errorCard);
+  }
 })();
 </script>
 </body>

@@ -2,12 +2,14 @@
 <html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SiKoyek V1.0 — Progress V2</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="./foundation/tokens.css">
 <link rel="stylesheet" href="./foundation/progress-v2.css">
+<link rel="stylesheet" href="./foundation/visual.css">
 <script src="./environment.js"></script>
 <script src="./foundation/config.js"></script>
 <script src="./foundation/runtime.js"></script>
+<script src="./foundation/visual.js" defer></script>
 <script src="./foundation/backend.js"></script>
 <script src="./foundation/repository.js"></script>
-</head><body><div class="wrap"><div id="app"></div></div><script>
+</head><body class="sk-theme"><div class="wrap"><div id="app"></div></div><script>
 const sb=window.SiKoyekBackend.getClient();const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));let projects=[],items=[];
 async function boot(){const{data:{session}}=await sb.auth.getSession();if(!session){renderLogin();return}const{data,error}=await sb.from('projects').select('id,project_code,project_name').order('project_code');if(error){app.innerHTML='<div class="card err">'+esc(error.message)+'</div>';return}projects=data||[];render()}
 function renderLogin(){app.innerHTML='<div class="card"><h1>SiKoyek V1.0</h1><p class="muted">Login Progress</p><div class="field"><label>Email</label><input id="email" type="email"></div><div class="field"><label>Password</label><input id="password" type="password"></div><button class="btn" onclick="login()">Masuk</button><div id="msg" class="err"></div></div>'}async function login(){const{error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:password.value});if(error)msg.textContent=error.message;else boot()}

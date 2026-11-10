@@ -1,0 +1,213 @@
+/* Shared SiKoyek visual foundation. Operational layouts remain in their module styles. */
+.sk-theme {
+  --control-font: "Arial Narrow", "Liberation Sans Narrow", "Nimbus Sans Narrow", "Roboto Condensed", Arial, sans-serif;
+  --control-navy: #153858;
+  --control-orange: #e77819;
+  --control-canvas: #e9eef2;
+  --control-ink: #112234;
+  --control-muted: #526575;
+  --control-line: #cdd7df;
+  --control-surface: #fff;
+  --control-radius: 12px;
+  --control-shadow: 0 2px 5px #1538580a;
+  --control-sidebar: linear-gradient(150deg, #102640, #122d4b 65%, #0e2138);
+  --control-nav-active: #294767;
+  --control-size: 14px;
+  --control-cell-padding: 7px 10px;
+  --sk-ink: var(--control-ink);
+  --sk-muted: var(--control-muted);
+  --sk-line: var(--control-line);
+  --sk-canvas: var(--control-canvas);
+  --sk-blue: var(--control-navy);
+  --sk-navy: #102640;
+  --bg: var(--control-canvas);
+  --text: var(--control-ink);
+  --line: var(--control-line);
+  --muted: var(--control-muted);
+  --blue: var(--control-navy);
+  margin: 0;
+  color: var(--control-ink);
+  background: var(--control-canvas);
+  font: var(--control-size)/1.4 var(--control-font);
+}
+.sk-theme :is(button, input, textarea, select) { font-family: inherit; }
+.sk-theme :is(button, a, input, textarea, select, summary, .sk-table-region):focus-visible {
+  outline: 2px solid #d55e0a;
+  outline-offset: 2px;
+}
+.sk-theme .shell:not(.control-shell) { grid-template-columns: 236px minmax(0, 1fr); min-height: 100vh; }
+.sk-theme .shell > :is(.content, .main) { min-width: 0; background: var(--control-canvas); }
+.sk-theme .shell:not(.control-shell) > :is(.content, .main) { padding: 24px; }
+.sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 26px 14px 18px;
+  background: var(--control-sidebar);
+}
+.sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) :is(.brand, .sidebrand) {
+  padding: 0 8px 24px;
+  font-size: 28px;
+  line-height: 1.2;
+}
+.sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) :is(.brand, .sidebrand) b { color: #ffc18a; }
+.sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) .nav { display: grid; gap: 5px; }
+.sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) :is(.nav a, .nav button, .sk-side-links button) {
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 9px 10px;
+  border-radius: 8px;
+  color: #e8eff7;
+  font-size: 16px;
+  font-weight: 600;
+}
+.sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) :is(.nav a, .nav button, .sk-side-links button):is(:hover, .active) {
+  background: var(--control-nav-active) !important; /* canonical Laporan nav supplies its own state rules */
+  color: #fff;
+}
+.sk-theme .sk-side-links { display: grid; gap: 5px; }
+.sk-theme .sk-side-toggle { display: none; }
+
+.sk-theme :is(.content, .main) :is(.top, .md-top, .md-head, .um-head, .core-module-header, .laporan-standard-header) {
+  min-width: 0;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.sk-theme :is(.content, .main) :is(.top, .md-top, .md-head, .um-head, .core-module-header, .laporan-standard-header) h1,
+.sk-theme > .wrap .card > h1 {
+  margin: 0;
+  color: var(--control-ink) !important;
+  font-size: clamp(24px, 2.4vw, 38px) !important;
+  line-height: 1.12;
+  letter-spacing: -.02em;
+}
+.sk-theme :is(.content, .main) :is(.top, .md-top, .md-head, .um-head, .core-module-header, .laporan-standard-header) p {
+  margin: 5px 0 0;
+  color: var(--control-muted) !important;
+  font-size: 15px;
+}
+/* Several legacy headers supplied a different gradient and decorative pseudo-element. */
+.sk-theme :is(.content, .main) :is(.md-top, .top:not(.dashboard-top), .laporan-standard-header),
+.sk-theme.secondary-page .content > .top {
+  color: var(--control-ink);
+  background: none !important; /* replaces the consolidated legacy .top gradient */
+  border: 0;
+  padding: 0 !important;
+  box-shadow: none;
+  overflow: visible;
+}
+.sk-theme :is(.content, .main) :is(.md-top, .top:not(.dashboard-top), .laporan-standard-header)::after,
+.sk-theme.secondary-page .content > .top::after { display: none; }
+.sk-theme :is(.content, .main) :is(.laporan-userinfo, .locked-userinfo) {
+  background: var(--control-surface);
+  border-color: var(--control-line);
+}
+.sk-theme :is(.content, .main) :is(.laporan-user-main, .laporan-user-role, .locked-user-main, .locked-user-role) { color: var(--control-ink); }
+.sk-theme .laporan-v3 { grid-template-columns: minmax(0, 1fr); }
+.sk-theme .laporan-v3 > *, .sk-theme #reportContent > * { min-width: 0; }
+.sk-theme #module .grid > .field { margin: 0; }
+.sk-theme #module .grid { margin-bottom: 12px; }
+.sk-theme #modal :is(.ui-final-head, .op-crud-box .modalhead) { background: var(--control-navy) !important; }
+.sk-theme .control-shell .control-sidebar .nav button.active { background: var(--control-nav-active); }
+
+
+.sk-theme :is(.content, .main, .wrap, #modal) :is(.card, .um-card, .md-card, .modalbox) {
+  min-width: 0;
+  border-color: var(--control-line);
+  border-radius: var(--control-radius);
+  background-color: var(--control-surface);
+  box-shadow: var(--control-shadow);
+}
+.sk-theme :is(.content, .main, .wrap, #modal) :is(.btn, .field input:not([type=checkbox]):not([type=radio]), .field select, .field textarea) {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 36px;
+  border-radius: 7px;
+  font-family: inherit;
+}
+.sk-theme :is(.content, .main, .wrap, #modal) :is(.field input:not([type=checkbox]):not([type=radio]), .field select, .field textarea) {
+  border-color: var(--control-line);
+  color: var(--control-ink);
+}
+.sk-theme :is(.content, .main, .wrap, #modal) :is(.btn.primary, .btn:not(.ghost):not(.danger):not(.secondary):not(.outline)) {
+  background: var(--control-navy);
+  color: #fff;
+}
+.sk-theme :is(.content, .main, .wrap, #modal) .btn.ghost { border-color: var(--control-line); }
+.sk-theme :is(.content, .main, .wrap, #modal) .field label { font-size: var(--control-size); }
+.sk-theme :is(.content, .main, .wrap, #modal) :is(.modalfoot, .modal-actions, .modalfooter) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.sk-theme :is(.content, .main, .wrap, #modal) .sk-table-region {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.sk-theme .sk-table-region > table { width: 100%; border-collapse: collapse; font-size: var(--control-size); }
+.sk-theme .sk-table-region > table :is(th, td) { padding: var(--control-cell-padding); }
+.sk-theme .sk-table-region > table th {
+  background-color: #e9eef2;
+  color: var(--control-ink);
+  white-space: nowrap;
+}
+.sk-theme .sk-table-region > table td { vertical-align: middle; }
+.sk-theme .sk-table-region > table .sk-table-number {
+  text-align: right !important; /* older report generators include inline cell alignment */
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.sk-theme .sk-table-region > table .sk-table-actions { white-space: nowrap; }
+.sk-theme .sk-table-region > table tbody tr:hover { background-color: #f3f7fa; }
+
+@media (max-width: 1120px) {
+  .sk-theme .shell:not(.control-shell) { grid-template-columns: 190px minmax(0, 1fr); }
+  .sk-theme .shell:not(.control-shell) > :is(.content, .main) { padding: 16px; }
+}
+@media (max-width: 780px) {
+  .sk-theme .shell:not(.control-shell) { display: block; }
+  .sk-theme .shell:not(.control-shell) > :is(.content, .main) { padding: 12px; }
+  .sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) {
+    z-index: 10;
+    height: auto;
+    max-height: 80dvh;
+    padding: 9px 12px;
+  }
+  .sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) :is(.brand, .sidebrand) { padding: 5px 94px 5px 0; min-height: 44px; }
+  .sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) .foot { display: none; }
+  .sk-theme .sk-side-ready .sk-side-toggle {
+    display: inline-flex;
+    align-items: center;
+    position: absolute;
+    top: 9px;
+    right: 12px;
+    min-height: 44px;
+    margin: 0;
+    padding: 0 10px;
+    border: 1px solid #50708e;
+    border-radius: 7px;
+    color: #fff;
+    background: var(--control-nav-active);
+  }
+  .sk-theme .sk-side-ready:not(.sk-side-open) :is(.nav, .sk-side-links) { display: none !important; }
+  .sk-theme .sk-side-ready.sk-side-open :is(.nav, .sk-side-links) { margin-top: 7px; }
+  .sk-theme :is(.content, .main) :is(.top, .md-top, .md-head, .um-head, .core-module-header) { flex-wrap: wrap; }
+  .sk-theme :is(.content, .main, .wrap, #modal) :is(.btn, .field input:not([type=checkbox]):not([type=radio]), .field select) {
+    min-height: 44px;
+  }
+  .sk-theme .sk-table-region > table { min-width: 490px; }
+  .sk-theme .wrap { padding: 12px; }
+}
+
+@media print {
+  .sk-theme .sk-table-region { overflow: visible; }
+  .sk-theme .sk-table-region > table { min-width: 0; }
+}

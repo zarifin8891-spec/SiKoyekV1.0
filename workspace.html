@@ -9,13 +9,15 @@
 
 <link rel="stylesheet" href="./foundation/tokens.css">
 <link rel="stylesheet" href="./foundation/workspace.css">
+<link rel="stylesheet" href="./foundation/visual.css">
 <script src="./environment.js"></script>
 <script src="./foundation/config.js"></script>
 <script src="./foundation/runtime.js"></script>
+<script src="./foundation/visual.js" defer></script>
 <script src="./foundation/backend.js"></script>
 <script src="./foundation/repository.js"></script>
 </head>
-<body><div id="app"></div><script>
+<body class="sk-theme"><div id="app"></div><script>
 const sb=window.SiKoyekBackend.getClient();
 const money=n=>window.SiKoyekFoundation.money(n);
 const pct=n=>Number(n||0).toFixed(2)+'%';

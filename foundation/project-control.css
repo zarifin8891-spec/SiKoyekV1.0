@@ -1,13 +1,4 @@
 .control-shell {
-  --control-font: "Arial Narrow", "Liberation Sans Narrow", "Nimbus Sans Narrow", "Roboto Condensed", Arial, sans-serif;
-  --control-navy: #153858;
-  --control-orange: #e77819;
-  --control-canvas: #e9eef2;
-  --control-ink: #112234;
-  --control-muted: #526575;
-  --control-line: #cdd7df;
-  --control-surface: #fff;
-  --control-radius: 12px;
   font-family: var(--control-font);
   grid-template-columns: 236px minmax(0, 1fr);
   min-height: 100vh;
@@ -25,7 +16,7 @@
   align-items: stretch;
   overflow-y: auto;
   padding: 26px 14px 18px;
-  background: linear-gradient(150deg, #102640, #122d4b 65%, #0e2138);
+  background: var(--control-sidebar);
 }
 .control-brand { display: flex; align-items: center; gap: 8px; padding: 0 8px 24px; color: #fff; }
 .control-brand strong { font-size: 30px; }
@@ -39,7 +30,7 @@
   border-radius: 8px; color: #e8eff7; font-size: 16px; font-weight: 600; text-align: left; white-space: normal;
 }
 .control-sidebar .nav svg { width: 21px; flex: 0 0 21px; color: #a9bed2; }
-.control-sidebar .nav button:is(:hover,.active) { background: #294767; color: #fff; }
+.control-sidebar .nav button:is(:hover,.active) { background: var(--control-nav-active); color: #fff; }
 .control-sidebar .sidefoot { margin-top: auto; color: #b7c8da; padding: 22px 10px 0; }
 .control-sidebar .control-menu { display: none; }
 
@@ -68,7 +59,7 @@
 .control-stack { min-width: 0; align-content: start; }
 .control-card {
   min-width: 0; border: 1px solid var(--control-line); border-radius: var(--control-radius);
-  padding: 14px; background: var(--control-surface); box-shadow: 0 2px 5px #1538580a;
+  padding: 14px; background: var(--control-surface); box-shadow: var(--control-shadow);
 }
 .control-card h2 { font-size: 20px; line-height: 1.2; margin: 0; color: var(--control-ink); letter-spacing: -.012em; }
 .control-card p { margin: 8px 0 0; }
@@ -150,7 +141,7 @@
   .control-sidebar .control-brand { padding: 0 96px 0 0; min-height: 44px; }
   .control-sidebar .control-menu {
     display: inline-flex; align-items: center; gap: 4px; position: absolute; top: 9px; right: 12px;
-    min-height: 44px; background: #294767; color: #fff; border: 1px solid #50708e; border-radius: 7px; padding: 0 10px;
+    min-height: 44px; background: var(--control-nav-active); color: #fff; border: 1px solid #50708e; border-radius: 7px; padding: 0 10px;
   }
   .control-menu svg { width: 18px; }
   .control-sidebar .nav { display: none; margin-top: 7px; }
