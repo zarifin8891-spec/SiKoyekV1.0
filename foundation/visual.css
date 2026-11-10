@@ -113,7 +113,8 @@
 .sk-theme .laporan-v3 > *, .sk-theme #reportContent > * { min-width: 0; }
 .sk-theme #module .grid > .field { margin: 0; }
 .sk-theme #module .grid { margin-bottom: 12px; }
-.sk-theme #modal :is(.ui-final-head, .op-crud-box .modalhead) { background: var(--control-navy) !important; }
+.sk-theme #modal :is(#uiFinalProject .ui-final-head, .op-crud-box .modalhead) { background: var(--control-navy) !important; }
+.sk-theme #modal #uiFinalProject .ui-final-actions > button[hidden] { display: none !important; }
 .sk-theme .control-shell .control-sidebar .nav button.active { background: var(--control-nav-active); }
 
 
@@ -203,6 +204,8 @@
   .sk-theme :is(.content, .main, .wrap, #modal) :is(.btn, .field input:not([type=checkbox]):not([type=radio]), .field select) {
     min-height: 44px;
   }
+  .sk-theme #modal #uiFinalProject .ui-final-actions { height: auto; min-height: 48px; }
+  .sk-theme #modal #uiFinalProject .ui-final-actions > button { min-width: 0; padding-inline: 8px !important; }
   .sk-theme .sk-table-region > table { min-width: 490px; }
   .sk-theme .wrap { padding: 12px; }
 }
