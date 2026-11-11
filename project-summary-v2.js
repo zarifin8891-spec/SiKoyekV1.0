@@ -25,7 +25,55 @@
     </div></div>`;
   }
   function timelineMarkup(d){const p=d?.project||{},start=new Date(p.start_date),end=new Date(p.end_date),now=new Date(),day=86400000;if(Number.isNaN(start.getTime())||Number.isNaN(end.getTime())||end<start)return `<section class="timeline-v4"><div class="timeline-v4-head"><h3>Timeline Proyek</h3></div><div class="empty">Tanggal mulai/selesai belum tersedia</div></section>`;const duration=Math.max(0,Math.ceil((end-start)/day)),elapsed=Math.ceil((now-start)/day),age=Math.max(0,Math.min(duration,elapsed)),remaining=Math.ceil((end-now)/day),before=now<start,after=now>end,pos=before?0:after?100:(age/duration*100),timePct=duration?Math.round((Math.max(0,Math.min(duration,elapsed))/duration)*100):0,status=before?'Belum dimulai':after?`Terlambat ${Math.abs(remaining)} hari`:'Berjalan',today=now.toLocaleDateString('id-ID',{day:'2-digit',month:'2-digit',year:'numeric'});return `<section class="timeline-v4"><div class="timeline-v4-head"><h3>Timeline Proyek</h3><div class="timeline-v4-meta"><span class="timeline-v4-badge">${status}</span><span class="timeline-v4-badge">${today}</span></div></div><div class="timeline-v4-track"><span class="timeline-v4-fill" style="width:${pos}%"></span><span class="timeline-v4-marker" style="left:${pos}%"></span><span class="timeline-v4-current-date" style="left:${pos}%">${today}</span></div><div class="timeline-v4-dates"><div>${esc(p.start_date)}</div><div>${esc(p.end_date)}</div></div><div class="timeline-v4-stats"><div class="timeline-v4-stat"><div class="label">UMUR PROYEK</div><div class="value">${before?'0 hari':`${age} hari`}</div></div><div class="timeline-v4-stat"><div class="label">WAKTU BERJALAN</div><div class="value">${timePct}%</div></div><div class="timeline-v4-stat"><div class="label">SISA WAKTU</div><div class="value">${after?`Terlambat ${Math.abs(remaining)} hari`:before?`${duration} hari`:`${Math.max(0,remaining)} hari`}</div></div></div></section>`}
-  function summaryMarkup(d,s){const r=d.rap||{},info=[['Pemilik',d.project.owner_name||'-'],['Project Manager',d.project.project_manager||'-'],['Mulai',d.project.start_date||'-'],['Target Selesai',d.project.end_date||'-']],costs=[['Cost Ratio',pct(s?.cost_ratio)],['RAP Consumption',pct(s?.rap_consumption)]],rap=[['Material',r.material],['Upah',r.labor],['Alat',r.equipment],['Operasional',r.operational],['Subkon',r.subcontract],['Lain-Lain',r.other]];return `<section class="project-summary-v2"><div class="summary-heading"><h2>Project Summary</h2></div><div class="summary-panels"><section class="summary-panel"><div class="summary-panel-head"><h3>Informasi Proyek &amp; Kinerja Biaya</h3></div><div class="info-grid">${info.map(([label,value])=>`<div class="info-item"><div class="note">${label}</div><strong>${esc(value)}</strong></div>`).join('')}</div><div class="summary-divider"></div><div class="subheading">Kinerja Biaya</div><div class="cost-grid">${costs.map(([label,value])=>`<div class="cost-item"><div class="note">${label}</div><strong>${value}</strong></div>`).join('')}</div></section><section class="summary-panel"><div class="summary-panel-head"><h3>RAP</h3><button class="btn primary" onclick="openRapForm()">${d.rap?'Edit RAP':'Isi RAP'}</button></div><div class="rap-grid">${rap.map(([label,value])=>`<div class="rap-item"><div class="label">${label}</div><div class="value">${money(value)}</div></div>`).join('')}</div><div class="rap-total"><span class="label">TOTAL RAP</span><span class="value">${money(s?.total_rap)}</span></div></section></div>${timelineMarkup(d)}${SiKoyekControl.canProgress() ? `<section class="control-card project-overview-curve"><h2>Kurva-S &amp; Kemajuan Proyek</h2><div class="control-curve">${SiKoyekControl.curveFromWorkItems(d.project,d.items,d.progress)}</div></section>` : ''}</section>`}
+  function actualCostsMarkup(d){
+    const heading='<h2>Realisasi Biaya per Kategori</h2>';
+    if(d.financeReadError) return `<section class="control-card">${heading}<p class="control-note">Data realisasi biaya belum dapat dimuat.</p></section>`;
+    const categories=[
+      ['material','Material','#337bb2'],
+      ['upah','Upah','#e99b34'],
+      ['alat','Alat','#459f91'],
+      ['operasional','Operasional','#8865bc'],
+      ['subkon','SubKon','#db6d65'],
+      ['lainlain','Lain-lain','#6e839b']
+    ];
+    const amounts=new Map(categories.map(([key])=>[key,0]));
+    const aliases={alatalat:'alat',subkontraktor:'subkon',subkontrak:'subkon'};
+    for(const transaction of d.fin||[]){
+      if(String(transaction.transaction_type).trim().toUpperCase()!=='KELUAR')continue;
+      const amount=Number(transaction.amount);
+      if(!Number.isFinite(amount)||amount<=0)continue;
+      const category=String(transaction.category||'').toLowerCase().replace(/[\s_-]+/g,'');
+      const key=aliases[category]||category;
+      const group=amounts.has(key)?key:'lainlain';
+      amounts.set(group,amounts.get(group)+amount);
+    }
+    const total=[...amounts.values()].reduce((sum,amount)=>sum+amount,0);
+    let cumulative=0;
+    const slices=categories.filter(([key])=>amounts.get(key)>0);
+    const stops=slices.map(([key,,color],index)=>{
+      const start=cumulative/total*100;
+      cumulative+=amounts.get(key);
+      const end=index===slices.length-1?100:cumulative/total*100;
+      return `${color} ${start}% ${end}%`;
+    }).join(',');
+    const pie=total>0
+      ? `<div class="project-cost-pie" style="--project-cost-slices:conic-gradient(${stops})" aria-hidden="true"></div>`
+      : '<p class="control-note">Belum ada transaksi pengeluaran.</p>';
+    return `<section class="control-card project-overview-costs">${heading}${pie}
+      <dl class="project-cost-breakdown">${categories.map(([key,label,color])=>`<div>
+        <dt><span style="--project-cost-color:${color}" aria-hidden="true"></span>${label}</dt>
+        <dd>${money(amounts.get(key))}</dd>
+      </div>`).join('')}<div class="project-cost-total"><dt>Total Realisasi</dt><dd>${money(total)}</dd></div></dl></section>`;
+  }
+
+  function overviewChartsMarkup(d){
+    const curve=SiKoyekControl.canProgress()
+      ? `<section class="control-card project-overview-curve"><h2>Kurva-S &amp; Kemajuan Proyek</h2><div class="control-curve">${SiKoyekControl.curveFromWorkItems(d.project,d.items,d.progress)}</div></section>`
+      : '';
+    const costs=SiKoyekControl.canFinance()?actualCostsMarkup(d):'';
+    return curve||costs?`<div class="project-overview-charts${curve&&costs?' project-overview-charts-paired':''}">${curve}${costs}</div>`:'';
+  }
+  function summaryMarkup(d,s){const r=d.rap||{},info=[['Pemilik',d.project.owner_name||'-'],['Project Manager',d.project.project_manager||'-'],['Mulai',d.project.start_date||'-'],['Target Selesai',d.project.end_date||'-']],costs=[['Cost Ratio',pct(s?.cost_ratio)],['RAP Consumption',pct(s?.rap_consumption)]],rap=[['Material',r.material],['Upah',r.labor],['Alat',r.equipment],['Operasional',r.operational],['Subkon',r.subcontract],['Lain-Lain',r.other]];return `<section class="project-summary-v2"><div class="summary-heading"><h2>Project Summary</h2></div><div class="summary-panels"><section class="summary-panel"><div class="summary-panel-head"><h3>Informasi Proyek &amp; Kinerja Biaya</h3></div><div class="info-grid">${info.map(([label,value])=>`<div class="info-item"><div class="note">${label}</div><strong>${esc(value)}</strong></div>`).join('')}</div><div class="summary-divider"></div><div class="subheading">Kinerja Biaya</div><div class="cost-grid">${costs.map(([label,value])=>`<div class="cost-item"><div class="note">${label}</div><strong>${value}</strong></div>`).join('')}</div></section><section class="summary-panel"><div class="summary-panel-head"><h3>RAP</h3><button class="btn primary" onclick="openRapForm()">${d.rap?'Edit RAP':'Isi RAP'}</button></div><div class="rap-grid">${rap.map(([label,value])=>`<div class="rap-item"><div class="label">${label}</div><div class="value">${money(value)}</div></div>`).join('')}</div><div class="rap-total"><span class="label">TOTAL RAP</span><span class="value">${money(s?.total_rap)}</span></div></section></div>${timelineMarkup(d)}${overviewChartsMarkup(d)}</section>`}
   function compactProgressView(d){const wrap=document.createElement('div');wrap.innerHTML=progressView(d);[...wrap.querySelectorAll('.card')].forEach(card=>{const text=(card.textContent||'').replace(/\s+/g,' ').trim();if(text.includes('Progress Saat Ini')||text.includes('Cara Kerja Progress'))card.remove()});return wrap.innerHTML}
   function renderDetailV2(el){if(!state.detail){el.innerHTML='<div class="empty">Memuat proyek...</div>';return}const d=state.detail,s=state.summary.find(x=>x.project_id===state.selected),labels={overview:'Overview',pekerjaan:'Item Pekerjaan',progress:'Progress',keuangan:'Keuangan',cost:'Cost Control',...(SiKoyekControl.canProgress()?SiKoyekControl.projectTabs:{})};if(!Object.hasOwn(labels,state.detailTab))state.detailTab='overview';el.innerHTML=`<div class="top sk-project-header"><div class="detailtitle"><h2>${esc(d.project.project_name)}</h2><p>${esc(d.project.project_code)} • ${esc(d.project.location||'-')} • ${esc(d.project.status)}</p></div><div class="actions"><button class="btn ghost" onclick="go('projects')">← Kembali</button><button class="btn primary" onclick="openItemForm()">+ Item Pekerjaan</button><button class="btn ghost" onclick="openTxForm()">+ Transaksi</button></div></div>${kpiMarkup(d,s)}<div class="tabs">${Object.entries(labels).map(([k,v])=>`<button class="${state.detailTab===k?'active':''}" onclick="setTab('${k}')">${v}</button>`).join('')}</div><div id="project-tab-content">${Object.hasOwn(SiKoyekControl.projectTabs,state.detailTab)?'':state.detailTab==='overview'?summaryMarkup(d,s):detailBodyV2(d,s)}</div>`;
     const workerCount=el.querySelector('[data-project-worker-count]');

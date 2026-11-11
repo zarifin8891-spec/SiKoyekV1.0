@@ -208,4 +208,31 @@
 }
 
 .project-list-table .project-list-date { white-space: nowrap; }
-.project-overview-curve { margin-top: 14px; }
+.project-overview-charts { display: grid; gap: 14px; margin-top: 14px; }
+.project-overview-charts-paired { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+.project-cost-pie {
+  position: relative;
+  width: min(66%, 188px);
+  aspect-ratio: 1.4;
+  margin: 8px auto;
+}
+.project-cost-pie::before, .project-cost-pie::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 47%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--project-cost-slices);
+  transform: translateY(-50%) scaleY(.64);
+}
+.project-cost-pie::before { top: 55%; filter: brightness(.66); }
+.project-cost-breakdown { display: grid; gap: 4px; margin: 8px 0 0; font-size: 13px; }
+.project-cost-breakdown > div { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.project-cost-breakdown dt { display: flex; align-items: center; gap: 6px; }
+.project-cost-breakdown dt span { width: 9px; height: 9px; border-radius: 2px; background: var(--project-cost-color); }
+.project-cost-breakdown dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+.project-cost-total { border-top: 1px solid var(--control-line); margin-top: 4px; padding-top: 6px; font-weight: 700; }
+@media (max-width: 960px) {
+  .project-overview-charts-paired { grid-template-columns: minmax(0, 1fr); }
+}
