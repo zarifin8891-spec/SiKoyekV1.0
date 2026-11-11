@@ -260,11 +260,8 @@
         ${card('Rata-rata Progress Fisik', progress === null ? '—' : percentage(progress), running.length
           ? `<progress max="100" value="${progress}" aria-label="Rata-rata progress fisik proyek berjalan"></progress>${running.length} proyek berjalan`
           : 'Belum ada proyek berjalan', 'activity')}
-        ${finance ? card('Biaya Kumulatif Semua Proyek', currency(spent), `/ ${currency(budget)} RAP · ${budget ? percentage(spent / budget * 100) : 'RAP belum tersedia'} · proyek dalam filter`, 'budget') : ''}
+        ${finance ? card('Biaya Kumulatif', currency(spent), `/ ${currency(budget)} RAP · ${budget ? percentage(spent / budget * 100) : 'RAP belum tersedia'} · proyek dalam filter`, 'budget') : ''}
         ${card('Tenaga Kerja Aktif', '—', 'Penempatan di proyek aktif hari ini', 'users', 'control-worker-count')}
-      </div>
-      <div class="control-summary" aria-label="Ringkasan portofolio">
-        ${['SEHAT', 'AWASI', 'BERISIKO', unassessed].map(status => `<span class="control-badge ${status === unassessed ? 'neutral' : healthClass(status)}">${rows.filter(p => p.health.status === status).length} ${status}</span>`).join('')}
       </div>
       <div class="control-columns">
         <div class="control-stack">
@@ -443,15 +440,20 @@
     const end = all.reduce((last, point) => Math.max(last, time(point.date)), -Infinity);
     const x = date => 55 + (end === start ? 315 : (time(date) - start) / (end - start) * 635);
     const y = value => 222 - Math.max(0, Math.min(value, 100)) * 1.96;
-    const draw = (series, kind) => `<polyline class="control-line ${kind}" points="${series.map(p => `${x(p.date)},${y(p.value)}`).join(' ')}"/>${
+    const points = series => series.map(p => `${x(p.date)},${y(p.value)}`).join(' ');
+    const area = (series, kind) => series.length > 1
+      ? `<polygon class="control-area ${kind}" points="${x(series[0].date)},${y(0)} ${points(series)} ${x(series.at(-1).date)},${y(0)}"/>`
+      : '';
+    const draw = (series, kind) => `${series.length > 1 ? `<polyline class="control-line ${kind}" points="${points(series)}"/>` : ''}${
       series.map(p => `<circle class="control-dot ${kind}" cx="${x(p.date)}" cy="${y(p.value)}" r="3"><title>${esc(p.date)} · ${percentage(p.value)}</title></circle>`).join('')}`;
     const ticks = end === start ? [start] : Array.from({length: 5}, (_, i) => start + (end - start) * i / 4);
     const tickFormat = new Intl.DateTimeFormat('id-ID', {day: 'numeric', month: 'short', timeZone: 'UTC'});
     return `<div class="control-legend"><span class="target">${targetLabel}${target.length ? ' · ' + percentage(target.at(-1).value) : ' · belum ada data'}</span>
       <span class="actual">Realisasi${actual.length ? ' · ' + percentage(actual.at(-1).value) : ' · belum ada data'}</span></div>
-      <svg class="control-chart" viewBox="0 0 730 255" role="img" aria-label="Kurva progress kumulatif target dan realisasi">
+      <svg class="control-chart" viewBox="0 0 730 255" role="img" aria-label="Grafik area progress kumulatif target dan realisasi">
         ${[0, 20, 40, 60, 80, 100].map(value => `<line x1="55" x2="690" y1="${y(value)}" y2="${y(value)}"/><text x="44" y="${y(value) + 4}" text-anchor="end">${value}%</text>`).join('')}
         ${ticks.map(t => `<text x="${x(new Date(t).toISOString().slice(0, 10))}" y="246" text-anchor="middle">${tickFormat.format(t)}</text>`).join('')}
+        ${area(target, 'target')}${area(actual, 'actual')}
         ${draw(target, 'target')}${draw(actual, 'actual')}
       </svg>`;
   }
