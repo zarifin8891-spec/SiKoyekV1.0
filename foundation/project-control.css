@@ -102,6 +102,7 @@
 .control-link { border: 0; background: transparent; color: #1b507a; text-align: left; cursor: pointer; font-size: inherit; font-weight: 700; padding: 4px 0; }
 .control-link:hover { text-decoration: underline; }
 .control-badge { display: inline-block; padding: 3px 7px; border-radius: 20px; white-space: nowrap; font-size: 12px; font-weight: 700; }
+.control-badge.neutral { background: var(--control-canvas); color: var(--control-muted); }
 .control-timeline, .control-stocks { margin: 10px 0 0; padding: 0; list-style: none; }
 .control-timeline li { border-left: 2px solid var(--control-line); padding: 0 0 9px 10px; overflow-wrap: anywhere; }
 .control-timeline li:first-child { border-color: var(--control-navy); }
