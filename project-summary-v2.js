@@ -59,11 +59,11 @@
     const pie=total>0
       ? `<div class="project-cost-pie" style="--project-cost-slices:conic-gradient(${stops})" aria-hidden="true"></div>`
       : '<p class="control-note">Belum ada transaksi pengeluaran.</p>';
-    return `<section class="control-card project-overview-costs">${heading}${pie}
+    return `<section class="control-card project-overview-costs">${heading}<div class="project-cost-layout${total>0?' project-cost-layout-paired':''}">${pie}
       <dl class="project-cost-breakdown">${categories.map(([key,label,color])=>`<div>
         <dt><span style="--project-cost-color:${color}" aria-hidden="true"></span>${label}</dt>
         <dd>${money(amounts.get(key))}</dd>
-      </div>`).join('')}<div class="project-cost-total"><dt>Total Realisasi</dt><dd>${money(total)}</dd></div></dl></section>`;
+      </div>`).join('')}<div class="project-cost-total"><dt>Total Realisasi</dt><dd>${money(total)}</dd></div></dl></div></section>`;
   }
 
   function overviewChartsMarkup(d){
