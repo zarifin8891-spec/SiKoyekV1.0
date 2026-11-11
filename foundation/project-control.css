@@ -210,11 +210,14 @@
 .project-list-table .project-list-date { white-space: nowrap; }
 .project-overview-charts { display: grid; gap: 14px; margin-top: 14px; }
 .project-overview-charts-paired { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
-.project-overview-costs { container-type: inline-size; }
+.project-overview-costs { container-type: inline-size; display: flex; flex-direction: column; }
 .project-cost-layout { margin-top: 8px; }
 .project-cost-layout-paired {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(155px, 1fr);
+  width: min(100%, 440px);
+  margin: auto;
+  padding-block: 10px;
   align-items: center;
   gap: 12px;
 }
