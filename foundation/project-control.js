@@ -143,20 +143,83 @@
       <strong ${id ? `id="${id}"` : ''}>${value}</strong><div class="control-note">${detail}</div></section>`;
   }
 
-  function tableRows(rows) {
+  const projectLink = p => `<button type="button" class="control-link" data-project="${esc(p.project_id)}">${esc(p.project_name || p.project_code)}</button>`;
+  const stateClass = priority => ({TINGGI: 'red', SEDANG: 'amber', RENDAH: 'green'})[priority];
+  const emptyRow = (columns, text) => `<tr><td colspan="${columns}">${esc(text)}</td></tr>`;
+
+  function tableRows(rows, finance) {
     return rows.slice(0, 8).map(p => `<tr>
-      <td><button type="button" class="control-link" data-project="${esc(p.project_id)}">${esc(p.project_name || p.project_code)}</button></td>
-      <td>${esc(p.location || '—')}</td><td class="control-number">${money(p.total_realization ?? p.cash_out ?? 0)}</td>
+      <td>${projectLink(p)}</td><td>${esc(p.location || '—')}</td>
+      ${finance ? `<td class="control-number">${money(p.total_realization ?? p.cash_out ?? 0)}</td>
+        <td class="control-number">${percentage(p.cost_ratio || 0)}</td><td class="control-number">${percentage(p.rap_consumption || 0)}</td>` : ''}
       <td class="control-number"><progress max="100" value="${Number(p.project_progress || 0)}"></progress> ${percentage(p.project_progress || 0)}</td>
-      <td><span class="control-badge ${healthClass(p.health_status)}">${esc(p.health_status || p.status || '—')}</span></td>
-    </tr>`).join('') || '<tr><td colspan="5">Tidak ada proyek untuk ditampilkan.</td></tr>';
+      <td><span class="control-badge ${p.health.level}">${esc(p.health.status)}</span></td>
+    </tr>`).join('') || emptyRow(finance ? 7 : 4, 'Tidak ada proyek untuk ditampilkan.');
+  }
+
+  function decisions(rows) {
+    const rank = {TINGGI: 3, SEDANG: 2, RENDAH: 1};
+    const prioritized = rows.map(row => {
+      // Decision Engine v1 recognizes the original wording for the yellow Health status.
+      const health = row.health.status === 'AWASI' ? {...row.health, status: 'PERLU PENGAWASAN'} : row.health;
+      return {...row, decision: global.SiKoyekDecisionEngine.evaluate(row, health)};
+    }).sort((a, b) => rank[b.decision.priority] - rank[a.decision.priority] || b.decision.costGap - a.decision.costGap);
+    return prioritized.slice(0, 5).map(row => `<tr><td>${projectLink(row)}</td>
+      <td><span class="control-badge ${stateClass(row.decision.priority)}">${esc(row.decision.priority)}</span></td>
+      <td>${esc(row.decision.reason)}</td><td>${esc(row.decision.action)}</td></tr>`).join('') ||
+      emptyRow(4, 'Belum ada proyek pada periode ini.');
+  }
+
+  function periodRanges() {
+    const now = new Date();
+    const year = now.getFullYear(), month = now.getMonth();
+    const date = (offset, day) => isoLocal(new Date(year, month + offset, day)).slice(0, 10);
+    return {
+      thisMonth: [date(0, 1), date(1, 0)],
+      lastMonth: [date(-1, 1), date(0, 0)],
+      thisYear: [`${year}-01-01`, `${year}-12-31`]
+    };
+  }
+
+  function periodControls() {
+    const {from, to} = state.period;
+    const quick = Object.entries(periodRanges()).find(([, dates]) => dates[0] === from && dates[1] === to)?.[0] || '';
+    return `<form class="control-card control-period" aria-label="Periode dasbor">
+      <label>Periode<select class="control-select" name="preset" id="periodPreset">
+        <option value="">Pilih periode</option>
+        ${[['thisMonth', 'Bulan Ini'], ['lastMonth', 'Bulan Lalu'], ['thisYear', 'Tahun Ini']].map(([id, label]) =>
+          `<option value="${id}" ${quick === id ? 'selected' : ''}>${label}</option>`).join('')}
+      </select></label>
+      <label>Dari<input class="control-select" name="from" type="date" value="${esc(from)}"></label>
+      <label>Sampai<input class="control-select" name="to" type="date" value="${esc(to)}"></label>
+      <button class="control-button" type="submit">Terapkan</button>
+      <button class="control-button" type="button" data-reset-period>Semua Periode</button>
+    </form>`;
+  }
+
+  function bindPeriod(form) {
+    const from = form.elements.from, to = form.elements.to;
+    const apply = (start, end) => {state.period = {from: start, to: end};renderPage()};
+    form.elements.preset.addEventListener('change', event => {
+      const range = periodRanges()[event.target.value];
+      if (range) apply(...range);
+    });
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      to.setCustomValidity(from.value && to.value && from.value > to.value ? 'Tanggal akhir harus sama atau setelah tanggal awal.' : '');
+      if (form.reportValidity()) apply(from.value, to.value);
+    });
+    for (const field of [from, to]) field.addEventListener('input', () => to.setCustomValidity(''));
+    form.querySelector('[data-reset-period]').addEventListener('click', () => apply('', ''));
   }
 
   function dashboard(root) {
-    const rows = state.summary.filter(periodMatch);
+    const rows = state.summary.filter(periodMatch).map(row => ({...row, health: global.SiKoyekHealthEngine.evaluate(row)}));
+    const finance = can('KEUANGAN') || can('RAP');
     const open = rows.filter(active);
     const running = open.filter(p => p.status === 'JALAN').length;
     const progress = open.length ? open.reduce((total, p) => total + Number(p.project_progress || 0), 0) / open.length : 0;
+    const contract = rows.reduce((total, p) => total + Number(p.contract_value || 0), 0);
     const budget = rows.reduce((total, p) => total + Number(p.total_rap || 0), 0);
     const spent = rows.reduce((total, p) => total + Number(p.total_realization ?? p.cash_out ?? 0), 0);
     const current = rows.find(p => p.project_id === chartProject) || open[0] || rows[0];
@@ -170,22 +233,28 @@
           <button type="button" class="control-button" onclick="logout()">Keluar</button>
         </div>
       </header>
-      <div class="control-kpis">
+      ${periodControls()}
+      <div class="control-kpis ${finance ? '' : 'control-kpis-compact'}">
         ${card('Total Proyek Aktif', `${open.length} Proyek`, `${running} Berjalan · ${open.length - running} Persiapan`, 'project')}
         ${card('Rata-rata Progress Fisik', open.length ? percentage(progress) : '—', `<progress max="100" value="${progress}" aria-label="Rata-rata progress fisik"></progress>`, 'activity')}
-        ${card('Anggaran Terpakai', currency(spent), `/ ${currency(budget)} RAP · ${budget ? percentage(spent / budget * 100) : 'RAP belum tersedia'}`, 'budget')}
+        ${finance ? card('Anggaran Terpakai', currency(spent), `/ ${currency(budget)} RAP · ${budget ? percentage(spent / budget * 100) : 'RAP belum tersedia'}`, 'budget') : ''}
         ${card('Tenaga Kerja Aktif', '—', 'Penempatan di proyek aktif hari ini', 'users', 'control-worker-count')}
+      </div>
+      <div class="control-summary" aria-label="Ringkasan portofolio">
+        <span><strong>${rows.length}</strong> proyek pada periode ini</span>
+        ${finance ? `<span>Nilai kontrak <strong>${currency(contract)}</strong></span>` : ''}
+        ${['SEHAT', 'AWASI', 'BERISIKO'].map(status => `<span class="control-badge ${healthClass(status)}">${rows.filter(p => p.health.status === status).length} ${status}</span>`).join('')}
       </div>
       <div class="control-columns">
         <div class="control-stack">
           <section class="control-card"><header class="control-section-head"><h2>Kurva-S &amp; Kemajuan Proyek</h2>
-            <select class="control-select" aria-label="Proyek Kurva-S" ${current ? '' : 'disabled'}><option value="" hidden>Pilih proyek</option>${options(rows)}</select>
+            <select class="control-select" data-curve-project aria-label="Proyek Kurva-S" ${current ? '' : 'disabled'}><option value="" hidden>Pilih proyek</option>${options(rows)}</select>
           </header><div class="control-curve" aria-live="polite">${message(current ? 'Memuat Kurva-S…' : 'Belum ada proyek.')}</div></section>
           <section class="control-card control-project-list"><header class="control-section-head"><h2>Daftar Proyek Utama</h2>
             <button type="button" class="control-link" onclick="state.activeOnly=false;go('projects')">Lihat semua</button></header>
             <div class="control-table-wrap"><table class="control-table"><thead><tr><th>Nama Proyek</th><th>Lokasi</th>
-              <th class="control-number">Biaya Aktual</th><th class="control-number">Progress</th><th>Status</th></tr></thead>
-              <tbody>${tableRows(rows)}</tbody></table></div>
+              ${finance ? '<th class="control-number">Biaya Kumulatif</th><th class="control-number">Rasio Biaya</th><th class="control-number">RAP Terpakai</th>' : ''}<th class="control-number">Progress</th><th>Kondisi</th></tr></thead>
+              <tbody>${tableRows(rows, finance)}</tbody></table></div>
           </section>
         </div>
         <aside class="control-stack" aria-label="Ringkasan lapangan">
@@ -194,21 +263,27 @@
           <section class="control-card"><h2>Stok Material Kritis</h2><div data-panel="stocks">${message('Memuat stok…')}</div></section>
         </aside>
       </div>
-      <details class="control-card control-legacy"><summary>Analisis dan kontrol SiKoyek</summary>${legacyDashboard()}</details>
+      ${finance ? `<section class="control-card control-decisions" id="dashboard-decision-panel">
+        <h2>Prioritas &amp; Tindakan</h2><div class="control-table-wrap"><table class="control-table">
+        <thead><tr><th>Proyek</th><th>Prioritas</th><th>Masalah Utama</th><th>Tindakan</th></tr></thead>
+        <tbody>${decisions(rows)}</tbody></table></div></section>` : ''}
+      ${can('KEUANGAN') ? '<div class="control-finance-host" aria-label="Kinerja periode"></div>' : ''}
     </div>`;
 
     const view = root.querySelector('.control-dashboard');
+    bindPeriod(view.querySelector('.control-period'));
     const search = view.querySelector('input[type=search]');
     search.addEventListener('input', () => {
       const query = search.value.trim().toLocaleLowerCase('id-ID');
-      view.querySelector('tbody').innerHTML = tableRows(rows.filter(p => [p.project_name, p.project_code, p.location]
-        .some(value => String(value || '').toLocaleLowerCase('id-ID').includes(query))));
+      const filtered = rows.filter(project => [project.project_name, project.project_code, project.location]
+        .some(value => String(value || '').toLocaleLowerCase('id-ID').includes(query)));
+      view.querySelector('.control-project-list tbody').innerHTML = tableRows(filtered, finance);
     });
-    view.querySelector('.control-project-list').addEventListener('click', event => {
+    view.addEventListener('click', event => {
       const button = event.target.closest('[data-project]');
       if (button) openProject(button.dataset.project);
     });
-    const select = view.querySelector('select.control-select');
+    const select = view.querySelector('[data-curve-project]');
     select.value = chartProject;
     select.addEventListener('change', () => {
       chartProject = select.value;

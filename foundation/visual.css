@@ -14,6 +14,9 @@
   --control-nav-active: #294767;
   --control-size: 14px;
   --control-cell-padding: 7px 10px;
+  --control-row-line: #e2e8ee;
+  --control-table-head: #e9eef2;
+  --control-panel-title: 20px;
   --sk-ink: var(--control-ink);
   --sk-muted: var(--control-muted);
   --sk-line: var(--control-line);
@@ -156,7 +159,7 @@
 .sk-theme .sk-table-region > table { width: 100%; border-collapse: collapse; font-size: var(--control-size); }
 .sk-theme .sk-table-region > table :is(th, td) { padding: var(--control-cell-padding); }
 .sk-theme .sk-table-region > table th {
-  background-color: #e9eef2;
+  background-color: var(--control-table-head);
   color: var(--control-ink);
   white-space: nowrap;
 }
@@ -214,3 +217,25 @@
   .sk-theme .sk-table-region { overflow: visible; }
   .sk-theme .sk-table-region > table { min-width: 0; }
 }
+
+/* Apply one heading, tab, and status treatment to both original and added modules. */
+.sk-theme :is(.sectiontitle, .md-card-head, .um-card-head, .control-section-head) :is(h2, h3) {
+  color: var(--control-ink);
+  font-size: var(--control-panel-title);
+  line-height: 1.2;
+}
+.sk-theme :is(.tabs, .report-tabs) button {
+  border: 1px solid var(--control-line);
+  border-radius: 7px;
+  background: var(--control-surface);
+  color: var(--control-ink);
+  font-family: inherit;
+}
+.sk-theme :is(.tabs, .report-tabs) button.active {
+  border-color: var(--control-navy);
+  background: var(--control-navy);
+  color: #fff;
+}
+.sk-theme :is(.pill, .control-badge).green { background: #dff2e7; color: #176842; }
+.sk-theme :is(.pill, .control-badge).amber { background: #fff2da; color: #8b510b; }
+.sk-theme :is(.pill, .control-badge).red { background: #fbe4e6; color: #9b2633; }

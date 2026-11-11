@@ -55,13 +55,14 @@
 
 .control-kpis, .control-columns, .control-stack, .control-module-tables { display: grid; gap: 14px; }
 .control-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 14px; }
+.control-kpis-compact { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .control-columns { grid-template-columns: minmax(0, 2.55fr) minmax(0, 1fr); align-items: start; }
 .control-stack { min-width: 0; align-content: start; }
 .control-card {
   min-width: 0; border: 1px solid var(--control-line); border-radius: var(--control-radius);
   padding: 14px; background: var(--control-surface); box-shadow: var(--control-shadow);
 }
-.control-card h2 { font-size: 20px; line-height: 1.2; margin: 0; color: var(--control-ink); letter-spacing: -.012em; }
+.control-card h2 { font-size: var(--control-panel-title); line-height: 1.2; margin: 0; color: var(--control-ink); letter-spacing: -.012em; }
 .control-card p { margin: 8px 0 0; }
 .control-kpi { position: relative; display: grid; align-content: start; gap: 5px; min-height: 114px; }
 .control-kpi h2 { padding-right: 24px; font-size: 17px; font-weight: 600; }
@@ -89,17 +90,14 @@
 .control-legend .target::before { border-top: 3px dashed #205784; }
 .control-table-wrap { overflow-x: auto; }
 .control-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.control-table th, .control-table td { padding: 8px 10px; border-bottom: 1px solid #e2e8ee; text-align: left; }
-.control-table th { background: #e9eef2; white-space: nowrap; color: var(--control-ink); }
+.control-table th, .control-table td { padding: var(--control-cell-padding); border-bottom: 1px solid var(--control-row-line); text-align: left; }
+.control-table th { background: var(--control-table-head); white-space: nowrap; color: var(--control-ink); }
 .control-table tr:last-child td { border-bottom: 0; }
 .control-table .control-number { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .control-table progress { width: 45px; vertical-align: middle; }
 .control-link { border: 0; background: transparent; color: #1b507a; text-align: left; cursor: pointer; font-size: inherit; font-weight: 700; padding: 4px 0; }
 .control-link:hover { text-decoration: underline; }
 .control-badge { display: inline-block; padding: 3px 7px; border-radius: 20px; white-space: nowrap; font-size: 12px; font-weight: 700; }
-.control-badge.green { background: #dff2e7; color: #176842; }
-.control-badge.amber { background: #fff2da; color: #8b510b; }
-.control-badge.red { background: #fbe4e6; color: #9b2633; }
 .control-timeline, .control-stocks { margin: 10px 0 0; padding: 0; list-style: none; }
 .control-timeline li { border-left: 2px solid var(--control-line); padding: 0 0 9px 10px; overflow-wrap: anywhere; }
 .control-timeline li:first-child { border-color: var(--control-navy); }
@@ -113,9 +111,41 @@
   background: radial-gradient(circle, #fff 54%, transparent 56%), conic-gradient(var(--control-orange) var(--stock), #dce5ec 0);
   font-size: 12px; font-weight: 700;
 }
-.control-legacy { margin-top: 14px; }
-.control-legacy summary { cursor: pointer; font-weight: 700; font-size: 16px; }
-.control-legacy .dashboard-period { margin-top: 12px; }
+.control-period { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; margin-bottom: 14px; }
+.control-period label { display: grid; gap: 4px; min-width: 0; font-weight: 700; }
+.control-period label .control-select { min-width: 120px; }
+.control-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 0 0 14px; color: var(--control-muted); }
+.control-summary strong { color: var(--control-ink); }
+.control-decisions, .control-finance-host { margin-top: 14px; }
+.control-decisions h2, .control-finance-host h2 { margin-bottom: 10px; }
+.control-finance-host { display: grid; gap: 14px; }
+.control-period-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0 0 12px; }
+.control-period-metrics > div { border: 1px solid var(--control-line); border-radius: 8px; padding: 8px; }
+.control-period-metrics dt { color: var(--control-muted); }
+.control-period-metrics dd { margin: 0; font-weight: 700; font-size: 17px; overflow-wrap: anywhere; }
+.dashboard-graphs-section .graph-controls, .dashboard-graphs-section .legend, .dashboard-graphs-section .picker-actions {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: end;
+}
+.dashboard-graphs-section .graph-control { display: grid; gap: 4px; min-width: 0; }
+.dashboard-graphs-section .graph-controls { margin-bottom: 12px; }
+.dashboard-graphs-section select, .dashboard-graphs-section .picker-actions button {
+  min-height: 36px; border: 1px solid var(--control-line); border-radius: 7px; background: var(--control-surface); color: inherit;
+}
+.dashboard-graphs-section .selected-wrap { display: none; flex-basis: 100%; }
+.dashboard-graphs-section .selected-wrap.show { display: grid; }
+.dashboard-graphs-section .project-picker { display: flex; flex-wrap: wrap; gap: 8px 16px; max-height: 130px; overflow: auto; }
+.dashboard-graphs-section .project-option { display: flex; align-items: center; gap: 4px; }
+.dashboard-graphs-section .graph-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.dashboard-graphs-section .graph-card { min-width: 0; border: 1px solid var(--control-line); border-radius: 8px; padding: 10px; }
+.dashboard-graphs-section .graph-card h3 { margin: 0; }
+.dashboard-graphs-section .graph-note { color: var(--control-muted); }
+.dashboard-graphs-section canvas { display: block; width: 100%; height: 230px; }
+.dashboard-graphs-section [hidden] { display: none; }
+.dashboard-graphs-section .swatch { display: inline-block; width: 9px; height: 9px; margin-right: 4px; border-radius: 2px; }
+@media (max-width: 780px) {
+  .control-period-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboard-graphs-section .graph-grid { grid-template-columns: minmax(0, 1fr); }
+}
 .control-module .control-project-select { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
 .control-form { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; margin: 12px 0; }
 .control-form label { display: grid; gap: 4px; flex: 1 1 145px; min-width: 0; font-size: 14px; }
@@ -153,6 +183,8 @@
   .control-kpis, .control-stack, .control-columns { gap: 9px; }
   .control-kpi { min-height: 100px; padding: 10px; }
   .control-kpi h2 { font-size: 15px; }
+  .control-period label { flex: 1 1 135px; }
+  .control-period button { flex: 1 1 auto; }
   .control-kpi > svg { width: 18px; right: 9px; top: 9px; }
   .control-button, .control-select, .control-form input { min-height: 44px; }
   .control-table .control-link { min-height: 36px; }

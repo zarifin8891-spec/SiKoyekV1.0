@@ -106,6 +106,7 @@
   }
 
   function boot(){
+    if(window.SiKoyekControl)return; // Dashboard renders directly from the shared summary and Health engine.
     installPeriodPresetFix();
     const s=document.createElement('script');s.src=ENGINE_URL;s.onload=load;document.body.appendChild(s);
     const obs=new window.SiKoyekFoundation.Observer(()=>{window.clearTimeout(window.__heTimer);window.__heTimer=setTimeout(()=>{installPeriodPresetFix();load()},250)});

@@ -13,6 +13,30 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
  const rows=table=>page.evaluate(async table=>(await sb.from(table).select('*')).data,table);
  try{
   await enter('master');assert.equal((await rows('projects')).length,6);check('master seeded dashboard');
+  assert.equal(await page.locator('.control-dashboard').count(),1);
+  assert.equal(await page.locator('.control-legacy').count(),0);
+  await page.locator('.control-period').waitFor();
+  await page.locator('#dashboard-decision-panel').waitFor();
+  await page.locator('#chartCashFlow').waitFor();
+  const curveProject=page.getByRole('combobox',{name:'Proyek Kurva-S'});
+  assert.equal(await curveProject.inputValue(),'p0');
+  await curveProject.selectOption('p1');
+  await page.locator('.control-legend .actual').filter({hasText:'30%'}).waitFor();
+  await curveProject.selectOption('p0');
+  await page.getByRole('searchbox',{name:'Pencarian proyek'}).fill('Proyek Uji 1');
+  assert.equal(await page.locator('.control-project-list tbody tr').count(),1);
+  assert.equal(await page.locator('.control-project-list tbody tr:first-child td').count(),7);
+  await page.getByRole('searchbox',{name:'Pencarian proyek'}).fill('');
+  await page.locator('.control-period [name=from]').fill('2026-09-01');
+  await page.locator('.control-period [name=to]').fill('2026-09-01');
+  await page.getByRole('button',{name:'Terapkan',exact:true}).click();
+  await page.getByText('Tidak ada transaksi pada periode ini.',{exact:true}).waitFor();
+  assert.equal(await page.locator('.control-project-list tbody tr').count(),6);
+  await page.getByRole('button',{name:'Semua Periode',exact:true}).click();
+  await page.locator('#chartCashFlow').waitFor();
+  assert.ok(await page.locator('.control-finance-host tbody [data-project]').count()>0);
+  check('one dashboard keeps project, decision and finance content under the same period');
+
   await page.evaluate(()=>openProjectForm());await page.waitForSelector('#uiFinalNext');assert.equal(await page.locator('#uiFinalBack').isVisible(),false);assert.equal(await page.locator('#uiFinalSave').isVisible(),false);await page.click('#uiFinalNext');assert.equal((await rows('projects')).length,6);check('required validation does not save');
   await page.fill('#f_code','PREVIEW-001');await page.fill('#f_name','Proyek Uji Tambah');await page.fill('#f_contract','100000000');await page.click('#uiFinalNext');assert.equal((await rows('projects')).length,6);assert.equal(await page.locator('#uiFinalNext').isVisible(),false);assert.equal(await page.locator('#uiFinalSave').isVisible(),true);check('confirmation shows the save action without saving');await page.click('#uiFinalSave');await page.waitForSelector('#modal',{state:'detached'});
   const id=(await rows('projects')).find(p=>p.project_code==='PREVIEW-001').id;await page.evaluate(id=>openProject(id),id);await page.waitForFunction(()=>state.detail?.project?.project_code==='PREVIEW-001');assert.equal((await rows('projects')).length,7);check('project create through UI persists');
