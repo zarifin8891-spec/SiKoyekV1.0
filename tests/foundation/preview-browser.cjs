@@ -20,7 +20,8 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   await page.locator('#chartCashFlow').waitFor();
   const curveProject=page.getByRole('combobox',{name:'Proyek Kurva-S'});
   assert.equal(await curveProject.inputValue(),'p0');
-  await page.locator('.control-legend .target').filter({hasText:'Target Manual'}).waitFor();
+  await page.locator('.control-legend .target').filter({hasText:'Target Otomatis'}).waitFor();
+  assert.equal(await page.locator('.control-dot.target').count(),0);
   await curveProject.selectOption('p1');
   await page.locator('.control-legend .target').filter({hasText:'Target Otomatis'}).waitFor();
   const points=await page.locator('.control-dot.target title').allTextContents();
@@ -60,13 +61,13 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   assert.equal(await page.locator('#page table tbody tr').count(),6);
   await page.getByRole('button',{name:'Proyek Uji 1',exact:true}).click();
   const tabs=page.locator('#page .tabs');
-  await tabs.getByRole('button',{name:'Kurva-S',exact:true}).click();
-  await page.locator('#project-tab-content .control-chart').waitFor();
-  await page.getByRole('heading',{name:'Milestones',exact:true}).waitFor();
+  await page.locator('#project-tab-content .timeline-v4 + .project-overview-curve .control-chart').waitFor();
+  assert.equal(await tabs.getByRole('button',{name:'Kurva-S',exact:true}).count(),0);
+  assert.equal(await page.getByRole('heading',{name:/Milestones|Target Kurva-S/}).count(),0);
   assert.match(await page.locator('.sk-project-header').evaluate(el=>getComputedStyle(el).backgroundImage),/page-header-network/);
   await tabs.getByRole('button',{name:'Material & Logistik',exact:true}).click();
   await page.getByRole('heading',{name:'Saldo material per proyek'}).waitFor();
-  assert.equal(await page.locator('#project-tab-content select').count(),0);
+  await page.locator('#project-tab-content select[name=goods_id]').waitFor();
   await tabs.getByRole('button',{name:'Tenaga Kerja & Alat',exact:true}).click();
   await page.getByRole('heading',{name:'Penempatan alat',exact:true}).waitFor();
   await sidebar.getByRole('button',{name:'Laporan',exact:true}).click();

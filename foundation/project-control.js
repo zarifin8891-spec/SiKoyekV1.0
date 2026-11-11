@@ -2,15 +2,6 @@
   'use strict';
 
   const modules = {
-    schedule: {
-      title: 'Jadwal & Milestones', permission: 'PROGRESS', icon: 'calendar',
-      tables: {
-        project_progress_targets: ['Target Kurva-S', 'target_date',
-          ['target_date', 'Tanggal target', 'date'], ['target_percent', 'Target kumulatif (%)', 'number', 0, 100]],
-        project_milestones: ['Milestones', 'due_date',
-          ['name', 'Milestone', 'text'], ['due_date', 'Tenggat', 'date'], ['completed_on', 'Tanggal selesai', 'date', null, null, true]]
-      }
-    },
     materials: {
       title: 'Material & Logistik', permission: 'PROGRESS', icon: 'layers',
       tables: {
@@ -466,21 +457,19 @@
     return rowsFor(table, query => query.eq('project_id', id));
   }
 
+  function curveFromWorkItems(project, items, records) {
+    const target = items ? weeklyTarget(project, items) : null;
+    const actual = items && records ? actualSeries(items, records, project.start_date) : [];
+    const warning = !items || !records ? message('Sebagian data Kurva-S belum dapat dimuat.') : '';
+    const note = target?.note ? message(target.note) : '';
+    return warning + note + drawCurve(target?.points || [], actual, 'Target Otomatis');
+  }
+
   async function projectCurve(project) {
-    const [targets, items, records] = await Promise.allSettled(
-      ['project_progress_targets', 'project_work_items', 'progress_records'].map(table => readProjectRows(table, project.project_id))
+    const [items, records] = await Promise.allSettled(
+      ['project_work_items', 'progress_records'].map(table => readProjectRows(table, project.project_id))
     );
-    const manual = (targets.value || []).map(row => ({date: row.target_date, value: Number(row.target_percent)}))
-      .sort((a, b) => a.date.localeCompare(b.date));
-    const automatic = items.status === 'fulfilled' ?
-      weeklyTarget(project, items.value) : null;
-    const actual = items.value && records.value ? actualSeries(items.value, records.value, project.start_date) : [];
-    const missing = [targets, items, records].some(result => result.status === 'rejected');
-    const warning = missing ? message('Sebagian data Kurva-S belum dapat dimuat.') : '';
-    const note = automatic?.note ? message(automatic.note) : '';
-    const scheduled = automatic?.points.length;
-    const label = !scheduled && manual.length ? 'Target Manual' : 'Target Otomatis';
-    return warning + note + drawCurve(scheduled ? automatic.points : manual, actual, label);
+    return curveFromWorkItems(project, items.value, records.value);
   }
 
   function mountProjectTables(root, config, id, onChange) {
@@ -492,7 +481,7 @@
     }
   }
 
-  const projectTabs = {schedule: 'Kurva-S', materials: modules.materials.title, resources: modules.resources.title};
+  const projectTabs = {materials: modules.materials.title, resources: modules.resources.title};
   function mountProjectTab(root, tab, project, refreshWorkers) {
     if (!can('PROGRESS')) {
       root.innerHTML = message('Akses ke tab ini belum diberikan.');
@@ -500,21 +489,8 @@
     }
     root.classList.add('control-module-tables');
     root.classList.toggle('control-panel-pair', tab === 'resources');
-    let refreshCurve;
-    if (tab === 'schedule') {
-      root.innerHTML = '<section class="control-card"><h2>Kurva-S &amp; Kemajuan Proyek</h2><div class="control-curve" aria-live="polite">Memuat Kurva-S…</div></section>';
-      const chart = root.querySelector('.control-curve');
-      let revision = 0;
-      refreshCurve = async () => {
-        const current = ++revision;
-        const html = await projectCurve({...project, project_id: project.id});
-        if (chart.isConnected && revision === current) chart.innerHTML = html;
-      };
-      refreshCurve();
-    }
     mountProjectTables(root, modules[tab], project.id, table => {
       if (table === 'project_worker_assignments') refreshWorkers?.();
-      refreshCurve?.();
     });
   }
 
@@ -776,7 +752,7 @@
 
   global.SiKoyekControl = {
     nav, toggleMenu, dashboard, module: showModule, isModule: page => page === 'budget' || Object.hasOwn(modules, page),
-    setIdentity, projectTabs, mountProjectTab, mountCatalog, loadWorkerCount,
+    setIdentity, projectTabs, mountProjectTab, mountCatalog, loadWorkerCount, curveFromWorkItems,
     itemScheduleFields, readItemSchedule,
     canFinance: () => can('KEUANGAN'), canProgress: () => can('PROGRESS')
   };
