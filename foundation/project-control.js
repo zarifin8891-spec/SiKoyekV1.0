@@ -236,6 +236,10 @@
     const progress = running.length
       ? running.reduce((total, p) => total + Number(p.project_progress || 0), 0) / running.length
       : null;
+    const pending = rows.filter(p => p.status === 'PENDING').length;
+    const completed = rows.filter(p => p.status === 'SELESAI').length;
+    const other = rows.length - open.length - pending - completed;
+    const statusCounts = `${open.length} Aktif · ${pending} Pending · ${completed} Selesai${other ? ' · ' + other + ' Lainnya' : ''}`;
     const contract = rows.reduce((total, p) => total + Number(p.contract_value || 0), 0);
     const budget = rows.reduce((total, p) => total + Number(p.total_rap || 0), 0);
     const spent = rows.reduce((total, p) => total + projectSpend(p), 0);
@@ -251,7 +255,8 @@
       </header>
       ${periodControls()}
       <div class="control-kpis ${finance ? '' : 'control-kpis-compact'}">
-        ${card('Total Proyek Aktif', `${open.length} Proyek`, `${running.length} Berjalan · ${open.length - running.length} Persiapan`, 'project')}
+        ${card('Total Proyek', `${rows.length} Proyek`, statusCounts, 'project')}
+        ${finance ? card('Nilai Kontrak', currency(contract), 'Semua proyek dalam filter', 'document') : ''}
         ${card('Rata-rata Progress Fisik', progress === null ? '—' : percentage(progress), running.length
           ? `<progress max="100" value="${progress}" aria-label="Rata-rata progress fisik proyek berjalan"></progress>${running.length} proyek berjalan`
           : 'Belum ada proyek berjalan', 'activity')}
@@ -259,8 +264,6 @@
         ${card('Tenaga Kerja Aktif', '—', 'Penempatan di proyek aktif hari ini', 'users', 'control-worker-count')}
       </div>
       <div class="control-summary" aria-label="Ringkasan portofolio">
-        <span><strong>${rows.length}</strong> proyek pada periode ini</span>
-        ${finance ? `<span>Nilai kontrak <strong>${currency(contract)}</strong></span>` : ''}
         ${['SEHAT', 'AWASI', 'BERISIKO', unassessed].map(status => `<span class="control-badge ${status === unassessed ? 'neutral' : healthClass(status)}">${rows.filter(p => p.health.status === status).length} ${status}</span>`).join('')}
       </div>
       <div class="control-columns">
