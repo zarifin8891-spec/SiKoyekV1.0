@@ -324,3 +324,25 @@
   .sk-theme .sk-catalog-editor .control-form-message { grid-row: auto; }
   .sk-theme .sk-compact-editor :is(input, select, .btn) { min-height: 44px; }
 }
+
+/* A shared type scale for the KPI cards across report tabs. */
+.sk-theme :is(.laporan-v3, #reportContent, .kinerja-v2) {
+  --sk-report-kpi-label-size: 11px;
+  --sk-report-kpi-value-size: clamp(17px, 1.45vw, 19px);
+}
+.sk-theme :is(.laporan-v3, #reportContent, .kinerja-v2)
+  :is(.kpi, .extra-kpi, .finance-kpi, .rap-biaya-kpi, .rap-period-kpi, .cashflow-v4-kpi, .kinerja-kpi, .kv2-kpi)
+  > :is(.label, small) {
+  font-size: var(--sk-report-kpi-label-size) !important;
+  line-height: 1.2;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+.sk-theme :is(.laporan-v3, #reportContent, .kinerja-v2)
+  :is(.kpi, .extra-kpi, .finance-kpi, .rap-biaya-kpi, .rap-period-kpi, .cashflow-v4-kpi, .kinerja-kpi, .kv2-kpi)
+  > :is(.value, strong) {
+  font-size: var(--sk-report-kpi-value-size) !important;
+  line-height: 1.2;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
