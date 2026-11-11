@@ -7,17 +7,16 @@
     if(q('um-reset-styles')) return;
     const s=document.createElement('style');s.id='um-reset-styles';
     s.textContent=`
-      .um-edit-user-modal .modalbox,.um-reset-password-modal .modalbox{width:min(430px,calc(100vw - 36px)) !important;padding:0 !important;border-radius:18px !important;overflow:hidden !important}
-      .um-edit-user-modal .modalhead,.um-reset-password-modal .modalhead{position:relative !important;min-height:100px !important;margin:0 !important;padding:22px 22px 30px !important;background:linear-gradient(115deg,#12375f 0%,#0c4a70 52%,#1f7180 100%) !important;border:0 !important;align-items:flex-start !important}
-      .um-edit-user-modal .modalhead h3,.um-reset-password-modal .modalhead h3{margin:8px 0 0 !important;color:#fff !important;font-size:22px !important;line-height:1.1 !important;font-weight:700 !important}
-      .um-edit-user-modal .modalhead::after{content:'Perbarui data inti user dan status akun.';position:absolute;left:22px;bottom:10px;color:#eef7fb;font-size:11px;line-height:1.2;font-weight:400;pointer-events:none}
+      .um-reset-password-modal .modalbox{width:min(430px,calc(100vw - 36px)) !important;padding:0 !important;border-radius:18px !important;overflow:hidden !important}
+      .um-reset-password-modal .modalhead{position:relative !important;min-height:100px !important;margin:0 !important;padding:22px 22px 30px !important;background:linear-gradient(115deg,#12375f 0%,#0c4a70 52%,#1f7180 100%) !important;border:0 !important;align-items:flex-start !important}
+      .um-reset-password-modal .modalhead h3{margin:8px 0 0 !important;color:#fff !important;font-size:22px !important;line-height:1.1 !important;font-weight:700 !important}
       .um-reset-password-modal .modalhead::after{content:'Buat password baru untuk user ini.';position:absolute;left:22px;bottom:10px;color:#eef7fb;font-size:11px;line-height:1.2;font-weight:400;pointer-events:none}
-      .um-edit-user-modal .modalhead .btn,.um-reset-password-modal .modalhead .btn{height:42px !important;min-width:72px !important;padding:0 16px !important;margin:0 !important;border-radius:10px !important;background:#fff !important;border:1px solid #fff !important;color:#172033 !important;font-size:14px !important;font-weight:400 !important}
-      .um-edit-user-modal .um-add-form,.um-reset-password-modal .um-add-form{padding:16px 22px 18px !important;gap:9px !important}
-      .um-edit-user-modal .field label,.um-reset-password-modal .field label{font-size:12px !important;margin-bottom:4px !important;font-weight:600 !important}
-      .um-edit-user-modal .field input,.um-edit-user-modal .field select,.um-reset-password-modal .field input{height:34px !important;padding:6px 11px !important;font-size:14px !important;border-radius:8px !important}
-      .um-edit-user-modal .formactions,.um-reset-password-modal .formactions{margin:8px -22px -18px !important;padding:14px 22px !important;border-top:1px solid #eef1f5 !important;background:#fff !important}
-      .um-edit-user-modal .formactions .btn,.um-reset-password-modal .formactions .btn{height:30px !important;padding:0 15px !important;border-radius:9px !important;font-size:13px !important;font-weight:400 !important}
+      .um-reset-password-modal .modalhead .btn{height:42px !important;min-width:72px !important;padding:0 16px !important;margin:0 !important;border-radius:10px !important;background:#fff !important;border:1px solid #fff !important;color:#172033 !important;font-size:14px !important;font-weight:400 !important}
+      .um-reset-password-modal .um-add-form{padding:16px 22px 18px !important;gap:9px !important}
+      .um-reset-password-modal .field label{font-size:12px !important;margin-bottom:4px !important;font-weight:600 !important}
+      .um-reset-password-modal .field input{height:34px !important;padding:6px 11px !important;font-size:14px !important;border-radius:8px !important}
+      .um-reset-password-modal .formactions{margin:8px -22px -18px !important;padding:14px 22px !important;border-top:1px solid #eef1f5 !important;background:#fff !important}
+      .um-reset-password-modal .formactions .btn{height:30px !important;padding:0 15px !important;border-radius:9px !important;font-size:13px !important;font-weight:400 !important}
       .um-reset-password-modal .um-pass-note{font-size:11px;color:var(--muted);margin:5px 0 0}
       .um-reset-password-modal .um-password-wrap{position:relative}.um-reset-password-modal .um-password-wrap input{width:100%;padding-right:38px !important}.um-reset-password-modal .um-password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;padding:3px;cursor:pointer;color:#64748b;line-height:1}.um-reset-password-modal .um-password-toggle svg{width:17px;height:17px;display:block}
       .um-reset-btn{margin-right:auto !important;background:#fff !important;border:1px solid #d8dee8 !important;color:#244a78 !important}

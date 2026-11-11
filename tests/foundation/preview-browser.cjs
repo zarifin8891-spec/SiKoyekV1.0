@@ -82,9 +82,11 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   for (const [tab, key, code, name] of [['Karyawan','employees','K-UJI','Karyawan Uji'],['Alat','equipment','A-UJI','Alat Uji']]){
     await masterTabs.getByRole('button',{name:tab,exact:true}).click();
     const panel=page.locator('[data-master-panel="'+key+'"]');
+    await panel.getByRole('button',{name:'+ Tambah',exact:true}).click();
+    await panel.getByRole('dialog').waitFor();
     await panel.locator('input[name=code]').fill(code);
     await panel.locator('input[name=name]').fill(name);
-    await panel.getByRole('button',{name:'Tambah',exact:true}).click();
+    await panel.getByRole('dialog').getByRole('button',{name:'Simpan',exact:true}).click();
     await panel.getByRole('cell',{name:name,exact:true}).waitFor();
     assert.equal(await page.locator('[data-master-panel]:visible').count(),1);
   }

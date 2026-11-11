@@ -243,7 +243,7 @@
 
 .sk-theme .md-page .md-kavio-table { width: 100%; min-width: 340px; border-collapse: collapse; }
 .sk-theme .md-page #md-managers .md-kavio-table { min-width: 400px; }
-.sk-theme .md-page .md-kavio-table :is(th, td) { border-bottom: 1px solid var(--control-line); padding: 5px 8px; font-size: 14px; text-align: left; }
+.sk-theme .md-page .md-kavio-table :is(th, td) { border-bottom: 1px solid var(--control-line); text-align: left; }
 .sk-theme .md-page .md-kavio-table th { background: var(--control-canvas); white-space: nowrap; }
 .sk-theme .md-page .md-kavio-table :is(th, td):first-child { text-align: right; }
 .sk-theme .md-page .md-kavio-table .md-actions { flex-wrap: nowrap; justify-content: flex-end; }
@@ -251,3 +251,76 @@
 .sk-theme .md-page { grid-template-columns: minmax(0, 1fr); }
 .sk-theme .md-page .md-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .sk-theme .md-page [data-master-panel][hidden] { display: none !important; }
+
+/* Master Data keeps narrow tables on wide screens and scrolls within each table on phones. */
+.sk-theme .md-page [data-master-panel] { width: min(100%, max(420px, 50%)); }
+.sk-theme .md-page [data-master-panel] > :is(.md-card, .control-card) { padding: 12px; }
+.sk-theme .md-page :is(.md-kavio-table, .control-table) :is(th, td) {
+  padding: 3px 7px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+.sk-theme .md-page [data-master-catalog] .control-table { min-width: 340px; }
+.sk-theme .md-page :is(.md-kavio-table, .control-table) :is(th, td):last-child { text-align: right; }
+.sk-theme .md-page .md-kavio-table .md-actions .btn,
+.sk-theme .md-page .control-row-actions .control-link { height: 24px; min-height: 24px; }
+.sk-theme .md-page .control-form-message:empty { display: none; }
+@media (max-width: 960px) {
+  .sk-theme .md-page [data-master-panel] { width: 100%; }
+}
+@media (max-width: 780px) {
+  .sk-theme .md-page .md-kavio-table .md-actions .btn,
+  .sk-theme .md-page .control-row-actions .control-link { min-height: 36px; }
+}
+
+.sk-theme .sk-compact-editor {
+  width: min(576px, calc(100vw - 28px)) !important;
+  max-height: calc(100dvh - 28px);
+  padding: 0 !important;
+  border: 1px solid var(--control-line);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--control-ink);
+  overflow: auto;
+}
+.sk-catalog-editor::backdrop { background: rgb(10 24 41 / 55%); }
+.sk-theme .sk-compact-editor > .modalhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #102a4a, #173b67 55%, #1f6274);
+}
+.sk-theme .sk-compact-editor > .modalhead h3 { margin: 0; color: #fff; font-size: 20px; }
+.sk-theme .sk-compact-editor > :is(.control-form, .um-add-form) { margin: 0; padding: 14px 18px; }
+.sk-theme .sk-compact-editor :is(.control-form:not([hidden]), .um-modal-grid) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.sk-theme .sk-compact-editor :is(input, select) { width: 100%; min-height: 38px; }
+.sk-theme .sk-compact-editor :is(.field label, .control-form > label) {
+  color: var(--control-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.sk-theme .sk-compact-editor :is(.formactions, .control-form-actions) {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--control-line);
+}
+.sk-theme .sk-compact-editor :is(.formactions, .control-form-actions) .btn { min-height: 36px; }
+.sk-theme .sk-catalog-editor .control-form-message { grid-column: 1 / -1; grid-row: 3; }
+@media (max-width: 560px) {
+  .sk-theme .sk-compact-editor :is(.control-form:not([hidden]), .um-modal-grid) { grid-template-columns: minmax(0, 1fr); }
+  .sk-theme .sk-catalog-editor .control-form-message { grid-row: auto; }
+  .sk-theme .sk-compact-editor :is(input, select, .btn) { min-height: 44px; }
+}

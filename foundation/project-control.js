@@ -58,7 +58,7 @@
 
   function mountCatalog(root, key) {
     const catalog = catalogs[key];
-    const definition = ['Daftar ' + catalog.title, 'code',
+    const definition = [catalog.title, 'code',
       ['code', 'Kode', 'text'], ['name', 'Nama', 'text'], ['is_active', 'Status', 'boolean']];
     mountTable(root, catalog.table, definition, null, 'MASTER_DATA');
   }
@@ -549,7 +549,8 @@
     const catalog = assignmentCatalog[table];
     const editFields = catalog ? fields.filter(([name]) => name !== catalog.codeField && name !== catalog.nameField) : fields;
     const scope = query => id === null ? query : query.eq('project_id', id);
-    const render = async (editing = null) => {
+    const inModal = id === null;
+    const render = async (editing = null, openEditor = false) => {
       section.innerHTML = `<h2>${title}</h2>${message('Memuat data…')}`;
       let rows, choices;
       try {
@@ -562,18 +563,27 @@
         return;
       }
       const write = editing ? 'EDIT' : 'ADD';
-      section.innerHTML = `<h2>${title}</h2><form class="control-form" ${can(permission, write) ? '' : 'hidden'}>${catalog ? catalogSelect(catalog, choices, editing) : ''}${editFields.map(field => fieldHTML(field, editing)).join('')}
-        <div class="control-form-actions"><button class="control-button primary" data-rbac-module="${permission}" data-rbac-action="${write}">${editing ? 'Simpan Perubahan' : 'Tambah'}</button>
-        ${editing ? '<button type="button" class="control-button" data-cancel>Batal</button>' : ''}</div>
-        <p class="control-form-message" role="status"></p></form>
-        <div class="control-table-wrap"><table class="control-table"><thead><tr>${fields.map(field => `<th class="${field[2] === 'number' ? 'control-number' : ''}">${field[1]}</th>`).join('')}<th>Aksi</th></tr></thead>
+      const editor = `<form class="control-form" ${can(permission, write) ? '' : 'hidden'}>${catalog ? catalogSelect(catalog, choices, editing) : ''}${editFields.map(field => fieldHTML(field, editing)).join('')}
+        <div class="control-form-actions">${inModal ? '<button type="button" class="btn ghost" data-cancel>Batal</button>' : ''}<button class="${inModal ? 'btn' : 'control-button'} primary" data-rbac-module="${permission}" data-rbac-action="${write}">${inModal ? 'Simpan' : editing ? 'Simpan Perubahan' : 'Tambah'}</button>
+        ${editing && !inModal ? '<button type="button" class="control-button" data-cancel>Batal</button>' : ''}</div>
+        <p class="control-form-message" role="status"></p></form>`;
+      const heading = inModal
+        ? `<div class="md-card-head"><h2>${title}</h2><button type="button" class="btn primary" data-catalog-add
+          ${can(permission, 'ADD') ? '' : 'hidden'} data-rbac-module="${permission}" data-rbac-action="ADD">+ Tambah</button></div>`
+        : `<h2>${title}</h2>`;
+      section.innerHTML = heading + (inModal
+        ? `<dialog class="sk-compact-editor sk-catalog-editor" aria-labelledby="catalog-editor-title">
+            <div class="modalhead"><h3 id="catalog-editor-title">${editing ? 'Edit' : 'Tambah'} ${title}</h3>
+            <button type="button" class="btn ghost" data-catalog-close>Tutup</button></div>${editor}</dialog>
+            <p class="control-form-message" data-table-status role="status"></p>`
+        : editor) + `<div class="control-table-wrap"><table class="control-table"><thead><tr>${fields.map(field => `<th class="${field[2] === 'number' ? 'control-number' : ''}">${field[1]}</th>`).join('')}<th>Aksi</th></tr></thead>
           <tbody>${rows.map((row, i) => `<tr>${fields.map(field => `<td class="${field[2] === 'number' ? 'control-number' : ''}">${cell(field, row[field[0]])}</td>`).join('')}
             <td class="control-row-actions"><button class="control-link" ${can(permission, 'EDIT') ? '' : 'hidden'} data-edit="${i}" data-rbac-module="${permission}" data-rbac-action="EDIT">Edit</button>
               <button class="control-link" ${can(permission, 'DELETE') ? '' : 'hidden'} data-delete="${i}" data-rbac-module="${permission}" data-rbac-action="DELETE">Hapus</button></td></tr>`).join('') ||
               `<tr><td colspan="${fields.length + 1}">Belum ada data.</td></tr>`}</tbody></table></div>`;
       const form = section.querySelector('form');
-      const status = section.querySelector('[role=status]');
-      const submit = form.querySelector('button');
+      const status = form.querySelector('[role=status]');
+      const submit = form.querySelector('button.primary');
       if (catalog && !editing && !choices.length) {
         submit.disabled = true;
         status.textContent = 'Tambahkan ' + catalog.title.toLowerCase() + ' aktif di Master Data.';
@@ -618,8 +628,18 @@
           submit.disabled = false;
         }
       });
-      section.querySelector('[data-cancel]')?.addEventListener('click', () => render());
-      section.querySelectorAll('[data-edit]').forEach(button => button.addEventListener('click', () => render(rows[Number(button.dataset.edit)])));
+      const dialog = section.querySelector('dialog');
+      const add = section.querySelector('[data-catalog-add]');
+      add?.addEventListener('click', () => editing ? render(null, true) : dialog.showModal());
+      dialog?.addEventListener('close', () => {
+        form.reset();
+        status.textContent = '';
+      });
+      section.querySelector('[data-catalog-close]')?.addEventListener('click', () => dialog.close());
+      section.querySelector('[data-cancel]')?.addEventListener('click', () => dialog ? dialog.close() : render());
+      if (dialog && openEditor && section.isConnected && !form.hidden) dialog.showModal();
+      section.querySelectorAll('[data-edit]').forEach(button =>
+        button.addEventListener('click', () => render(rows[Number(button.dataset.edit)], inModal)));
       section.querySelectorAll('[data-delete]').forEach(button => button.addEventListener('click', async () => {
         if (!global.confirm('Hapus catatan ini?')) return;
         button.disabled = true;
@@ -630,7 +650,7 @@
           await render();
           onChange?.();
         } catch (error) {
-          status.textContent = error.message;
+          (section.querySelector('[data-table-status]') || status).textContent = error.message;
         } finally {
           button.disabled = false;
         }
