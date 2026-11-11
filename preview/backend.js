@@ -28,6 +28,9 @@
   function profile(){const current=session();return state.tables.profiles.find(p=>p.id===current?.user.id&&p.is_active)}
   function can(table,action){
     const who=profile();if(!who)return false;if(who.role_id==='admin')return true;
+    if (['employee_master','equipment_master'].includes(table)) {
+      return can('project_categories', action) || action === 'VIEW' && can('project_worker_assignments', 'VIEW');
+    }
     const fieldTables=['project_progress_targets','project_milestones','project_material_stocks','project_worker_assignments','project_equipment_assignments','project_field_logs','project_weather_observations'];
     const module=fieldTables.includes(table)?'PROGRESS':({project_document_links:'LAPORAN',projects:'PROJECTS',project_work_items:'PROJECTS',progress_records:'PROGRESS',project_rap:'RAP',financial_transactions:'KEUANGAN',project_categories:'MASTER_DATA',project_managers:'MASTER_DATA',transaction_categories:'MASTER_DATA',payment_methods:'MASTER_DATA'})[table];
     if(!module)return action==='VIEW';

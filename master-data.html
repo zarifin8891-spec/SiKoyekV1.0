@@ -8,6 +8,7 @@
 
 <link rel="stylesheet" href="./foundation/tokens.css">
 <link rel="stylesheet" href="./foundation/master-data.css">
+<link rel="stylesheet" href="./foundation/project-control.css">
 <link rel="stylesheet" href="./foundation/visual.css">
 <script src="./environment.js"></script>
 <script src="./foundation/config.js"></script>
@@ -47,12 +48,14 @@ window.toast=window.toast||function(msg){const d=document.createElement('div');d
 window.go=window.go||function(page){window.location.href=page==='projects'?'./daftar-proyek.html':'./index.html'};
 window.renderApp=window.renderApp||function(){return document.getElementById('page')};
 </script>
+<script src="./foundation/project-control.js"></script>
 <script src="./master-data-v1.js?v=6"></script>
 <script>
 (async function(){
   try{
     const session=await window.SK?.requireSession?.();
     if(!session)return;
+    await window.SiKoyekControl.setIdentity(session.user);
     const {data:profile}=await window.SK.sb.from('profiles').select('roles(name)').eq('id',session.user.id).maybeSingle();
     document.querySelector('.locked-user-main')?.replaceChildren(document.createTextNode(session.user?.user_metadata?.full_name||session.user?.email||'Pengguna'));
     document.querySelector('.locked-user-role')?.replaceChildren(document.createTextNode(profile?.roles?.name?'Role: '+String(profile.roles.name).toUpperCase():'Pengguna'));

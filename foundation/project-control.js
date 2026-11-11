@@ -48,6 +48,21 @@
     }
   };
 
+  const catalogs = {
+    employees: {table: 'employee_master', title: 'Karyawan', reference: 'employee_id',
+      assignment: 'project_worker_assignments', codeField: 'worker_code', nameField: 'worker_name'},
+    equipment: {table: 'equipment_master', title: 'Alat', reference: 'equipment_id',
+      assignment: 'project_equipment_assignments', codeField: 'equipment_code', nameField: 'name'}
+  };
+  const assignmentCatalog = Object.fromEntries(Object.values(catalogs).map(catalog => [catalog.assignment, catalog]));
+
+  function mountCatalog(root, key) {
+    const catalog = catalogs[key];
+    const definition = ['Daftar ' + catalog.title, 'code',
+      ['code', 'Kode', 'text'], ['name', 'Nama', 'text'], ['is_active', 'Status', 'boolean']];
+    mountTable(root, catalog.table, definition, null, 'MASTER_DATA');
+  }
+
   const icons = {
     dashboard: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
     project: '<rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V4h8v3m-13 6h18"/>',
@@ -464,6 +479,10 @@
   function fieldHTML(field, row) {
     const [key, label, type, min, max, optional] = field;
     let value = row?.[key] ?? '';
+    if (type === 'boolean') {
+      return `<label>${label}<select name="${key}"><option value="true">Aktif</option>
+        <option value="false" ${value === false ? 'selected' : ''}>Nonaktif</option></select></label>`;
+    }
     if (value && type === 'datetime-local') value = isoLocal(new Date(value));
     return `<label>${label}<input name="${key}" type="${type}" value="${esc(value)}" ${optional ? '' : 'required'}
       ${type === 'number' ? 'step="0.01"' : ''} ${min == null ? '' : `min="${min}"`} ${max == null ? '' : `max="${max}"`}></label>`;
@@ -471,6 +490,7 @@
 
   function cell(field, value) {
     if (value == null || value === '') return '—';
+    if (field[2] === 'boolean') return value ? 'Aktif' : 'Nonaktif';
     if (field[2] === 'number') return number.format(value);
     if (field[2] === 'datetime-local') return timeLabel.format(new Date(value));
     if (field[2] === 'url' && /^https:\/\/[^\s]+$/i.test(value)) {
@@ -479,19 +499,36 @@
     return esc(value);
   }
 
+  function catalogSelect(catalog, choices, editing) {
+    const current = editing?.[catalog.reference];
+    const currentListed = choices.some(row => row.id === current);
+    const placeholder = editing && !current ? 'Pertahankan catatan lama' : 'Pilih ' + catalog.title.toLowerCase();
+    return `<label>${catalog.title}<select name="${catalog.reference}" ${editing && !current ? '' : 'required'}>
+      <option value="">${placeholder}</option>
+      ${current && !currentListed ? `<option value="${esc(current)}" selected>${esc(editing[catalog.codeField])} — ${esc(editing[catalog.nameField])} (nonaktif)</option>` : ''}
+      ${choices.map(row => `<option value="${esc(row.id)}" ${row.id === current ? 'selected' : ''}>${esc(row.code)} — ${esc(row.name)}</option>`).join('')}
+    </select></label>`;
+  }
+
   async function mountTable(section, table, definition, id, permission, onChange) {
     const [title, sort, ...fields] = definition;
+    const catalog = assignmentCatalog[table];
+    const editFields = catalog ? fields.filter(([name]) => name !== catalog.codeField && name !== catalog.nameField) : fields;
+    const scope = query => id === null ? query : query.eq('project_id', id);
     const render = async (editing = null) => {
       section.innerHTML = `<h2>${title}</h2>${message('Memuat data…')}`;
-      let rows;
+      let rows, choices;
       try {
-        rows = await rowsFor(table, query => query.eq('project_id', id).order(sort));
+        [rows, choices] = await Promise.all([
+          rowsFor(table, query => scope(query).order(sort)),
+          catalog ? rowsFor(catalog.table, query => query.eq('is_active', true).order('code')) : []
+        ]);
       } catch {
         section.innerHTML = `<h2>${title}</h2>${message('Data belum dapat dimuat. Periksa akses dan migrasi database versi uji.')}`;
         return;
       }
       const write = editing ? 'EDIT' : 'ADD';
-      section.innerHTML = `<h2>${title}</h2><form class="control-form" ${can(permission, write) ? '' : 'hidden'}>${fields.map(field => fieldHTML(field, editing)).join('')}
+      section.innerHTML = `<h2>${title}</h2><form class="control-form" ${can(permission, write) ? '' : 'hidden'}>${catalog ? catalogSelect(catalog, choices, editing) : ''}${editFields.map(field => fieldHTML(field, editing)).join('')}
         <div class="control-form-actions"><button class="control-button primary" data-rbac-module="${permission}" data-rbac-action="${write}">${editing ? 'Simpan Perubahan' : 'Tambah'}</button>
         ${editing ? '<button type="button" class="control-button" data-cancel>Batal</button>' : ''}</div>
         <p class="control-form-message" role="status"></p></form>
@@ -503,24 +540,40 @@
       const form = section.querySelector('form');
       const status = section.querySelector('[role=status]');
       const submit = form.querySelector('button');
+      if (catalog && !editing && !choices.length) {
+        submit.disabled = true;
+        status.textContent = 'Tambahkan ' + catalog.title.toLowerCase() + ' aktif di Master Data.';
+      }
       form.addEventListener('submit', async event => {
         event.preventDefault();
         if (submit.disabled) return;
         const data = new FormData(form);
         const payload = {};
-        for (const [key, label, type, , , optional] of fields) {
+        for (const [key, label, type, , , optional] of editFields) {
           const input = data.get(key).trim();
           if ((!input && !optional) || (type === 'url' && !/^https:\/\/[^\s]+$/i.test(input))) {
             status.textContent = `Periksa kembali ${label}.`;
             return;
           }
           payload[key] = !input ? null : type === 'number' ? Number(input) :
-            type === 'datetime-local' ? new Date(input).toISOString() : input;
+            type === 'datetime-local' ? new Date(input).toISOString() : type === 'boolean' ? input === 'true' : input;
+        }
+        if (catalog) {
+          const reference = data.get(catalog.reference);
+          const selected = choices.find(row => row.id === reference);
+          if (selected) {
+            payload[catalog.reference] = selected.id;
+            payload[catalog.codeField] = selected.code;
+            payload[catalog.nameField] = selected.name;
+          } else if (!editing || reference !== (editing[catalog.reference] || '')) {
+            status.textContent = 'Pilih ' + catalog.title.toLowerCase() + ' aktif.';
+            return;
+          }
         }
         submit.disabled = true;
         try {
-          const request = editing ? sb.from(table).update(payload).eq('id', editing.id).eq('project_id', id) :
-            sb.from(table).insert({...payload, project_id: id});
+          const request = editing ? scope(sb.from(table).update(payload).eq('id', editing.id)) :
+            sb.from(table).insert(id === null ? payload : {...payload, project_id: id});
           const {data: saved, error} = await request.select('id').maybeSingle();
           if (error || !saved) throw new Error(error?.message || 'Perubahan tidak tersimpan. Periksa hak akses.');
           await render();
@@ -538,7 +591,7 @@
         button.disabled = true;
         try {
           const row = rows[Number(button.dataset.delete)];
-          const {data: removed, error} = await sb.from(table).delete().eq('id', row.id).eq('project_id', id).select('id').maybeSingle();
+          const {data: removed, error} = await scope(sb.from(table).delete().eq('id', row.id)).select('id').maybeSingle();
           if (error || !removed) throw new Error(error?.message || 'Catatan tidak terhapus. Periksa hak akses.');
           await render();
           onChange?.();
@@ -593,6 +646,6 @@
 
   global.SiKoyekControl = {
     nav, toggleMenu, dashboard, module: showModule, isModule: page => page === 'budget' || Object.hasOwn(modules, page),
-    setIdentity, projectTabs, mountProjectTab, canProgress: () => can('PROGRESS')
+    setIdentity, projectTabs, mountProjectTab, mountCatalog, canProgress: () => can('PROGRESS')
   };
 })(window);

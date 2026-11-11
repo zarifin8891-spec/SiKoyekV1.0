@@ -69,6 +69,37 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   await sidebar.getByRole('button',{name:'Dashboard',exact:true}).click();
   await page.locator('.dashboard-head').waitFor();
   check('sidebar routes, project status filter, project tabs, and direct Laporan');
+  await sidebar.getByRole('button',{name:'Master Data',exact:true}).click();
+  const masterTabs=page.locator('.md-tabs');
+  await masterTabs.waitFor();
+  assert.equal(await masterTabs.getByRole('button').count(),6);
+  for (const [tab, key, code, name] of [['Karyawan','employees','K-UJI','Karyawan Uji'],['Alat','equipment','A-UJI','Alat Uji']]){
+    await masterTabs.getByRole('button',{name:tab,exact:true}).click();
+    const panel=page.locator('[data-master-panel="'+key+'"]');
+    await panel.locator('input[name=code]').fill(code);
+    await panel.locator('input[name=name]').fill(name);
+    await panel.getByRole('button',{name:'Tambah',exact:true}).click();
+    await panel.getByRole('cell',{name:name,exact:true}).waitFor();
+    assert.equal(await page.locator('[data-master-panel]:visible').count(),1);
+  }
+  await sidebar.getByRole('button',{name:'Daftar Proyek',exact:true}).click();
+  await page.getByRole('button',{name:'Proyek Uji 1',exact:true}).click();
+  await tabs.getByRole('button',{name:'Tenaga Kerja & Alat',exact:true}).click();
+  for(const [key,label,table,catalog] of [['employee_id','K-UJI — Karyawan Uji','project_worker_assignments','employee_master'],
+      ['equipment_id','A-UJI — Alat Uji','project_equipment_assignments','equipment_master']]){
+    const dropdown=page.locator('#project-tab-content select[name="'+key+'"]');
+    const form=dropdown.locator('xpath=ancestor::form');
+    await dropdown.selectOption({label});
+    const selected=await dropdown.inputValue();
+    await form.locator('input[name=starts_on]').fill('2026-12-28');
+    await form.getByRole('button',{name:'Tambah',exact:true}).click();
+    await page.waitForFunction(async({key,selected,table})=>(await sb.from(table).select('*')).data.some(row=>row[key]===selected&&row.project_id==='p0'),{key,selected,table});
+    assert.ok((await rows(catalog)).some(row=>row.id===selected));
+  }
+  await sidebar.getByRole('button',{name:'Dashboard',exact:true}).click();
+  await page.locator('.dashboard-head').waitFor();
+  check('tabbed Master Data creates workers and tools available in project assignment dropdowns');
+
 
 
   await page.evaluate(()=>openProjectForm());await page.waitForSelector('#uiFinalNext');assert.equal(await page.locator('#uiFinalBack').isVisible(),false);assert.equal(await page.locator('#uiFinalSave').isVisible(),false);await page.click('#uiFinalNext');assert.equal((await rows('projects')).length,6);check('required validation does not save');

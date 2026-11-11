@@ -35,6 +35,15 @@ tables.project_worker_assignments = summary.flatMap((p,i) => Array.from({length:
   id:'worker-'+i+'-'+j,project_id:p.project_id,worker_code:'TK-'+i+'-'+j,worker_name:'Pekerja Uji '+(i*4+j+1),starts_on:'2026-09-01',ends_on:null
 })));
 tables.project_equipment_assignments = [{id:'equipment-1',project_id:'p0',equipment_code:'AL-01',name:'Concrete mixer',starts_on:date,ends_on:null}];
+tables.employee_master = tables.project_worker_assignments.map(row => ({
+  id: 'master-' + row.id, code: row.worker_code, name: row.worker_name, is_active: true
+}));
+tables.equipment_master = tables.project_equipment_assignments.map(row => ({
+  id: 'master-' + row.id, code: row.equipment_code, name: row.name, is_active: true
+}));
+tables.project_worker_assignments.forEach(row => { row.employee_id = 'master-' + row.id; });
+tables.project_equipment_assignments.forEach(row => { row.equipment_id = 'master-' + row.id; });
+
 tables.project_field_logs = [
   {id:'log-1',project_id:'p0',logged_at:now,description:'Pengiriman semen diterima'},
   {id:'log-2',project_id:'p0',logged_at:new Date(Date.now()-3600000).toISOString(),description:'Pengecoran pondasi dimulai'},

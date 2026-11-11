@@ -11,7 +11,40 @@
   function navButton(){const nav=document.querySelector('.sidebar .nav');if(!nav||nav.querySelector('[data-master-data-nav]'))return;const b=document.createElement('button');b.type='button';b.dataset.masterDataNav='1';b.textContent='Master Data';b.onclick=openMasterData;nav.appendChild(b)}
   function cleanProjectCategoryControl(){document.querySelectorAll('.category-tools,.step1-category-tools,[data-p6-cat-master]').forEach(x=>(x.closest?.('.category-tools,.step1-category-tools')||x).remove())}
   const mdCard=(cls,title,desc,fn)=>`<section class="card md-card"><div class="md-card-head"><div><h2>${title}</h2><p>${desc}</p></div><button class="btn primary" type="button" onclick="${fn}">+ Tambah</button></div><div id="${cls}" class="md-table-wrap"><div class="empty">Memuat...</div></div></section>`;
-  function masterHTML(){return `<div class="md-page"><div class="md-top"><div><h1>Master Data</h1><p>Kelola data referensi untuk Project dan Keuangan.</p></div><button class="btn ghost" type="button" onclick="go('projects')">← Kembali ke Project</button></div><div class="md-grid">${mdCard('md-project-cats',defs.project.title,defs.project.desc,'mdAddProjectCategory()')}${mdCard('md-managers','Project Manager','Daftar Project Manager aktif.','mdAddManager()')}${mdCard('md-finance-cats',defs.finance.title,defs.finance.desc,'mdAddFinanceCategory()')}${mdCard('md-payment-methods',defs.payment.title,defs.payment.desc,'mdAddPaymentMethod()')}</div></div>`}
+  function masterHTML() {
+    const pages = [
+      ['project', defs.project.title, mdCard('md-project-cats', defs.project.title, defs.project.desc, 'mdAddProjectCategory()')],
+      ['manager', 'Project Manager', mdCard('md-managers', 'Project Manager', 'Daftar Project Manager.', 'mdAddManager()')],
+      ['finance', defs.finance.title, mdCard('md-finance-cats', defs.finance.title, defs.finance.desc, 'mdAddFinanceCategory()')],
+      ['payment', defs.payment.title, mdCard('md-payment-methods', defs.payment.title, defs.payment.desc, 'mdAddPaymentMethod()')],
+      ['employees', 'Karyawan', '<section class="control-card" data-master-catalog="employees"></section>'],
+      ['equipment', 'Alat', '<section class="control-card" data-master-catalog="equipment"></section>']
+    ];
+    return `<div class="md-page"><div class="md-top"><div><h1>Master Data</h1><p>Kelola referensi proyek, keuangan, karyawan, dan alat.</p></div>
+      <button class="btn ghost" type="button" onclick="go('projects')">← Kembali ke Project</button></div>
+      <div class="tabs md-tabs" aria-label="Master Data">${pages.map(([key, title], i) =>
+        `<button type="button" data-master-tab="${key}" aria-pressed="${i === 0}" class="${i === 0 ? 'active' : ''}">${title}</button>`).join('')}</div>
+      ${pages.map(([key, , html], i) => `<div data-master-panel="${key}" ${i === 0 ? '' : 'hidden'}>${html}</div>`).join('')}</div>`;
+  }
+
+  function bindMasterTabs(page) {
+    page.querySelector('.md-tabs').addEventListener('click', event => {
+      const button = event.target.closest('[data-master-tab]');
+      if (!button || button.classList.contains('active')) return;
+      const key = button.dataset.masterTab;
+      page.querySelectorAll('[data-master-tab]').forEach(tab => {
+        const active = tab === button;
+        tab.classList.toggle('active', active);
+        tab.setAttribute('aria-pressed', String(active));
+      });
+      page.querySelectorAll('[data-master-panel]').forEach(panel => {
+        panel.hidden = panel.dataset.masterPanel !== key;
+      });
+      const catalog = page.querySelector(`[data-master-catalog="${key}"]`);
+      if (catalog) window.SiKoyekControl.mountCatalog(catalog, key);
+    });
+  }
+
   function renderMasterTable(id, rows, columns, edit, remove) {
     const host = q(id);
     if (!host) return;
@@ -45,7 +78,7 @@
     renderMasterTable('md-managers', rows, [orderColumn, ['Kode', row => row.code || '—'], nameColumn], edit, remove);
   }
   async function refresh(){try{const [pc,pm,fc,pay]=await Promise.all([list('project_categories'),managers(),list('transaction_categories'),list('payment_methods')]);renderList('md-project-cats',pc,'mdEditProjectCategory','mdDeleteProjectCategory');renderManagerList(pm,'mdEditManager','mdDeleteManager');renderList('md-finance-cats',fc,'mdEditFinanceCategory','mdDeleteFinanceCategory');renderList('md-payment-methods',pay,'mdEditPaymentMethod','mdDeletePaymentMethod')}catch(e){toast(e?.message||'Gagal memuat Master Data')}}
-  function openMasterData(){state.page='master-data';state.selected=null;state.detail=null;const page=q('page');if(page){page.innerHTML=masterHTML();refresh()}document.querySelectorAll('.sidebar .nav button').forEach(b=>b.classList.remove('active'));document.querySelector('[data-master-data-nav]')?.classList.add('active');cleanProjectCategoryControl()}
+  function openMasterData(){state.page='master-data';state.selected=null;state.detail=null;const page=q('page');if(page){page.innerHTML=masterHTML();bindMasterTabs(page);refresh()}document.querySelectorAll('.sidebar .nav button').forEach(b=>b.classList.remove('active'));document.querySelector('[data-master-data-nav]')?.classList.add('active');cleanProjectCategoryControl()}
   window.openMasterData=openMasterData;
   window.mdAddProjectCategory=function(){modal('Tambah Kategori Proyek',`<div class="field"><label>Nama Kategori *</label><input id="md_name"></div><div class="field"><label>Urutan</label><input id="md_sort" type="number" value="1"></div><div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn primary" onclick="mdSaveProjectCategory()">Simpan</button></div>`)};
   window.mdSaveProjectCategory=async function(){const name=q('md_name')?.value.trim(),sort=Number(q('md_sort')?.value||0);if(!name){toast('Nama kategori wajib diisi');return}const {error}=await db().from('project_categories').insert({name,sort_order:sort,is_active:true});if(error){toast(error.message);return}closeModal();toast('Kategori proyek ditambahkan');refresh()};
