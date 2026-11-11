@@ -383,12 +383,12 @@
       <small>Kosongkan untuk mengikuti urutan pekerjaan.</small></div>`;
   }
 
-  function readItemSchedule(prefix) {
+  function readItemSchedule(prefix, report = toast) {
     const duration = document.getElementById(prefix + '_duration')?.value;
     const start = document.getElementById(prefix + '_planned_start')?.value;
     const days = duration ? Number(duration) : null;
     if ((days !== null && (!Number.isInteger(days) || days < 1 || days > 36500)) || (start && !days)) {
-      toast('Isi durasi dalam hari bulat (1–36.500). Tanggal mulai rencana memerlukan durasi.');
+      report('Isi durasi dalam hari bulat (1–36.500). Tanggal mulai rencana memerlukan durasi.');
       return null;
     }
     return {duration_days: days, planned_start_date: start || null};
