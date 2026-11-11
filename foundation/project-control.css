@@ -203,3 +203,5 @@
   .control-chart text { font-size: 23px; }
   .control-chart .control-line { stroke-width: 4; }
 }
+
+.project-list-table .project-list-date { white-space: nowrap; }

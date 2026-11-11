@@ -614,6 +614,8 @@
     const catalog = assignmentCatalog[table];
     const editFields = catalog ? fields.filter(([name]) => !Object.hasOwn(catalog.snapshot, name)) : fields;
     const scope = query => id === null ? query : query.eq('project_id', id);
+    const assignment = table === 'project_worker_assignments' || table === 'project_equipment_assignments';
+    const transferHelp = 'Untuk pindah proyek, isi tanggal Selesai pada penempatan lama. Mulai di proyek baru paling cepat sehari setelahnya.';
     const inModal = id === null;
     const render = async (editing = null, openEditor = false) => {
       section.innerHTML = `<h2>${title}</h2>${message('Memuat data…')}`;
@@ -641,7 +643,7 @@
             <div class="modalhead"><h3 id="catalog-editor-title">${editing ? 'Edit' : 'Tambah'} ${title}</h3>
             <button type="button" class="btn ghost" data-catalog-close>Tutup</button></div>${editor}</dialog>
             <p class="control-form-message" data-table-status role="status"></p>`
-        : editor) + `<div class="control-table-wrap"><table class="control-table"><thead><tr>${fields.map(field => `<th class="${field[2] === 'number' ? 'control-number' : ''}">${field[1]}</th>`).join('')}<th>Aksi</th></tr></thead>
+        : editor) + (assignment ? message(transferHelp) : '') + `<div class="control-table-wrap"><table class="control-table"><thead><tr>${fields.map(field => `<th class="${field[2] === 'number' ? 'control-number' : ''}">${field[1]}</th>`).join('')}<th>Aksi</th></tr></thead>
           <tbody>${rows.map((row, i) => `<tr>${fields.map(field => `<td class="${field[2] === 'number' ? 'control-number' : ''}">${cell(field, row[field[0]])}</td>`).join('')}
             <td class="control-row-actions"><button class="control-link" ${can(permission, 'EDIT') ? '' : 'hidden'} data-edit="${i}" data-rbac-module="${permission}" data-rbac-action="EDIT">Edit</button>
               <button class="control-link" ${can(permission, 'DELETE') ? '' : 'hidden'} data-delete="${i}" data-rbac-module="${permission}" data-rbac-action="DELETE">Hapus</button></td></tr>`).join('') ||
@@ -667,6 +669,10 @@
           payload[key] = !input ? null : type === 'number' ? Number(input) :
             type === 'datetime-local' ? new Date(input).toISOString() : type === 'boolean' ? input === 'true' : input;
         }
+        if (assignment && payload.ends_on && payload.ends_on < payload.starts_on) {
+          status.textContent = 'Tanggal Selesai harus sama dengan atau setelah tanggal Mulai.';
+          return;
+        }
         if (catalog) {
           const reference = data.get(catalog.reference);
           const selected = choices.find(row => row.id === reference);
@@ -685,6 +691,9 @@
           const request = editing ? scope(sb.from(table).update(payload).eq('id', editing.id)) :
             sb.from(table).insert(id === null ? payload : {...payload, project_id: id});
           const {data: saved, error} = await request.select('id').maybeSingle();
+          if (assignment && (error?.code === '23P01' || error?.code === '23505')) {
+            throw new Error('Tanggal penempatan berbenturan dengan penempatan yang sudah tercatat. ' + transferHelp);
+          }
           if (error || !saved) throw new Error(error?.message || 'Perubahan tidak tersimpan. Periksa hak akses.');
           await render();
           onChange?.();
