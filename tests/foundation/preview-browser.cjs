@@ -24,9 +24,9 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   await curveProject.selectOption('p1');
   await page.locator('.control-legend .target').filter({hasText:'Target Otomatis'}).waitFor();
   const points=await page.locator('.control-dot.target title').allTextContents();
-  assert.equal(points[0],'2026-09-01 · 0%');
-  assert.equal(points[1],'2026-09-08 · 5,8%');
-  assert.equal(points.at(-1),'2026-12-31 · 100%');
+  assert.equal(points[0],'2026-08-31 · 0%');
+  assert.equal(points[1],'2026-09-07 · 20%');
+  assert.equal(points.at(-1),'2026-10-12 · 100%');
   await page.locator('.control-legend .actual').filter({hasText:'30%'}).waitFor();
   await curveProject.selectOption('p0');
   await page.getByRole('searchbox',{name:'Pencarian proyek'}).fill('Proyek Uji 1');
@@ -78,20 +78,30 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   await sidebar.getByRole('button',{name:'Master Data',exact:true}).click();
   const masterTabs=page.locator('.md-tabs');
   await masterTabs.waitFor();
-  assert.equal(await masterTabs.getByRole('button').count(),6);
-  for (const [tab, key, code, name] of [['Karyawan','employees','K-UJI','Karyawan Uji'],['Alat','equipment','A-UJI','Alat Uji']]){
+  assert.equal(await masterTabs.getByRole('button').count(),7);
+  for (const [tab, key, code, name] of [['Karyawan','employees','K-UJI','Karyawan Uji'],['Alat','equipment','A-UJI','Alat Uji'],['Barang','goods','BR-UJI','Barang Uji']]){
     await masterTabs.getByRole('button',{name:tab,exact:true}).click();
     const panel=page.locator('[data-master-panel="'+key+'"]');
     await panel.getByRole('button',{name:'+ Tambah',exact:true}).click();
     await panel.getByRole('dialog').waitFor();
     await panel.locator('input[name=code]').fill(code);
     await panel.locator('input[name=name]').fill(name);
+    if(key==='goods') await panel.locator('input[name=unit]').fill('kg');
     await panel.getByRole('dialog').getByRole('button',{name:'Simpan',exact:true}).click();
     await panel.getByRole('cell',{name:name,exact:true}).waitFor();
     assert.equal(await page.locator('[data-master-panel]:visible').count(),1);
   }
   await sidebar.getByRole('button',{name:'Daftar Proyek',exact:true}).click();
   await page.getByRole('button',{name:'Proyek Uji 1',exact:true}).click();
+  await tabs.getByRole('button',{name:'Material & Logistik',exact:true}).click();
+  const goods=page.locator('#project-tab-content select[name=goods_id]');
+  await goods.selectOption({label:'BR-UJI — Barang Uji (kg)'});
+  const stockForm=goods.locator('xpath=ancestor::form');
+  await stockForm.locator('[name=quantity]').fill('15');
+  await stockForm.locator('[name=minimum_quantity]').fill('5');
+  await stockForm.getByRole('button',{name:'Tambah',exact:true}).click();
+  await page.getByRole('cell',{name:'Barang Uji',exact:true}).waitFor();
+  assert.equal((await rows('project_material_stocks')).find(row=>row.name==='Barang Uji')?.unit,'kg');
   await tabs.getByRole('button',{name:'Tenaga Kerja & Alat',exact:true}).click();
   for(const [key,label,table,catalog] of [['employee_id','K-UJI — Karyawan Uji','project_worker_assignments','employee_master'],
       ['equipment_id','A-UJI — Alat Uji','project_equipment_assignments','equipment_master']]){

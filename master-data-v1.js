@@ -18,7 +18,8 @@
       ['finance', defs.finance.title, mdCard('md-finance-cats', defs.finance.title, defs.finance.desc, 'mdAddFinanceCategory()')],
       ['payment', defs.payment.title, mdCard('md-payment-methods', defs.payment.title, defs.payment.desc, 'mdAddPaymentMethod()')],
       ['employees', 'Karyawan', '<section class="control-card" data-master-catalog="employees"></section>'],
-      ['equipment', 'Alat', '<section class="control-card" data-master-catalog="equipment"></section>']
+      ['equipment', 'Alat', '<section class="control-card" data-master-catalog="equipment"></section>'],
+      ['goods', 'Barang', '<section class="control-card" data-master-catalog="goods"></section>']
     ];
     return `<div class="md-page"><div class="md-top"><div><h1>Master Data</h1><p>Kelola referensi proyek, keuangan, karyawan, dan alat.</p></div>
       <button class="btn ghost" type="button" onclick="go('projects')">← Kembali ke Project</button></div>

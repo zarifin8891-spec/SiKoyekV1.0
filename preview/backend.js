@@ -28,7 +28,7 @@
   function profile(){const current=session();return state.tables.profiles.find(p=>p.id===current?.user.id&&p.is_active)}
   function can(table,action){
     const who=profile();if(!who)return false;if(who.role_id==='admin')return true;
-    if (['employee_master','equipment_master'].includes(table)) {
+    if (['employee_master','equipment_master','goods_master'].includes(table)) {
       return can('project_categories', action) || action === 'VIEW' && can('project_worker_assignments', 'VIEW');
     }
     const fieldTables=['project_progress_targets','project_milestones','project_material_stocks','project_worker_assignments','project_equipment_assignments','project_field_logs','project_weather_observations'];

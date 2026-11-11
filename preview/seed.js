@@ -31,6 +31,13 @@ tables.project_material_stocks = [
   {id:'stock-2',project_id:'p0',name:'Besi Beton',unit:'batang',quantity:12,minimum_quantity:40},
   {id:'stock-3',project_id:'p0',name:'Pasir',unit:'m³',quantity:3,minimum_quantity:20}
 ];
+tables.goods_master = tables.project_material_stocks.map((row, index) => ({
+  id: 'goods-' + row.id, code: 'BR-' + (index + 1), name: row.name, unit: row.unit, is_active: true
+}));
+tables.project_material_stocks.forEach(row => { row.goods_id = 'goods-' + row.id; });
+tables.project_work_items.filter(row => row.project_id === 'p1').forEach((row, index) => {
+  row.duration_days = index === 0 ? 14 : 28;
+});
 tables.project_worker_assignments = summary.flatMap((p,i) => Array.from({length:4},(_,j) => ({
   id:'worker-'+i+'-'+j,project_id:p.project_id,worker_code:'TK-'+i+'-'+j,worker_name:'Pekerja Uji '+(i*4+j+1),starts_on:'2026-09-01',ends_on:null
 })));

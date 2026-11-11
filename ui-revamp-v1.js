@@ -104,6 +104,7 @@
       <div class="formgrid">
         <div class="field"><label>Bobot (%) *</label><input id="wi_weight" type="number" min="0" max="100" step="0.01" value="${item?Number(item.weight||0)*100:0}"></div>
         <div class="field"><label>Urutan</label><input id="wi_sort" type="number" min="0" value="${item?.sort_order??state.detail.items.length+1}"></div>
+        ${SiKoyekControl.itemScheduleFields('wi',item)}
       </div>
       <div class="field"><label>Catatan</label><textarea id="wi_notes" placeholder="Catatan pekerjaan (opsional)">${esc(item?.notes||'')}</textarea></div>
       <div class="ui-total"><span>Total bobot saat ini</span><strong id="wiTotalPreview">${pct(state.detail.items.reduce((s,x)=>s+Number(x.weight||0),0)*100)}</strong></div>
@@ -113,7 +114,8 @@
   };
 
   window.saveItemEdit=async function(id){
-    const row={work_name:document.getElementById('wi_name').value.trim(),weight:Number(document.getElementById('wi_weight').value||0)/100,sort_order:Number(document.getElementById('wi_sort').value||0),notes:document.getElementById('wi_notes').value.trim()||null};
+    const schedule=SiKoyekControl.readItemSchedule('wi');if(!schedule)return;
+    const row={...schedule,work_name:document.getElementById('wi_name').value.trim(),weight:Number(document.getElementById('wi_weight').value||0)/100,sort_order:Number(document.getElementById('wi_sort').value||0),notes:document.getElementById('wi_notes').value.trim()||null};
     if(!row.work_name){toast('Nama item wajib diisi');return}
     const other=state.detail.items.filter(x=>String(x.id)!==String(id)).reduce((s,x)=>s+Number(x.weight||0),0);
     if(other+row.weight>1.000001){toast('Total bobot proyek tidak boleh lebih dari 100%');return}

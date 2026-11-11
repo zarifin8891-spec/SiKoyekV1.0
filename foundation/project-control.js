@@ -50,16 +50,19 @@
 
   const catalogs = {
     employees: {table: 'employee_master', title: 'Karyawan', reference: 'employee_id',
-      assignment: 'project_worker_assignments', codeField: 'worker_code', nameField: 'worker_name'},
+      assignment: 'project_worker_assignments', snapshot: {worker_code: 'code', worker_name: 'name'}},
     equipment: {table: 'equipment_master', title: 'Alat', reference: 'equipment_id',
-      assignment: 'project_equipment_assignments', codeField: 'equipment_code', nameField: 'name'}
+      assignment: 'project_equipment_assignments', snapshot: {equipment_code: 'code', name: 'name'}},
+    goods: {table: 'goods_master', title: 'Barang', reference: 'goods_id',
+      assignment: 'project_material_stocks', snapshot: {name: 'name', unit: 'unit'},
+      fields: [['unit', 'Satuan', 'text']]}
   };
   const assignmentCatalog = Object.fromEntries(Object.values(catalogs).map(catalog => [catalog.assignment, catalog]));
 
   function mountCatalog(root, key) {
     const catalog = catalogs[key];
     const definition = [catalog.title, 'code',
-      ['code', 'Kode', 'text'], ['name', 'Nama', 'text'], ['is_active', 'Status', 'boolean']];
+      ['code', 'Kode', 'text'], ['name', 'Nama', 'text'], ...(catalog.fields || []), ['is_active', 'Status', 'boolean']];
     mountTable(root, catalog.table, definition, null, 'MASTER_DATA');
   }
 
@@ -355,26 +358,73 @@
     return series;
   }
 
-  function weeklyTarget(project, items) {
-    const day = 86400000, week = 7 * day;
-    const start = Date.parse(project.start_date + 'T00:00:00Z');
-    const end = Date.parse(project.end_date + 'T00:00:00Z');
-    if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) {
-      return {points: [], note: 'Lengkapi tanggal mulai dan estimasi selesai untuk menghitung target otomatis.'};
+  const calendarDay = 86400000;
+  const dayNumber = date => Date.parse(date + 'T00:00:00Z') / calendarDay;
+
+  function itemScheduleFields(prefix, item) {
+    return `<div class="field"><label for="${prefix}_duration">Durasi Pekerjaan (hari)</label>
+      <input id="${prefix}_duration" type="number" min="1" max="36500" step="1" value="${esc(item?.duration_days ?? '')}"></div>
+      <div class="field"><label for="${prefix}_planned_start">Mulai Rencana (opsional)</label>
+      <input id="${prefix}_planned_start" type="date" value="${esc(item?.planned_start_date ?? '')}">
+      <small>Kosongkan untuk mengikuti urutan pekerjaan.</small></div>`;
+  }
+
+  function readItemSchedule(prefix) {
+    const duration = document.getElementById(prefix + '_duration')?.value;
+    const start = document.getElementById(prefix + '_planned_start')?.value;
+    const days = duration ? Number(duration) : null;
+    if ((days !== null && (!Number.isInteger(days) || days < 1 || days > 36500)) || (start && !days)) {
+      toast('Isi durasi dalam hari bulat (1–36.500). Tanggal mulai rencana memerlukan durasi.');
+      return null;
     }
-    const weights = items.map(item => Number(item.weight));
-    const total = weights.reduce((sum, weight) => sum + weight, 0);
-    if (weights.some(weight => !Number.isFinite(weight) || weight < 0 || weight > 1) || Math.abs(total - 1) > 0.0001) {
+    return {duration_days: days, planned_start_date: start || null};
+  }
+
+  function weeklyTarget(project, items) {
+    const start = dayNumber(project.start_date);
+    if (!Number.isFinite(start)) {
+      return {points: [], note: 'Lengkapi tanggal mulai proyek untuk menghitung target otomatis.'};
+    }
+    const weighted = items.map(item => ({...item, weight: Number(item.weight)}));
+    const total = weighted.reduce((sum, item) => sum + item.weight, 0);
+    if (weighted.some(item => !Number.isFinite(item.weight) || item.weight < 0 || item.weight > 1) ||
+        Math.abs(total - 1) > 0.0001) {
       return {points: [], note: 'Total bobot item pekerjaan harus 100% untuk menghitung target otomatis.'};
     }
-    const point = (time, value) => ({date: new Date(time).toISOString().slice(0, 10), value});
-    const points = [];
-    for (let time = start; time < end; time += week) {
-      const elapsed = (time - start) / (end - start);
-      points.push(point(time, 100 * total * elapsed));
+    const planned = weighted.filter(item => item.weight > 0).sort((a, b) =>
+      Number(a.sort_order || 0) - Number(b.sort_order || 0) || String(a.id).localeCompare(String(b.id)));
+    if (planned.some(item => !Number.isInteger(Number(item.duration_days)) || Number(item.duration_days) < 1)) {
+      return {points: [], note: 'Isi durasi semua item berbobot untuk menghitung target otomatis.'};
     }
-    points.push(point(end, 100));
-    return {points};
+    let next = start;
+    const schedule = [];
+    for (const item of planned) {
+      const begin = item.planned_start_date ? dayNumber(item.planned_start_date) : next;
+      if (!Number.isFinite(begin) || begin < start) {
+        return {points: [], note: 'Tanggal mulai rencana item harus pada atau setelah tanggal mulai proyek.'};
+      }
+      const duration = Number(item.duration_days);
+      const finish = begin + duration - 1;
+      schedule.push({begin, finish, duration, weight: item.weight});
+      next = Math.max(next, finish + 1);
+    }
+    const finish = next - 1;
+    const baseline = start - 1;
+    const dates = new Set([baseline, finish]);
+    for (let date = baseline + 7; date < finish; date += 7) dates.add(date);
+    for (const item of schedule) {
+      dates.add(item.begin - 1);
+      dates.add(item.finish);
+    }
+    const points = [...dates].sort((a, b) => a - b).map(date => ({
+      date: new Date(date * calendarDay).toISOString().slice(0, 10),
+      value: date === finish ? 100 : schedule.reduce((sum, item) =>
+        sum + item.weight * Math.min(1, Math.max(0, (date - item.begin + 1) / item.duration)), 0) / total * 100
+    }));
+    const deadline = dayNumber(project.end_date);
+    const note = Number.isFinite(deadline) && finish > deadline
+      ? `Jadwal item melampaui estimasi selesai proyek sebanyak ${finish - deadline} hari.` : '';
+    return {points, note};
   }
 
   function drawCurve(target, actual, targetLabel) {
@@ -408,14 +458,15 @@
     );
     const manual = (targets.value || []).map(row => ({date: row.target_date, value: Number(row.target_percent)}))
       .sort((a, b) => a.date.localeCompare(b.date));
-    const automatic = !manual.length && targets.status === 'fulfilled' && items.status === 'fulfilled' ?
+    const automatic = items.status === 'fulfilled' ?
       weeklyTarget(project, items.value) : null;
     const actual = items.value && records.value ? actualSeries(items.value, records.value, project.start_date) : [];
     const missing = [targets, items, records].some(result => result.status === 'rejected');
     const warning = missing ? message('Sebagian data Kurva-S belum dapat dimuat.') : '';
     const note = automatic?.note ? message(automatic.note) : '';
-    const label = manual.length ? 'Target Manual' : 'Target Otomatis';
-    return warning + note + drawCurve(automatic?.points ?? manual, actual, label);
+    const scheduled = automatic?.points.length;
+    const label = !scheduled && manual.length ? 'Target Manual' : 'Target Otomatis';
+    return warning + note + drawCurve(scheduled ? automatic.points : manual, actual, label);
   }
 
   function mountProjectTables(root, config, id, onChange) {
@@ -539,15 +590,15 @@
     const placeholder = editing && !current ? 'Pertahankan catatan lama' : 'Pilih ' + catalog.title.toLowerCase();
     return `<label>${catalog.title}<select name="${catalog.reference}" ${editing && !current ? '' : 'required'}>
       <option value="">${placeholder}</option>
-      ${current && !currentListed ? `<option value="${esc(current)}" selected>${esc(editing[catalog.codeField])} — ${esc(editing[catalog.nameField])} (nonaktif)</option>` : ''}
-      ${choices.map(row => `<option value="${esc(row.id)}" ${row.id === current ? 'selected' : ''}>${esc(row.code)} — ${esc(row.name)}</option>`).join('')}
+      ${current && !currentListed ? `<option value="${esc(current)}" selected>${esc(Object.keys(catalog.snapshot).map(key => editing[key]).join(' — '))} (nonaktif)</option>` : ''}
+      ${choices.map(row => `<option value="${esc(row.id)}" ${row.id === current ? 'selected' : ''}>${esc(row.code)} — ${esc(row.name)}${row.unit ? ' (' + esc(row.unit) + ')' : ''}</option>`).join('')}
     </select></label>`;
   }
 
   async function mountTable(section, table, definition, id, permission, onChange) {
     const [title, sort, ...fields] = definition;
     const catalog = assignmentCatalog[table];
-    const editFields = catalog ? fields.filter(([name]) => name !== catalog.codeField && name !== catalog.nameField) : fields;
+    const editFields = catalog ? fields.filter(([name]) => !Object.hasOwn(catalog.snapshot, name)) : fields;
     const scope = query => id === null ? query : query.eq('project_id', id);
     const inModal = id === null;
     const render = async (editing = null, openEditor = false) => {
@@ -607,8 +658,9 @@
           const selected = choices.find(row => row.id === reference);
           if (selected) {
             payload[catalog.reference] = selected.id;
-            payload[catalog.codeField] = selected.code;
-            payload[catalog.nameField] = selected.name;
+            for (const [field, source] of Object.entries(catalog.snapshot)) {
+              payload[field] = selected[source];
+            }
           } else if (!editing || reference !== (editing[catalog.reference] || '')) {
             status.textContent = 'Pilih ' + catalog.title.toLowerCase() + ' aktif.';
             return;
@@ -702,6 +754,7 @@
   global.SiKoyekControl = {
     nav, toggleMenu, dashboard, module: showModule, isModule: page => page === 'budget' || Object.hasOwn(modules, page),
     setIdentity, projectTabs, mountProjectTab, mountCatalog, loadWorkerCount,
+    itemScheduleFields, readItemSchedule,
     canFinance: () => can('KEUANGAN'), canProgress: () => can('PROGRESS')
   };
 })(window);
