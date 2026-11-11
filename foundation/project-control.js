@@ -301,7 +301,7 @@
       loadSite(view, rows.find(p => p.project_id === chartProject));
     });
     loadSite(view, current);
-    loadWorkerCount(view, open);
+    loadWorkerCount(view.querySelector('#control-worker-count'), open.map(row => row.project_id));
   }
 
   async function rowsFor(table, configure = query => query) {
@@ -315,23 +315,27 @@
     }
   }
 
-  async function loadWorkerCount(view, open) {
-    const box = view.querySelector('#control-worker-count');
+  async function loadWorkerCount(box, projectIds) {
     if (!can('PROGRESS')) {
       box.title = 'Data penempatan memerlukan akses Progress.';
       return;
     }
-    if (!open.length) {
+    if (!projectIds.length) {
       box.textContent = '0 Orang';
       return;
     }
+    box.title = 'Jumlah tenaga kerja dengan penempatan aktif hari ini.';
     try {
       const date = isoLocal().slice(0, 10);
-      const ids = new Set(open.map(p => p.project_id));
-      const workers = await rowsFor('project_worker_assignments', query => query.lte('starts_on', date));
+      const ids = new Set(projectIds);
+      const workers = await rowsFor('project_worker_assignments', query => {
+        const started = query.lte('starts_on', date);
+        return ids.size === 1 ? started.eq('project_id', projectIds[0]) : started;
+      });
       const live = workers.filter(row => ids.has(row.project_id) && (!row.ends_on || row.ends_on >= date));
       box.textContent = `${new Set(live.map(row => row.worker_code.trim().toUpperCase())).size} Orang`;
     } catch {
+      box.textContent = '—';
       box.title = 'Data penempatan tenaga kerja belum dapat dimuat.';
     }
   }
@@ -420,17 +424,18 @@
       const section = document.createElement('section');
       section.className = 'control-card';
       root.append(section);
-      mountTable(section, table, definition, id, config.permission, onChange);
+      mountTable(section, table, definition, id, config.permission, onChange && (() => onChange(table)));
     }
   }
 
   const projectTabs = {schedule: 'Kurva-S', materials: modules.materials.title, resources: modules.resources.title};
-  function mountProjectTab(root, tab, project) {
+  function mountProjectTab(root, tab, project, refreshWorkers) {
     if (!can('PROGRESS')) {
       root.innerHTML = message('Akses ke tab ini belum diberikan.');
       return;
     }
     root.classList.add('control-module-tables');
+    root.classList.toggle('control-panel-pair', tab === 'resources');
     let refreshCurve;
     if (tab === 'schedule') {
       root.innerHTML = '<section class="control-card"><h2>Kurva-S &amp; Kemajuan Proyek</h2><div class="control-curve" aria-live="polite">Memuat Kurva-S…</div></section>';
@@ -443,7 +448,10 @@
       };
       refreshCurve();
     }
-    mountProjectTables(root, modules[tab], project.id, refreshCurve);
+    mountProjectTables(root, modules[tab], project.id, table => {
+      if (table === 'project_worker_assignments') refreshWorkers?.();
+      refreshCurve?.();
+    });
   }
 
   async function loadSite(view, project) {
@@ -657,6 +665,7 @@
       <div class="control-module-tables"></div></div>`;
     root.querySelector('[data-open-report]')?.addEventListener('click', () => go('laporan'));
     const select = root.querySelector('select'), tables = root.querySelector('.control-module-tables');
+    tables.classList.toggle('control-panel-pair', page === 'field');
     select.value = projects.some(row => row.project_id === chartProject) ? chartProject : projects[0]?.project_id || '';
     const load = () => {
       tables.replaceChildren();
@@ -673,6 +682,7 @@
 
   global.SiKoyekControl = {
     nav, toggleMenu, dashboard, module: showModule, isModule: page => page === 'budget' || Object.hasOwn(modules, page),
-    setIdentity, projectTabs, mountProjectTab, mountCatalog, canProgress: () => can('PROGRESS')
+    setIdentity, projectTabs, mountProjectTab, mountCatalog, loadWorkerCount,
+    canFinance: () => can('KEUANGAN'), canProgress: () => can('PROGRESS')
   };
 })(window);
