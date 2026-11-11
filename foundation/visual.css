@@ -106,8 +106,6 @@
   color: #dbeaf6 !important;
   font-size: 15px;
 }
-.sk-theme .control-head .control-identity,
-.sk-theme .control-head .control-identity svg { color: #edf7ff; }
 .sk-theme .control-head .control-button { color: var(--control-ink); }
 .sk-theme .control-head .control-button.primary { color: #fff; border-color: #84abc5; }
 .sk-theme :is(.content, .main) :is(.laporan-userinfo, .locked-userinfo) {

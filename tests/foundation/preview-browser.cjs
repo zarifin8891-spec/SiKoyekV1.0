@@ -2,7 +2,7 @@ const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),
 const {chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES?process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright':'playwright');
 const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'docs/cloud-audit/preview-browser.json');
 (async()=>{
- const server=http.createServer((req,res)=>{let file=path.join(root,new URL(req.url,'http://local').pathname);if(fs.existsSync(file)&&fs.statSync(file).isDirectory())file=path.join(file,'index.html');if(!file.startsWith(root+path.sep)||!fs.existsSync(file)){res.writeHead(404);return res.end('missing')}res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html');res.end(fs.readFileSync(file))}).listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
+ const server=http.createServer((req,res)=>{let file=path.join(root,new URL(req.url,'http://local').pathname);if(fs.existsSync(file)&&fs.statSync(file).isDirectory())file=path.join(file,'index.html');if(!file.startsWith(root+path.sep)||!fs.existsSync(file)){res.writeHead(404);return res.end('missing')}res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.webp')?'image/webp':'text/html');res.end(fs.readFileSync(file))}).listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
  const browser=await chromium.launch({...(process.env.SIKOYEK_CHROMIUM?{executablePath:process.env.SIKOYEK_CHROMIUM}:{}),args:['--no-sandbox','--disable-dev-shm-usage','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
  const origin='http://127.0.0.1:'+server.address().port,errors=[],external=[],missing=[],checks=[];
  const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage();page.setDefaultTimeout(15000);
@@ -138,7 +138,18 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   await enter('konstruva');assert.equal((await rows('projects')).length,6);check('KONSTRUVA data isolated from MASTER preview');
   await enter('klien-baru');assert.equal((await rows('projects')).length,6);check('new client uses same source and isolated data');
   for(const role of ['direktur','keuangan','marketing','pelaksana']){await enter('master',role);assert.equal(await page.evaluate(async()=>(await sb.auth.getSession()).data.session.user.email),role+'@preview.invalid');if(role==='pelaksana'){const rejected=await page.evaluate(()=>sb.from('projects').insert({project_code:'DENIED',project_name:'Denied'}));assert.ok(rejected.error);check('preview adapter rejects unauthorized direct write')}check('role '+role+' dashboard');}
-  await enter('master');await page.evaluate(()=>logout());await page.waitForSelector('.login-v1 #email');await page.fill('#email','admin@preview.invalid');await page.fill('#password','Preview123!');await page.click('#loginBtn');await page.waitForSelector('.dashboard-head');assert.ok(await page.getByRole('button',{name:'Log Lapangan',exact:true}).isVisible());assert.match(await page.locator('.control-identity').innerText(),/Pengguna Uji admin/);check('credential login loads project control permissions and identity');
+  await enter('master');await page.evaluate(()=>logout());await page.waitForSelector('.login-v1 #email');await page.fill('#email','admin@preview.invalid');await page.fill('#password','Preview123!');await page.click('#loginBtn');await page.waitForSelector('.dashboard-head');assert.ok(await page.getByRole('button',{name:'Log Lapangan',exact:true}).isVisible());assert.match(await page.locator('.control-sidebar .control-identity').innerText(),/Pengguna Uji admin/);
+  assert.equal(await page.locator('.dashboard-head .control-identity').count(),0);
+  await page.waitForFunction(()=>document.querySelector('.control-brand img')?.naturalWidth===480);
+  await page.setViewportSize({width:360,height:800});
+  const menu=page.getByRole('button',{name:'Menu',exact:true});
+  await menu.click();
+  assert.ok(await page.locator('.control-sidebar .control-identity').isVisible());
+  const brand=await page.locator('.control-brand img').boundingBox(), menuBox=await menu.boundingBox();
+  assert.ok(brand.x+brand.width<=menuBox.x,'logo fits alongside the mobile menu');
+  await menu.click();
+  await page.setViewportSize({width:1440,height:1000});
+  check('credential login shows the account and logo in the responsive sidebar');
   await page.goto(origin+'/');await page.selectOption('#tenant','master');await page.click('#reset');await page.selectOption('#role','admin');await page.click('#open');await page.waitForSelector('.dashboard-head');assert.equal((await rows('projects')).length,6);check('reset selected tenant restores seed');
   await page.goto(origin+'/');await page.setViewportSize({width:390,height:844});assert.ok(await page.locator('#open').isVisible());await page.screenshot({path:path.join(path.dirname(output),'preview-portal.png'),fullPage:true});check('mobile preview portal');
   assert.deepEqual(external,[]);assert.deepEqual(missing,[]);assert.deepEqual(errors,[]);check('zero external requests, 404s and JavaScript errors');

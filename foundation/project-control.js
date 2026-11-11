@@ -131,7 +131,7 @@
       ['users', 'Daftar User', 'users', 'USERS', "go('users')"]
     ];
     return `<aside class="sidebar control-sidebar">
-      <div class="control-brand"><span>${icon('project')}</span><strong>SiKoyek</strong><small>V1.0</small></div>
+      <div class="control-brand"><img src="./sikoyek-sidebar-logo.webp" width="480" height="168" alt="SiKoyek"></div>
       <button class="control-menu" type="button" aria-expanded="false" aria-controls="control-nav" onclick="SiKoyekControl.toggleMenu(this)">${icon('menu')} Menu</button>
       <nav id="control-nav" class="nav" aria-label="Menu utama">
         ${entries.filter(([key, , , permission]) => can(permission)).map(([key, label, glyph, permission, action]) => {
@@ -139,7 +139,7 @@
           return `<button type="button" data-rbac-module="${permission}" ${key === 'master-data' ? 'data-master-data-nav' : key === 'users' ? 'data-users-nav' : ''}
             class="${selected ? 'active' : ''}" ${selected ? 'aria-current="page"' : ''} onclick="${action}">${icon(glyph)}<span>${label}</span></button>`;
         }).join('')}
-      </nav><div class="sidefoot">Sistem Kontrol Proyek</div>
+      </nav><div class="sidefoot control-identity" title="${esc(identity || 'Akun SiKoyek')}">${icon('users')}<span>${esc(identity || 'Akun SiKoyek')}</span></div>
     </aside>`;
   }
 
@@ -239,7 +239,6 @@
       <header class="control-head dashboard-head"><div><h1>Dashboard Kontrol Proyek</h1><p>${dateLabel.format(new Date())}</p></div>
         <div class="control-actions">
           <label class="control-search">${icon('search')}<input type="search" placeholder="Pencarian proyek" aria-label="Pencarian proyek"></label>
-          <div class="control-identity" title="${esc(identity)}">${icon('users')}<span>${esc(identity || 'Akun SiKoyek')}</span></div>
           ${can('PROJECTS', 'ADD') ? '<button type="button" class="control-button primary" onclick="openProjectForm()">+ Proyek Baru</button>' : ''}
           <button type="button" class="control-button" onclick="logout()">Keluar</button>
         </div>
