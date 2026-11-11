@@ -352,7 +352,29 @@
     return series;
   }
 
-  function drawCurve(target, actual) {
+  function weeklyTarget(project, items) {
+    const day = 86400000, week = 7 * day;
+    const start = Date.parse(project.start_date + 'T00:00:00Z');
+    const end = Date.parse(project.end_date + 'T00:00:00Z');
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) {
+      return {points: [], note: 'Lengkapi tanggal mulai dan estimasi selesai untuk menghitung target otomatis.'};
+    }
+    const weights = items.map(item => Number(item.weight));
+    const total = weights.reduce((sum, weight) => sum + weight, 0);
+    if (weights.some(weight => !Number.isFinite(weight) || weight < 0 || weight > 1) || Math.abs(total - 1) > 0.0001) {
+      return {points: [], note: 'Total bobot item pekerjaan harus 100% untuk menghitung target otomatis.'};
+    }
+    const point = (time, value) => ({date: new Date(time).toISOString().slice(0, 10), value});
+    const points = [];
+    for (let time = start; time < end; time += week) {
+      const elapsed = (time - start) / (end - start);
+      points.push(point(time, 100 * total * elapsed));
+    }
+    points.push(point(end, 100));
+    return {points};
+  }
+
+  function drawCurve(target, actual, targetLabel) {
     const all = [...target, ...actual];
     if (!all.length) return message('Belum ada target atau catatan progress untuk proyek ini.');
     const time = date => Date.parse(date + 'T00:00:00Z');
@@ -364,7 +386,7 @@
       series.map(p => `<circle class="control-dot ${kind}" cx="${x(p.date)}" cy="${y(p.value)}" r="3"><title>${esc(p.date)} · ${percentage(p.value)}</title></circle>`).join('')}`;
     const ticks = end === start ? [start] : Array.from({length: 5}, (_, i) => start + (end - start) * i / 4);
     const tickFormat = new Intl.DateTimeFormat('id-ID', {day: 'numeric', month: 'short', timeZone: 'UTC'});
-    return `<div class="control-legend"><span class="target">Target${target.length ? ' · ' + percentage(target.at(-1).value) : ' · belum ada data'}</span>
+    return `<div class="control-legend"><span class="target">${targetLabel}${target.length ? ' · ' + percentage(target.at(-1).value) : ' · belum ada data'}</span>
       <span class="actual">Realisasi${actual.length ? ' · ' + percentage(actual.at(-1).value) : ' · belum ada data'}</span></div>
       <svg class="control-chart" viewBox="0 0 730 255" role="img" aria-label="Kurva progress kumulatif target dan realisasi">
         ${[0, 20, 40, 60, 80, 100].map(value => `<line x1="55" x2="690" y1="${y(value)}" y2="${y(value)}"/><text x="44" y="${y(value) + 4}" text-anchor="end">${value}%</text>`).join('')}
@@ -381,11 +403,16 @@
     const [targets, items, records] = await Promise.allSettled(
       ['project_progress_targets', 'project_work_items', 'progress_records'].map(table => readProjectRows(table, project.project_id))
     );
-    const planned = (targets.value || []).map(row => ({date: row.target_date, value: Number(row.target_percent)}))
+    const manual = (targets.value || []).map(row => ({date: row.target_date, value: Number(row.target_percent)}))
       .sort((a, b) => a.date.localeCompare(b.date));
+    const automatic = !manual.length && targets.status === 'fulfilled' && items.status === 'fulfilled' ?
+      weeklyTarget(project, items.value) : null;
     const actual = items.value && records.value ? actualSeries(items.value, records.value, project.start_date) : [];
     const missing = [targets, items, records].some(result => result.status === 'rejected');
-    return (missing ? message('Sebagian data Kurva-S belum dapat dimuat.') : '') + drawCurve(planned, actual);
+    const warning = missing ? message('Sebagian data Kurva-S belum dapat dimuat.') : '';
+    const note = automatic?.note ? message(automatic.note) : '';
+    const label = manual.length ? 'Target Manual' : 'Target Otomatis';
+    return warning + note + drawCurve(automatic?.points ?? manual, actual, label);
   }
 
   function mountProjectTables(root, config, id, onChange) {

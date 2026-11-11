@@ -20,7 +20,13 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   await page.locator('#chartCashFlow').waitFor();
   const curveProject=page.getByRole('combobox',{name:'Proyek Kurva-S'});
   assert.equal(await curveProject.inputValue(),'p0');
+  await page.locator('.control-legend .target').filter({hasText:'Target Manual'}).waitFor();
   await curveProject.selectOption('p1');
+  await page.locator('.control-legend .target').filter({hasText:'Target Otomatis'}).waitFor();
+  const points=await page.locator('.control-dot.target title').allTextContents();
+  assert.equal(points[0],'2026-09-01 · 0%');
+  assert.equal(points[1],'2026-09-08 · 5,8%');
+  assert.equal(points.at(-1),'2026-12-31 · 100%');
   await page.locator('.control-legend .actual').filter({hasText:'30%'}).waitFor();
   await curveProject.selectOption('p0');
   await page.getByRole('searchbox',{name:'Pencarian proyek'}).fill('Proyek Uji 1');
