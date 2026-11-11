@@ -37,15 +37,15 @@
     if(!nav)return;
     nav.innerHTML=`
       <a href="index.html" data-lap-side="dashboard" data-rbac-nav-wired="1">Dashboard</a>
-      <a href="workspace.html" data-lap-side="projects" data-project-nav="1" data-rbac-nav-wired="1">Daftar Proyek</a>
-      <a href="master-data.html" data-lap-side="master" data-master-data-nav="1" data-rbac-nav-wired="1">Data Master</a>
+      <a href="index.html#projects" data-lap-side="projects" data-project-nav="1" data-rbac-nav-wired="1">Daftar Proyek</a>
+      <a href="master-data.html" data-lap-side="master" data-master-data-nav="1" data-rbac-nav-wired="1">Master Data</a>
       <a href="user-management.html" data-lap-side="users" data-users-nav="1" data-rbac-nav-wired="1">Daftar User</a>
       <a href="laporan.html" class="active" data-lap-side="laporan" data-laporan-nav="1" data-rbac-nav-wired="1">Laporan</a>`;
 
     nav.querySelector('[data-project-nav]')?.addEventListener('click',async(e)=>{
       e.preventDefault();
       await prepareWorkspaceSession();
-      window.location.href='./workspace.html';
+      window.location.href='./index.html#projects';
     });
   }
 

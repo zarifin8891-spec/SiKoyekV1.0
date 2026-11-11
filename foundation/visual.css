@@ -78,7 +78,7 @@
 .sk-theme .sk-side-toggle { display: none; }
 
 /* Page titles share the supplied image. Section headings and forms keep their own surfaces. */
-.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner):has(> h1, > div > h1) {
+.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner):has(> h1, > div > h1, > .detailtitle > h2) {
   min-width: 0;
   gap: 12px;
   margin-bottom: 16px;
@@ -91,17 +91,17 @@
   box-shadow: var(--control-shadow);
   overflow: visible;
 }
-.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner):has(> h1, > div > h1)::after {
+.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner):has(> h1, > div > h1, > .detailtitle > h2)::after {
   display: none;
 }
-.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner) h1 {
+.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner) :is(h1, .detailtitle h2) {
   margin: 0;
   color: #fff !important;
   font-size: clamp(24px, 2.4vw, 38px) !important;
   line-height: 1.12;
   letter-spacing: -.02em;
 }
-.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner):has(> h1, > div > h1) p {
+.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner):has(> h1, > div > h1, > .detailtitle > h2) p {
   margin: 5px 0 0;
   color: #dbeaf6 !important;
   font-size: 15px;
@@ -242,3 +242,53 @@
 .sk-theme :is(.pill, .control-badge).green { background: #dff2e7; color: #176842; }
 .sk-theme :is(.pill, .control-badge).amber { background: #fff2da; color: #8b510b; }
 .sk-theme :is(.pill, .control-badge).red { background: #fbe4e6; color: #9b2633; }
+
+/* Master Data uses KAVIO's navy and gold palette with compact reference lists. */
+.sk-theme .md-page .md-card {
+  border: 1px solid #264969;
+  border-radius: 14px;
+  background: linear-gradient(155deg, #0d2948, #08213d);
+  color: #f7f3e8;
+  box-shadow: 0 8px 18px #04182f25;
+}
+.sk-theme .md-page .md-card :is(h2, strong) { color: #f7f3e8; }
+.sk-theme .md-page .md-card :is(p, small, .md-manager-order, .md-manager-code) { color: #e0d1ab; }
+.sk-theme .md-page .md-table-wrap { background: #0d2948; border-color: #365470; }
+.sk-theme .md-page .md-card-head .btn.primary {
+  color: #17283b !important;
+  background: linear-gradient(#f0d48a, #d8b45a) !important;
+  border: 1px solid #f0d48a;
+  border-radius: 8px;
+}
+.sk-theme .md-page .md-actions .btn {
+  border: 1px solid #b89954;
+  border-radius: 6px;
+  background: #173452;
+  color: #f7f3e8;
+}
+.sk-theme .md-page .md-actions .btn.danger { border-color: #bc7777; color: #ffd6d6; }
+.sk-theme .md-page .md-card .empty { color: #e0d1ab; }
+
+.sk-theme .md-page .md-kavio-table { width: 100%; min-width: 340px; border-collapse: collapse; }
+.sk-theme .md-page #md-managers .md-kavio-table { min-width: 400px; }
+.sk-theme .md-page .md-kavio-table :is(th, td) {
+  border-bottom: 1px solid #365470;
+  padding: 5px 8px;
+  font-size: 14px;
+  text-align: left;
+}
+.sk-theme .md-page .md-kavio-table th { background: #173452; color: #f0d48a; white-space: nowrap; }
+.sk-theme .md-page .md-kavio-table td:first-child,
+.sk-theme .md-page .md-kavio-table th:first-child { text-align: right; }
+.sk-theme .md-page .md-kavio-table tr:hover { background: #173452; }
+.sk-theme .md-page .md-kavio-table .md-actions { flex-wrap: nowrap; justify-content: flex-end; }
+.sk-theme .md-page .md-kavio-table .md-actions .btn { min-width: 0; padding: 0 10px; }
+.sk-theme .md-page { grid-template-columns: minmax(0, 1fr); }
+.sk-theme .md-page .md-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 900px) {
+  .sk-theme .md-page .md-grid { grid-template-columns: minmax(0, 1fr); }
+}

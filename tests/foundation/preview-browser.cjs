@@ -36,6 +36,40 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   await page.locator('#chartCashFlow').waitFor();
   assert.ok(await page.locator('.control-finance-host tbody [data-project]').count()>0);
   check('one dashboard keeps project, decision and finance content under the same period');
+  const sidebar=page.getByRole('navigation',{name:'Menu utama'});
+  for(const title of ['Dashboard','Daftar Proyek','Laporan','Master Data']){
+    assert.ok(await sidebar.getByRole('button',{name:title,exact:true}).isVisible());
+  }
+  for(const title of ['Jadwal & Milestones','Anggaran & Biaya','Material & Logistik','Tenaga Kerja & Alat']){
+    assert.equal(await sidebar.getByRole('button',{name:title,exact:true}).count(),0);
+  }
+  await sidebar.getByRole('button',{name:'Daftar Proyek',exact:true}).click();
+  const projectFilter=page.getByRole('combobox',{name:'Filter daftar proyek'});
+  await projectFilter.waitFor();
+  assert.equal(await projectFilter.inputValue(),'all');
+  await page.evaluate(()=>{state.summary.find(row=>row.project_id==='p5').status='SELESAI';});
+  await projectFilter.selectOption('active');
+  assert.equal(await page.locator('#page table tbody tr').count(),5);
+  await projectFilter.selectOption('all');
+  assert.equal(await page.locator('#page table tbody tr').count(),6);
+  await page.getByRole('button',{name:'Proyek Uji 1',exact:true}).click();
+  const tabs=page.locator('#page .tabs');
+  await tabs.getByRole('button',{name:'Kurva-S',exact:true}).click();
+  await page.locator('#project-tab-content .control-chart').waitFor();
+  await page.getByRole('heading',{name:'Milestones',exact:true}).waitFor();
+  assert.match(await page.locator('.sk-project-header').evaluate(el=>getComputedStyle(el).backgroundImage),/page-header-network/);
+  await tabs.getByRole('button',{name:'Material & Logistik',exact:true}).click();
+  await page.getByRole('heading',{name:'Saldo material per proyek'}).waitFor();
+  assert.equal(await page.locator('#project-tab-content select').count(),0);
+  await tabs.getByRole('button',{name:'Tenaga Kerja & Alat',exact:true}).click();
+  await page.getByRole('heading',{name:'Penempatan alat',exact:true}).waitFor();
+  await sidebar.getByRole('button',{name:'Laporan',exact:true}).click();
+  await page.locator('.report-tabs').waitFor();
+  await page.getByRole('button',{name:'Dokumen Proyek',exact:true}).waitFor();
+  await sidebar.getByRole('button',{name:'Dashboard',exact:true}).click();
+  await page.locator('.dashboard-head').waitFor();
+  check('sidebar routes, project status filter, project tabs, and direct Laporan');
+
 
   await page.evaluate(()=>openProjectForm());await page.waitForSelector('#uiFinalNext');assert.equal(await page.locator('#uiFinalBack').isVisible(),false);assert.equal(await page.locator('#uiFinalSave').isVisible(),false);await page.click('#uiFinalNext');assert.equal((await rows('projects')).length,6);check('required validation does not save');
   await page.fill('#f_code','PREVIEW-001');await page.fill('#f_name','Proyek Uji Tambah');await page.fill('#f_contract','100000000');await page.click('#uiFinalNext');assert.equal((await rows('projects')).length,6);assert.equal(await page.locator('#uiFinalNext').isVisible(),false);assert.equal(await page.locator('#uiFinalSave').isVisible(),true);check('confirmation shows the save action without saving');await page.click('#uiFinalSave');await page.waitForSelector('#modal',{state:'detached'});
@@ -67,7 +101,7 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   await enter('konstruva');assert.equal((await rows('projects')).length,6);check('KONSTRUVA data isolated from MASTER preview');
   await enter('klien-baru');assert.equal((await rows('projects')).length,6);check('new client uses same source and isolated data');
   for(const role of ['direktur','keuangan','marketing','pelaksana']){await enter('master',role);assert.equal(await page.evaluate(async()=>(await sb.auth.getSession()).data.session.user.email),role+'@preview.invalid');if(role==='pelaksana'){const rejected=await page.evaluate(()=>sb.from('projects').insert({project_code:'DENIED',project_name:'Denied'}));assert.ok(rejected.error);check('preview adapter rejects unauthorized direct write')}check('role '+role+' dashboard');}
-  await enter('master');await page.evaluate(()=>logout());await page.waitForSelector('.login-v1 #email');await page.fill('#email','admin@preview.invalid');await page.fill('#password','Preview123!');await page.click('#loginBtn');await page.waitForSelector('.dashboard-head');assert.ok(await page.getByRole('button',{name:'Material & Logistik'}).isVisible());assert.match(await page.locator('.control-identity').innerText(),/Pengguna Uji admin/);check('credential login loads project control permissions and identity');
+  await enter('master');await page.evaluate(()=>logout());await page.waitForSelector('.login-v1 #email');await page.fill('#email','admin@preview.invalid');await page.fill('#password','Preview123!');await page.click('#loginBtn');await page.waitForSelector('.dashboard-head');assert.ok(await page.getByRole('button',{name:'Log Lapangan',exact:true}).isVisible());assert.match(await page.locator('.control-identity').innerText(),/Pengguna Uji admin/);check('credential login loads project control permissions and identity');
   await page.goto(origin+'/');await page.selectOption('#tenant','master');await page.click('#reset');await page.selectOption('#role','admin');await page.click('#open');await page.waitForSelector('.dashboard-head');assert.equal((await rows('projects')).length,6);check('reset selected tenant restores seed');
   await page.goto(origin+'/');await page.setViewportSize({width:390,height:844});assert.ok(await page.locator('#open').isVisible());await page.screenshot({path:path.join(path.dirname(output),'preview-portal.png'),fullPage:true});check('mobile preview portal');
   assert.deepEqual(external,[]);assert.deepEqual(missing,[]);assert.deepEqual(errors,[]);check('zero external requests, 404s and JavaScript errors');

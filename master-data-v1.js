@@ -12,8 +12,38 @@
   function cleanProjectCategoryControl(){document.querySelectorAll('.category-tools,.step1-category-tools,[data-p6-cat-master]').forEach(x=>(x.closest?.('.category-tools,.step1-category-tools')||x).remove())}
   const mdCard=(cls,title,desc,fn)=>`<section class="card md-card"><div class="md-card-head"><div><h2>${title}</h2><p>${desc}</p></div><button class="btn primary" type="button" onclick="${fn}">+ Tambah</button></div><div id="${cls}" class="md-table-wrap"><div class="empty">Memuat...</div></div></section>`;
   function masterHTML(){return `<div class="md-page"><div class="md-top"><div><h1>Master Data</h1><p>Kelola data referensi untuk Project dan Keuangan.</p></div><button class="btn ghost" type="button" onclick="go('projects')">← Kembali ke Project</button></div><div class="md-grid">${mdCard('md-project-cats',defs.project.title,defs.project.desc,'mdAddProjectCategory()')}${mdCard('md-managers','Project Manager','Daftar Project Manager aktif.','mdAddManager()')}${mdCard('md-finance-cats',defs.finance.title,defs.finance.desc,'mdAddFinanceCategory()')}${mdCard('md-payment-methods',defs.payment.title,defs.payment.desc,'mdAddPaymentMethod()')}</div></div>`}
-  function renderList(elId,rows,editFn,deleteFn){const w=q(elId);if(!w)return;w.innerHTML=rows.map(x=>`<div class="md-row"><div><strong>${esc(x.name)}</strong><small>Urutan ${Number(x.sort_order||0)}</small></div><span class="md-status ${x.is_active?'on':'off'}">${x.is_active?'AKTIF':'NONAKTIF'}</span><div class="md-actions"><button type="button" class="btn ghost" style="font-size:13px;padding:8px 12px" onclick="${editFn}('${x.id}')">Edit</button><button type="button" class="btn danger" style="font-size:13px;padding:8px 12px" onclick="${deleteFn}('${x.id}','${esc(x.name)}')">Hapus</button></div></div>`).join('')||'<div class="empty">Belum ada data.</div>'}
-  function renderManagerList(rows,editFn,deleteFn){const w=q('md-managers');if(!w)return;w.innerHTML=rows.map(x=>`<div class="md-row md-manager-row"><div class="md-manager-order">Urutan ${Number(x.sort_order||0)}</div><div class="md-manager-code">${esc(x.code||'-')}</div><div class="md-manager-name"><strong>${esc(x.name)}</strong></div><span class="md-status ${x.is_active?'on':'off'}">${x.is_active?'AKTIF':'NONAKTIF'}</span><div class="md-actions"><button type="button" class="btn ghost" style="font-size:13px;padding:8px 12px" onclick="${editFn}('${x.id}')">Edit</button><button type="button" class="btn danger" style="font-size:13px;padding:8px 12px" onclick="${deleteFn}('${x.id}','${esc(x.name)}')">Hapus</button></div></div>`).join('')||'<div class="empty">Belum ada data.</div>'}
+  function renderMasterTable(id, rows, columns, edit, remove) {
+    const host = q(id);
+    if (!host) return;
+    if (!rows.length) {
+      host.innerHTML = '<div class="empty">Belum ada data.</div>';
+      return;
+    }
+    host.innerHTML = `<table class="md-kavio-table"><thead><tr>${columns.map(([label]) => `<th>${label}</th>`).join('')}
+      <th>Status</th><th>Aksi</th></tr></thead><tbody>${rows.map((row, index) => `<tr>
+      ${columns.map(([, value]) => `<td>${esc(value(row))}</td>`).join('')}
+      <td><span class="md-status ${row.is_active ? 'on' : 'off'}">${row.is_active ? 'AKTIF' : 'NONAKTIF'}</span></td>
+      <td><div class="md-actions">
+        <button type="button" class="btn ghost" data-md-edit="${index}" data-rbac-module="MASTER_DATA" data-rbac-action="EDIT">Edit</button>
+        <button type="button" class="btn danger" data-md-delete="${index}" data-rbac-module="MASTER_DATA" data-rbac-action="DELETE">Hapus</button>
+      </div></td></tr>`).join('')}</tbody></table>`;
+    host.querySelectorAll('[data-md-edit]').forEach(button =>
+      button.addEventListener('click', () => window[edit](rows[Number(button.dataset.mdEdit)].id)));
+    host.querySelectorAll('[data-md-delete]').forEach(button => button.addEventListener('click', () => {
+      const row = rows[Number(button.dataset.mdDelete)];
+      window[remove](row.id, row.name);
+    }));
+  }
+
+  const orderColumn = ['Urutan', row => Number(row.sort_order || 0)];
+  const nameColumn = ['Nama', row => row.name];
+  function renderList(id, rows, edit, remove) {
+    renderMasterTable(id, rows, [orderColumn, nameColumn], edit, remove);
+  }
+
+  function renderManagerList(rows, edit, remove) {
+    renderMasterTable('md-managers', rows, [orderColumn, ['Kode', row => row.code || '—'], nameColumn], edit, remove);
+  }
   async function refresh(){try{const [pc,pm,fc,pay]=await Promise.all([list('project_categories'),managers(),list('transaction_categories'),list('payment_methods')]);renderList('md-project-cats',pc,'mdEditProjectCategory','mdDeleteProjectCategory');renderManagerList(pm,'mdEditManager','mdDeleteManager');renderList('md-finance-cats',fc,'mdEditFinanceCategory','mdDeleteFinanceCategory');renderList('md-payment-methods',pay,'mdEditPaymentMethod','mdDeletePaymentMethod')}catch(e){toast(e?.message||'Gagal memuat Master Data')}}
   function openMasterData(){state.page='master-data';state.selected=null;state.detail=null;const page=q('page');if(page){page.innerHTML=masterHTML();refresh()}document.querySelectorAll('.sidebar .nav button').forEach(b=>b.classList.remove('active'));document.querySelector('[data-master-data-nav]')?.classList.add('active');cleanProjectCategoryControl()}
   window.openMasterData=openMasterData;

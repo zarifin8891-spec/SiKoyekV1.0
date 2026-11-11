@@ -30,7 +30,7 @@
       }
     },
     reports: {
-      title: 'Laporan & Dokumen', permission: 'LAPORAN', icon: 'document',
+      title: 'Dokumen Proyek', permission: 'LAPORAN', icon: 'document',
       tables: {
         project_document_links: ['Tautan dokumen proyek', 'title',
           ['title', 'Judul dokumen', 'text'], ['url', 'URL HTTPS', 'url']]
@@ -108,23 +108,19 @@
 
   function nav(page) {
     const entries = [
-      ['dashboard', 'Dasbor Utama', 'dashboard', 'DASHBOARD', "go('dashboard')"],
-      ['projects', 'Proyek Aktif', 'project', 'PROJECTS', "state.activeOnly=true;go('projects')"],
-      ['schedule', modules.schedule.title, 'calendar', 'PROGRESS', "go('schedule')"],
-      ['budget', 'Anggaran & Biaya', 'budget', 'KEUANGAN', "go('budget')"],
-      ['materials', modules.materials.title, 'layers', 'PROGRESS', "go('materials')"],
-      ['resources', modules.resources.title, 'users', 'PROGRESS', "go('resources')"],
-      ['reports', modules.reports.title, 'document', 'LAPORAN', "go('reports')"],
+      ['dashboard', 'Dashboard', 'dashboard', 'DASHBOARD', "go('dashboard')"],
+      ['projects', 'Daftar Proyek', 'project', 'PROJECTS', "go('projects')"],
+      ['laporan', 'Laporan', 'document', 'LAPORAN', "go('laporan')"],
       ['field', modules.field.title, 'activity', 'PROGRESS', "go('field')"],
-      ['master-data', 'Pengaturan', 'settings', 'MASTER_DATA', "go('master-data')"],
+      ['master-data', 'Master Data', 'settings', 'MASTER_DATA', "go('master-data')"],
       ['users', 'Daftar User', 'users', 'USERS', "go('users')"]
     ];
     return `<aside class="sidebar control-sidebar">
       <div class="control-brand"><span>${icon('project')}</span><strong>SiKoyek</strong><small>V1.0</small></div>
       <button class="control-menu" type="button" aria-expanded="false" aria-controls="control-nav" onclick="SiKoyekControl.toggleMenu(this)">${icon('menu')} Menu</button>
       <nav id="control-nav" class="nav" aria-label="Menu utama">
-        ${entries.filter(([key, , , permission]) => key === 'budget' ? can('RAP') || can('KEUANGAN') : can(permission)).map(([key, label, glyph, permission, action]) => {
-          const selected = key === page || key === 'projects' && page === 'detail' || key === 'reports' && page === 'laporan';
+        ${entries.filter(([key, , , permission]) => can(permission)).map(([key, label, glyph, permission, action]) => {
+          const selected = key === page || key === 'projects' && page === 'detail' || key === 'laporan' && page === 'reports';
           return `<button type="button" data-rbac-module="${permission}" ${key === 'master-data' ? 'data-master-data-nav' : key === 'users' ? 'data-users-nav' : ''}
             class="${selected ? 'active' : ''}" ${selected ? 'aria-current="page"' : ''} onclick="${action}">${icon(glyph)}<span>${label}</span></button>`;
         }).join('')}
@@ -184,7 +180,7 @@
   function periodControls() {
     const {from, to} = state.period;
     const quick = Object.entries(periodRanges()).find(([, dates]) => dates[0] === from && dates[1] === to)?.[0] || '';
-    return `<form class="control-card control-period" aria-label="Periode dasbor">
+    return `<form class="control-card control-period" aria-label="Periode Dashboard">
       <label>Periode<select class="control-select" name="preset" id="periodPreset">
         <option value="">Pilih periode</option>
         ${[['thisMonth', 'Bulan Ini'], ['lastMonth', 'Bulan Lalu'], ['thisYear', 'Tahun Ini']].map(([id, label]) =>
@@ -225,7 +221,7 @@
     const current = rows.find(p => p.project_id === chartProject) || open[0] || rows[0];
     chartProject = current?.project_id || '';
     root.innerHTML = `<div class="control-dashboard">
-      <header class="control-head dashboard-head"><div><h1>Dasbor Kontrol Proyek</h1><p>${dateLabel.format(new Date())}</p></div>
+      <header class="control-head dashboard-head"><div><h1>Dashboard Kontrol Proyek</h1><p>${dateLabel.format(new Date())}</p></div>
         <div class="control-actions">
           <label class="control-search">${icon('search')}<input type="search" placeholder="Pencarian proyek" aria-label="Pencarian proyek"></label>
           <div class="control-identity" title="${esc(identity)}">${icon('users')}<span>${esc(identity || 'Akun SiKoyek')}</span></div>
@@ -362,6 +358,52 @@
       </svg>`;
   }
 
+  function readProjectRows(table, id) {
+    return rowsFor(table, query => query.eq('project_id', id));
+  }
+
+  async function projectCurve(project) {
+    const [targets, items, records] = await Promise.allSettled(
+      ['project_progress_targets', 'project_work_items', 'progress_records'].map(table => readProjectRows(table, project.project_id))
+    );
+    const planned = (targets.value || []).map(row => ({date: row.target_date, value: Number(row.target_percent)}))
+      .sort((a, b) => a.date.localeCompare(b.date));
+    const actual = items.value && records.value ? actualSeries(items.value, records.value, project.start_date) : [];
+    const missing = [targets, items, records].some(result => result.status === 'rejected');
+    return (missing ? message('Sebagian data Kurva-S belum dapat dimuat.') : '') + drawCurve(planned, actual);
+  }
+
+  function mountProjectTables(root, config, id, onChange) {
+    for (const [table, definition] of Object.entries(config.tables)) {
+      const section = document.createElement('section');
+      section.className = 'control-card';
+      root.append(section);
+      mountTable(section, table, definition, id, config.permission, onChange);
+    }
+  }
+
+  const projectTabs = {schedule: 'Kurva-S', materials: modules.materials.title, resources: modules.resources.title};
+  function mountProjectTab(root, tab, project) {
+    if (!can('PROGRESS')) {
+      root.innerHTML = message('Akses ke tab ini belum diberikan.');
+      return;
+    }
+    root.classList.add('control-module-tables');
+    let refreshCurve;
+    if (tab === 'schedule') {
+      root.innerHTML = '<section class="control-card"><h2>Kurva-S &amp; Kemajuan Proyek</h2><div class="control-curve" aria-live="polite">Memuat Kurva-S…</div></section>';
+      const chart = root.querySelector('.control-curve');
+      let revision = 0;
+      refreshCurve = async () => {
+        const current = ++revision;
+        const html = await projectCurve({...project, project_id: project.id});
+        if (chart.isConnected && revision === current) chart.innerHTML = html;
+      };
+      refreshCurve();
+    }
+    mountProjectTables(root, modules[tab], project.id, refreshCurve);
+  }
+
   async function loadSite(view, project) {
     const chart = view.querySelector('.control-curve');
     const panel = key => view.querySelector(`[data-panel="${key}"]`);
@@ -394,16 +436,8 @@
       chart.innerHTML = message('Kurva-S memerlukan akses Progress.');
       return;
     }
-    const curve = Promise.allSettled([read('project_progress_targets'), read('project_work_items'), read('progress_records')]);
     await Promise.all([
-      render(chart, curve, ([target, items, records]) => {
-        const planned = (target.value || []).map(row => ({date: row.target_date, value: Number(row.target_percent)}))
-          .sort((a, b) => a.date.localeCompare(b.date));
-        const actual = items.value && records.value ? actualSeries(items.value, records.value, project.start_date) : [];
-        const missing = [target, items, records].some(result => result.status === 'rejected');
-        const warning = missing ? message('Sebagian data Kurva-S belum dapat dimuat.') : '';
-        return warning + drawCurve(planned, actual);
-      }),
+      render(chart, projectCurve(project), html => html, 'Kurva-S belum dapat dimuat.'),
       render(panel('weather'), latest('project_weather_observations', 'observed_at', 1), observations => {
         const row = observations.find(value => isoLocal(new Date(value.observed_at)).slice(0, 10) === isoLocal().slice(0, 10));
         return row ? `<p>${esc(project.location || project.project_name)} · ${esc(row.condition)}
@@ -445,7 +479,7 @@
     return esc(value);
   }
 
-  async function mountTable(section, table, definition, id, permission) {
+  async function mountTable(section, table, definition, id, permission, onChange) {
     const [title, sort, ...fields] = definition;
     const render = async (editing = null) => {
       section.innerHTML = `<h2>${title}</h2>${message('Memuat data…')}`;
@@ -490,6 +524,7 @@
           const {data: saved, error} = await request.select('id').maybeSingle();
           if (error || !saved) throw new Error(error?.message || 'Perubahan tidak tersimpan. Periksa hak akses.');
           await render();
+          onChange?.();
         } catch (error) {
           status.textContent = error.message;
         } finally {
@@ -506,6 +541,7 @@
           const {data: removed, error} = await sb.from(table).delete().eq('id', row.id).eq('project_id', id).select('id').maybeSingle();
           if (error || !removed) throw new Error(error?.message || 'Catatan tidak terhapus. Periksa hak akses.');
           await render();
+          onChange?.();
         } catch (error) {
           status.textContent = error.message;
         } finally {
@@ -549,12 +585,7 @@
         return;
       }
       chartProject = select.value;
-      for (const [table, definition] of Object.entries(config.tables)) {
-        const section = document.createElement('section');
-        section.className = 'control-card';
-        tables.append(section);
-        mountTable(section, table, definition, select.value, config.permission);
-      }
+      mountProjectTables(tables, config, select.value);
     };
     select.addEventListener('change', load);
     load();
@@ -562,6 +593,6 @@
 
   global.SiKoyekControl = {
     nav, toggleMenu, dashboard, module: showModule, isModule: page => page === 'budget' || Object.hasOwn(modules, page),
-    setIdentity
+    setIdentity, projectTabs, mountProjectTab, canProgress: () => can('PROGRESS')
   };
 })(window);
