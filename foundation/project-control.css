@@ -192,13 +192,7 @@
   .control-project-select select { min-width: 0; }
 }
 .control-form[hidden], .control-link[hidden] { display: none; }
-.control-dashboard .control-head.dashboard-head {
-  background: transparent; box-shadow: none; padding: 0 !important; margin-bottom: 20px !important; overflow: visible;
-}
-.control-dashboard .control-head.dashboard-head::after { display: none; }
 .control-budget-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.control-dashboard .control-head.dashboard-head { color: var(--control-ink); }
-.control-head .control-identity { color: var(--control-ink); }
 @media (max-width: 780px) {
   .control-chart text { font-size: 23px; }
   .control-chart .control-line { stroke-width: 4; }

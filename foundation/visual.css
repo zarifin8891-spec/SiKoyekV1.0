@@ -77,36 +77,39 @@
 .sk-theme .sk-side-links { display: grid; gap: 5px; }
 .sk-theme .sk-side-toggle { display: none; }
 
-.sk-theme :is(.content, .main) :is(.top, .md-top, .md-head, .um-head, .core-module-header, .laporan-standard-header) {
+/* Page titles share the supplied image. Section headings and forms keep their own surfaces. */
+.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner):has(> h1, > div > h1) {
   min-width: 0;
   gap: 12px;
   margin-bottom: 16px;
+  padding: clamp(14px, 2vw, 24px) !important;
+  border: 1px solid #1b4562;
+  border-radius: var(--control-radius);
+  color: #fff;
+  background: linear-gradient(90deg, #061c2dee, #092b4366 72%, #07233680),
+    #092b43 url("../page-header-network.png") center 54% / cover no-repeat !important;
+  box-shadow: var(--control-shadow);
+  overflow: visible;
 }
-.sk-theme :is(.content, .main) :is(.top, .md-top, .md-head, .um-head, .core-module-header, .laporan-standard-header) h1,
-.sk-theme > .wrap .card > h1 {
+.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner):has(> h1, > div > h1)::after {
+  display: none;
+}
+.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner) h1 {
   margin: 0;
-  color: var(--control-ink) !important;
+  color: #fff !important;
   font-size: clamp(24px, 2.4vw, 38px) !important;
   line-height: 1.12;
   letter-spacing: -.02em;
 }
-.sk-theme :is(.content, .main) :is(.top, .md-top, .md-head, .um-head, .core-module-header, .laporan-standard-header) p {
+.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner):has(> h1, > div > h1) p {
   margin: 5px 0 0;
-  color: var(--control-muted) !important;
+  color: #dbeaf6 !important;
   font-size: 15px;
 }
-/* Several legacy headers supplied a different gradient and decorative pseudo-element. */
-.sk-theme :is(.content, .main) :is(.md-top, .top:not(.dashboard-top), .laporan-standard-header),
-.sk-theme.secondary-page .content > .top {
-  color: var(--control-ink);
-  background: none !important; /* replaces the consolidated legacy .top gradient */
-  border: 0;
-  padding: 0 !important;
-  box-shadow: none;
-  overflow: visible;
-}
-.sk-theme :is(.content, .main) :is(.md-top, .top:not(.dashboard-top), .laporan-standard-header)::after,
-.sk-theme.secondary-page .content > .top::after { display: none; }
+.sk-theme .control-head .control-identity,
+.sk-theme .control-head .control-identity svg { color: #edf7ff; }
+.sk-theme .control-head .control-button { color: var(--control-ink); }
+.sk-theme .control-head .control-button.primary { color: #fff; border-color: #84abc5; }
 .sk-theme :is(.content, .main) :is(.laporan-userinfo, .locked-userinfo) {
   background: var(--control-surface);
   border-color: var(--control-line);
