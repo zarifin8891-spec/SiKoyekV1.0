@@ -1,4 +1,9 @@
 (function(){
+  const { money, formatDate } = window.SiKoyekFoundation;
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, char =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const pct = value => value == null ? '—' : Number(value).toFixed(2) + '%';
+  const healthClass = status => status === 'SEHAT' ? 'green' : status === 'BERISIKO' ? 'red' : 'amber';
   const STYLE_ID='project-summary-v2-style';
   function addStyle(){
     if(document.getElementById(STYLE_ID)) return;
@@ -7,25 +12,24 @@
       @media(max-width:1100px){.project-summary-v2 .summary-panels{grid-template-columns:1fr}.project-summary-v2 .rap-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:780px){.project-summary-v2 .detail-kpis-v2{grid-template-columns:repeat(2,minmax(0,1fr))}.project-summary-v2 .info-grid{grid-template-columns:1fr}.project-summary-v2 .timeline-v4-stats{grid-template-columns:1fr}}@media(max-width:520px){.project-summary-v2 .rap-grid{grid-template-columns:1fr 1fr}.project-summary-v2 .summary-panel-head{align-items:flex-start;flex-direction:column}.project-summary-v2 .timeline-v4-dates{font-size:10px}}
     `;document.head.appendChild(s);
   }
-  function kpiMarkup(d,s){
+  function kpiMarkup(d,s,access){
     const progress=Math.min(100,Math.max(0,Number(s?.project_progress||0)));
     const contract=d.project.contract_value;
     const rap=s?.total_rap;
     const card=(label,value,attributes='')=>`<div class="card detail-kpi-v2"><div class="label">${label}</div><div class="value" ${attributes}>${value}</div></div>`;
-    const finance=SiKoyekControl.canFinance()
+    const finance=(access?.finance ?? SiKoyekControl.canFinance())
       ? card('REALISASI BIAYA',money(s?.total_realization ?? s?.cash_out ?? d.fin.filter(row=>row.transaction_type==='KELUAR').reduce((total,row)=>total+Number(row.amount||0),0)))
-        +card('ESTIMASI LABA',money(s?.estimated_profit ?? (Number(contract||0)-Number(rap||0))))
+        +(!access || access.rap && contract != null ? card('ESTIMASI LABA',money(s?.estimated_profit ?? (Number(contract||0)-Number(rap||0)))) : '')
       : '';
-    const workers=SiKoyekControl.canProgress() ? card('TENAGA KERJA','—','data-project-worker-count aria-live="polite"') : '';
+    const workers=!access && SiKoyekControl.canProgress() ? card('TENAGA KERJA','—','data-project-worker-count aria-live="polite"') : '';
     return `<div class="project-summary-v2"><div class="detail-kpis-v2">
-      ${card('NILAI KONTRAK',money(contract))}${card('RAP',money(rap))}${finance}
+      ${!access || contract != null ? card('NILAI KONTRAK',money(contract)) : ''}${!access || access.rap ? card('RAP',money(rap)) : ''}${finance}
       <div class="card detail-kpi-v2 health-kpi"><div class="label">HEALTH</div><div class="value"><span class="pill ${healthClass(s?.health_status)}">${esc(s?.health_status||'-')}</span></div></div>
-      <div class="card detail-kpi-v2"><div class="label progress-value"><span>PROGRESS</span><span class="value">${pct(progress)}</span></div><div class="bar"><i style="width:${progress}%"></i></div></div>
+      <div class="card detail-kpi-v2"><div class="label progress-value"><span>PROGRESS</span><span class="value">${access && !access.curve ? '—' : pct(progress)}</span></div><div class="bar"><i style="width:${progress}%"></i></div></div>
       ${workers}
     </div></div>`;
   }
-  const formatDate=value=>window.SiKoyekFoundation.formatDate(value);
-  function timelineMarkup(d){const p=d?.project||{},start=new Date(p.start_date),end=new Date(p.end_date),now=new Date(),day=86400000;if(Number.isNaN(start.getTime())||Number.isNaN(end.getTime())||end<start)return `<section class="timeline-v4"><div class="timeline-v4-head"><h3>Timeline Proyek</h3></div><div class="empty">Tanggal mulai/selesai belum tersedia</div></section>`;const duration=Math.max(0,Math.ceil((end-start)/day)),elapsed=Math.ceil((now-start)/day),age=Math.max(0,Math.min(duration,elapsed)),remaining=Math.ceil((end-now)/day),before=now<start,after=now>end,pos=before?0:after?100:(age/duration*100),timePct=duration?Math.round((Math.max(0,Math.min(duration,elapsed))/duration)*100):0,status=before?'Belum dimulai':after?`Terlambat ${Math.abs(remaining)} hari`:'Berjalan',today=formatDate(now);return `<section class="timeline-v4"><div class="timeline-v4-head"><h3>Timeline Proyek</h3><div class="timeline-v4-meta"><span class="timeline-v4-badge">${status}</span><span class="timeline-v4-badge">${today}</span></div></div><div class="timeline-v4-track"><span class="timeline-v4-fill" style="width:${pos}%"></span><span class="timeline-v4-marker" style="left:${pos}%"></span><span class="timeline-v4-current-date" style="left:${pos}%">${today}</span></div><div class="timeline-v4-dates"><div>${formatDate(p.start_date)}</div><div>${formatDate(p.end_date)}</div></div><div class="timeline-v4-stats"><div class="timeline-v4-stat"><div class="label">UMUR PROYEK</div><div class="value">${before?'0 hari':`${age} hari`}</div></div><div class="timeline-v4-stat"><div class="label">WAKTU BERJALAN</div><div class="value">${timePct}%</div></div><div class="timeline-v4-stat"><div class="label">SISA WAKTU</div><div class="value">${after?`Terlambat ${Math.abs(remaining)} hari`:before?`${duration} hari`:`${Math.max(0,remaining)} hari`}</div></div></div></section>`}
+  function timelineMarkup(d){const p=d?.project||{},start=new Date(p.start_date),end=new Date(p.end_date),now=new Date(),day=86400000;if(!p.start_date||!p.end_date||Number.isNaN(start.getTime())||Number.isNaN(end.getTime())||end<start)return `<section class="timeline-v4"><div class="timeline-v4-head"><h3>Timeline Proyek</h3></div><div class="empty">Tanggal mulai/selesai belum tersedia</div></section>`;const duration=Math.max(0,Math.ceil((end-start)/day)),elapsed=Math.ceil((now-start)/day),age=Math.max(0,Math.min(duration,elapsed)),remaining=Math.ceil((end-now)/day),before=now<start,after=now>end,pos=before?0:after?100:(age/duration*100),timePct=duration?Math.round((Math.max(0,Math.min(duration,elapsed))/duration)*100):0,status=before?'Belum dimulai':after?`Terlambat ${Math.abs(remaining)} hari`:'Berjalan',today=formatDate(now);return `<section class="timeline-v4"><div class="timeline-v4-head"><h3>Timeline Proyek</h3><div class="timeline-v4-meta"><span class="timeline-v4-badge">${status}</span><span class="timeline-v4-badge">${today}</span></div></div><div class="timeline-v4-track"><span class="timeline-v4-fill" style="width:${pos}%"></span><span class="timeline-v4-marker" style="left:${pos}%"></span><span class="timeline-v4-current-date" style="left:${pos}%">${today}</span></div><div class="timeline-v4-dates"><div>${formatDate(p.start_date)}</div><div>${formatDate(p.end_date)}</div></div><div class="timeline-v4-stats"><div class="timeline-v4-stat"><div class="label">UMUR PROYEK</div><div class="value">${before?'0 hari':`${age} hari`}</div></div><div class="timeline-v4-stat"><div class="label">WAKTU BERJALAN</div><div class="value">${timePct}%</div></div><div class="timeline-v4-stat"><div class="label">SISA WAKTU</div><div class="value">${after?`Terlambat ${Math.abs(remaining)} hari`:before?`${duration} hari`:`${Math.max(0,remaining)} hari`}</div></div></div></section>`}
   function actualCostsMarkup(d){
     const heading='<h2>Realisasi Biaya per Kategori</h2>';
     if(d.financeReadError) return `<section class="control-card">${heading}<p class="control-note">Data realisasi biaya belum dapat dimuat.</p></section>`;
@@ -67,16 +71,52 @@
       </div>`).join('')}<div class="project-cost-total"><dt>Total Realisasi</dt><dd>${money(total)}</dd></div></dl></div></section>`;
   }
 
-  function overviewChartsMarkup(d){
-    const curve=SiKoyekControl.canProgress()
+  function overviewChartsMarkup(d,access){
+    const curve=(access?.curve ?? SiKoyekControl.canProgress())
       ? `<section class="control-card project-overview-curve"><h2>Kurva-S &amp; Kemajuan Proyek</h2><div class="control-curve">${SiKoyekControl.curveFromWorkItems(d.project,d.items,d.progress)}</div></section>`
       : '';
-    const costs=SiKoyekControl.canFinance()?actualCostsMarkup(d):'';
+    const costs=(access?.costChart ?? SiKoyekControl.canFinance())?actualCostsMarkup(d):'';
     return curve||costs?`<div class="project-overview-charts${curve&&costs?' project-overview-charts-paired':''}">${curve}${costs}</div>`:'';
   }
-  function summaryMarkup(d,s){const r=d.rap||{},info=[['Pemilik',d.project.owner_name||'-'],['Project Manager',d.project.project_manager||'-'],['Mulai',formatDate(d.project.start_date)],['Target Selesai',formatDate(d.project.end_date)]],costs=[['Cost Ratio',pct(s?.cost_ratio)],['RAP Consumption',pct(s?.rap_consumption)]],rap=[['Material',r.material],['Upah',r.labor],['Alat',r.equipment],['Operasional',r.operational],['Subkon',r.subcontract],['Lain-Lain',r.other]];return `<section class="project-summary-v2"><div class="summary-heading"><h2>Project Summary</h2></div><div class="summary-panels"><section class="summary-panel"><div class="summary-panel-head"><h3>Informasi Proyek &amp; Kinerja Biaya</h3></div><div class="info-grid">${info.map(([label,value])=>`<div class="info-item"><div class="note">${label}</div><strong>${esc(value)}</strong></div>`).join('')}</div><div class="summary-divider"></div><div class="subheading">Kinerja Biaya</div><div class="cost-grid">${costs.map(([label,value])=>`<div class="cost-item"><div class="note">${label}</div><strong>${value}</strong></div>`).join('')}</div></section><section class="summary-panel"><div class="summary-panel-head"><h3>RAP</h3><button class="btn primary" onclick="openRapForm()">${d.rap?'Edit RAP':'Isi RAP'}</button></div><div class="rap-grid">${rap.map(([label,value])=>`<div class="rap-item"><div class="label">${label}</div><div class="value">${money(value)}</div></div>`).join('')}</div><div class="rap-total"><span class="label">TOTAL RAP</span><span class="value">${money(s?.total_rap)}</span></div></section></div>${timelineMarkup(d)}${overviewChartsMarkup(d)}</section>`}
+  function rapMarkup(rap, total, action = '') {
+    const values = rap || {};
+    const categories = [['Material','material'],['Upah','labor'],['Alat','equipment'],
+      ['Operasional','operational'],['Subkon','subcontract'],['Lain-Lain','other']];
+    return `<section class="summary-panel"><div class="summary-panel-head"><h3>RAP</h3>${action}</div>
+      <div class="rap-grid">${categories.map(([label,key]) => `<div class="rap-item"><div class="label">${label}</div>
+        <div class="value">${money(values[key])}</div></div>`).join('')}</div>
+      <div class="rap-total"><span class="label">TOTAL RAP</span><span class="value">${money(total)}</span></div></section>`;
+  }
+
+  function summaryMarkup(d,s,access) {
+    const info = [['Pemilik',d.project.owner_name||'-'],['Project Manager',d.project.project_manager||'-'],
+      ['Mulai',formatDate(d.project.start_date)],['Target Selesai',formatDate(d.project.end_date)]];
+    const costs = [['Cost Ratio',pct(s?.cost_ratio)],['RAP Consumption',pct(s?.rap_consumption)]];
+    const edit = !access ? `<button class="btn primary" onclick="openRapForm()">${d.rap?'Edit RAP':'Isi RAP'}</button>`
+      : access.writeRap ? `<button type="button" class="btn primary" data-edit-rap>${d.rap?'Edit RAP':'Isi RAP'}</button>` : '';
+    return `<section class="project-summary-v2"><div class="summary-heading"><h2>Project Summary</h2></div>
+      <div class="summary-panels"><section class="summary-panel"><div class="summary-panel-head"><h3>Informasi Proyek &amp; Kinerja Biaya</h3></div>
+      <div class="info-grid">${info.map(([label,value]) => `<div class="info-item"><div class="note">${label}</div><strong>${esc(value)}</strong></div>`).join('')}</div>
+      <div class="summary-divider"></div><div class="subheading">Kinerja Biaya</div>
+      <div class="cost-grid">${costs.map(([label,value]) => `<div class="cost-item"><div class="note">${label}</div><strong>${value}</strong></div>`).join('')}</div>
+      </section>${!access || access.rap ? rapMarkup(d.rap,s?.total_rap,edit) : ''}</div>
+      ${timelineMarkup(d)}${overviewChartsMarkup(d,access)}</section>`;
+  }
+
+  function headerMarkup(project, actions) {
+    return `<div class="top sk-project-header"><div class="detailtitle"><h2>${esc(project.project_name)}</h2>
+      <p>${esc(project.project_code)} • ${esc(project.location||'-')} • ${esc(project.status||'-')}</p></div>
+      <div class="actions">${actions}</div></div>`;
+  }
+
+  function tabsMarkup(labels, selected, legacy = false) {
+    return `<div class="tabs" aria-label="Perincian proyek">${Object.entries(labels).map(([key,label]) =>
+      `<button type="button" class="${selected===key?'active':''}" ${selected===key?'aria-current="page"':''}
+        ${legacy?`onclick="setTab('${key}')"`:`data-detail-tab="${key}"`}>${label}</button>`).join('')}</div>`;
+  }
+
   function compactProgressView(d){const wrap=document.createElement('div');wrap.innerHTML=progressView(d);[...wrap.querySelectorAll('.card')].forEach(card=>{const text=(card.textContent||'').replace(/\s+/g,' ').trim();if(text.includes('Progress Saat Ini')||text.includes('Cara Kerja Progress'))card.remove()});return wrap.innerHTML}
-  function renderDetailV2(el){if(!state.detail){el.innerHTML='<div class="empty">Memuat proyek...</div>';return}const d=state.detail,s=state.summary.find(x=>x.project_id===state.selected),labels={overview:'Overview',pekerjaan:'Item Pekerjaan',progress:'Progress',keuangan:'Keuangan',cost:'Cost Control',...(SiKoyekControl.canProgress()?SiKoyekControl.projectTabs:{})};if(!Object.hasOwn(labels,state.detailTab))state.detailTab='overview';el.innerHTML=`<div class="top sk-project-header"><div class="detailtitle"><h2>${esc(d.project.project_name)}</h2><p>${esc(d.project.project_code)} • ${esc(d.project.location||'-')} • ${esc(d.project.status)}</p></div><div class="actions"><button class="btn ghost" onclick="go('projects')">← Kembali</button><button class="btn primary" onclick="openItemForm()">+ Item Pekerjaan</button><button class="btn ghost" onclick="openTxForm()">+ Transaksi</button></div></div>${kpiMarkup(d,s)}<div class="tabs">${Object.entries(labels).map(([k,v])=>`<button class="${state.detailTab===k?'active':''}" onclick="setTab('${k}')">${v}</button>`).join('')}</div><div id="project-tab-content">${Object.hasOwn(SiKoyekControl.projectTabs,state.detailTab)?'':state.detailTab==='overview'?summaryMarkup(d,s):detailBodyV2(d,s)}</div>`;
+  function renderDetailV2(el){if(!state.detail){el.innerHTML='<div class="empty">Memuat proyek...</div>';return}const d=state.detail,s=state.summary.find(x=>x.project_id===state.selected),labels={overview:'Overview',pekerjaan:'Item Pekerjaan',progress:'Progress',keuangan:'Keuangan',cost:'Cost Control',...(SiKoyekControl.canProgress()?SiKoyekControl.projectTabs:{})};if(!Object.hasOwn(labels,state.detailTab))state.detailTab='overview';el.innerHTML=`${headerMarkup(d.project, '<button class="btn ghost" onclick="go(\'projects\')">← Kembali</button><button class="btn primary" onclick="openItemForm()">+ Item Pekerjaan</button><button class="btn ghost" onclick="openTxForm()">+ Transaksi</button>')}${kpiMarkup(d,s)}${tabsMarkup(labels,state.detailTab,true)}<div id="project-tab-content">${Object.hasOwn(SiKoyekControl.projectTabs,state.detailTab)?'':state.detailTab==='overview'?summaryMarkup(d,s):detailBodyV2(d,s)}</div>`;
     const workerCount=el.querySelector('[data-project-worker-count]');
     const refreshWorkers=()=>workerCount && SiKoyekControl.loadWorkerCount(workerCount,[d.project.id]);
     refreshWorkers();
@@ -84,5 +124,8 @@
   }
   function detailBodyV2(d,s){if(state.detailTab==='pekerjaan')return workitems(d);if(state.detailTab==='progress')return compactProgressView(d);if(state.detailTab==='keuangan')return financeView(d);return costView(d,s)}
   function install(){if(window.__projectSummaryV2Installed)return;if(typeof window.renderDetail==='function'){window.renderDetail=renderDetailV2;window.__projectSummaryV2Installed=true;addStyle();if(typeof state!=='undefined'&&state.page==='detail'&&state.detail)renderDetailV2(document.getElementById('page'))}}
-  addStyle();const boot=()=>setTimeout(install,120);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();const obs=new window.SiKoyekFoundation.Observer(()=>{if(window.__projectSummaryV2Installed){obs.disconnect();return}clearTimeout(window.__projectSummaryV2Timer);window.__projectSummaryV2Timer=setTimeout(install,120)});obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
+  window.SiKoyekProjectDetail = { headerMarkup, tabsMarkup, kpiMarkup, summaryMarkup, rapMarkup };
+  addStyle();
+  if (document.documentElement.hasAttribute('data-shared-login')) return;
+  const boot=()=>setTimeout(install,120);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();const obs=new window.SiKoyekFoundation.Observer(()=>{if(window.__projectSummaryV2Installed){obs.disconnect();return}clearTimeout(window.__projectSummaryV2Timer);window.__projectSummaryV2Timer=setTimeout(install,120)});obs.observe(document.getElementById('app')||document.body,{childList:true,subtree:true});
 })();

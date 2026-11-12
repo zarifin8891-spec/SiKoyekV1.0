@@ -13,7 +13,9 @@
     const dashboardRoot = get("dashboard-panel");
     const projectRoot = get("company-project-list");
     const projectForm = get("project-entry");
-    const planning = window.createCompanyPlanning(client);
+    const planning = window.createCompanyPlanning(client, () => {
+      if (account) load(account, true).catch(() => {});
+    }, () => onRoutesChanged("project"));
     let generation = 0;
     let account = null;
     let period = { from: "", to: "" };
@@ -121,7 +123,7 @@
       }
     }
 
-    async function load(nextAccount) {
+    async function load(nextAccount, preservePlanning = false) {
       const current = ++generation;
       account = nextAccount;
       const administrator = account.access_role === "company_admin";
@@ -176,7 +178,7 @@
       [master, projects, transactions, projects && transactions, projects].forEach((visible, index) => {
         get(panels[index]).hidden = !visible;
       });
-      await planning.load(canRead, canWrite);
+      await planning.load(canRead, canWrite, preservePlanning);
       if (generation === current) onRoutesChanged();
     }
 

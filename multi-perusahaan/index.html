@@ -19,6 +19,7 @@
   <script defer src="../project-decision-engine-v1.js"></script>
   <script defer src="../foundation/project-control.js"></script>
   <script defer src="../login-ui-v1.js"></script>
+  <script defer src="../project-summary-v2.js"></script>
   <script defer src="./planning.js"></script>
   <script defer src="./operations.js"></script>
   <script defer src="./staff-access.js"></script>
@@ -125,24 +126,30 @@
           </form>
           <div class="table-scroll"><table><thead><tr><th>Tanggal</th><th>Proyek</th><th>Jenis</th><th>Jumlah</th></tr></thead><tbody id="transaction-rows"></tbody></table></div>
         </section>
-        <section id="planning-panel" data-workspace-page hidden>
-          <h2>Perincian Proyek</h2>
-          <label>Proyek<select id="planning-project"></select></label>
+        <div id="planning-panel" data-workspace-page hidden>
+          <label>Proyek<select class="control-select" id="planning-project"></select></label>
           <p id="planning-notice" role="status"></p>
           <div id="planning-details" hidden>
-            <div id="planning-rap" class="planning-block" hidden>
-              <h3>RAP</h3>
-              <form id="planning-budget">
+            <div id="planning-heading"></div>
+            <div id="planning-kpis"></div>
+            <div id="planning-tabs"></div>
+            <div id="planning-overview"></div>
+            <div id="planning-rap" class="project-summary-v2" hidden>
+              <div id="planning-budget-summary"></div>
+              <form id="planning-budget" hidden>
                 <label>Material<input name="material" type="number" min="0" step="0.01" required></label>
                 <label>Upah<input name="labor" type="number" min="0" step="0.01" required></label>
                 <label>Alat<input name="equipment" type="number" min="0" step="0.01" required></label>
                 <label>Operasional<input name="operational" type="number" min="0" step="0.01" required></label>
                 <label>SubKon<input name="subcontract" type="number" min="0" step="0.01" required></label>
                 <label>Lain-lain<input name="other" type="number" min="0" step="0.01" required></label>
-                <button type="submit">Simpan RAP</button>
+                <button type="submit" class="btn primary">Simpan RAP</button>
+                <button id="planning-budget-cancel" type="button" class="btn ghost">Batal</button>
               </form>
-              <h3>Item Pekerjaan</h3>
-              <form id="planning-item">
+            </div>
+            <div id="planning-work" hidden>
+              <div class="sectiontitle"><h2>Item Pekerjaan</h2><button type="button" class="btn primary" data-add-item>+ Item Pekerjaan</button></div>
+              <form id="planning-item" hidden>
                 <label>Nama item<input name="work_name" maxlength="160" required></label>
                 <label>Bobot (%)<input name="weight" type="number" min="0" max="100" step="0.0001" required></label>
                 <label>Durasi (hari)<input name="duration_days" type="number" min="1" max="36500" required></label>
@@ -151,11 +158,11 @@
                 <button type="submit">Tambah Item</button>
                 <button type="button" id="planning-item-cancel" hidden>Batal</button>
               </form>
-              <div class="table-scroll"><table><thead><tr><th>Item</th><th>Bobot</th><th>Durasi</th><th>Mulai Rencana</th><th>Urutan</th><th>Aksi</th></tr></thead><tbody id="planning-items"></tbody></table></div>
+              <div class="card tablecard"><div class="scroll"><table class="table"><thead><tr><th>Item</th><th>Bobot</th><th>Durasi</th><th>Mulai Rencana</th><th>Urutan</th><th>Aksi</th></tr></thead><tbody id="planning-items"></tbody></table></div></div>
             </div>
-            <div id="planning-progress" class="planning-block" hidden>
-              <h3>Progress</h3>
-              <form id="planning-record">
+            <div id="planning-progress" hidden>
+              <div class="sectiontitle"><h2>Riwayat Progress</h2><button type="button" class="btn primary" data-add-record>+ Input Progress</button></div>
+              <form id="planning-record" hidden>
                 <label>Item pekerjaan<select name="work_item_id" required></select></label>
                 <label>Tanggal<input name="progress_date" type="date" required></label>
                 <label>Tambahan progress (%)<input name="progress_percentage" type="number" min="0" max="100" step="0.0001" required></label>
@@ -163,14 +170,10 @@
                 <button type="submit">Tambah Progress</button>
                 <button type="button" id="planning-record-cancel" hidden>Batal</button>
               </form>
-              <div class="table-scroll"><table><thead><tr><th>Tanggal</th><th>Item</th><th>Tambahan Progress</th><th>Catatan</th><th>Aksi</th></tr></thead><tbody id="planning-history"></tbody></table></div>
-            </div>
-            <div id="planning-overview" class="planning-block" hidden>
-              <h3>Kurva-S</h3>
-              <div id="planning-curve"></div>
+              <div class="card tablecard"><div class="scroll"><table class="table"><thead><tr><th>Tanggal</th><th>Item</th><th>Tambahan Progress</th><th>Catatan</th><th>Aksi</th></tr></thead><tbody id="planning-history"></tbody></table></div></div>
             </div>
           </div>
-        </section>
+        </div>
         <section id="report-panel" data-workspace-page hidden>
           <h2>Ringkasan Keuangan Proyek</h2>
           <div class="table-scroll"><table><thead><tr><th>Proyek</th><th>Kontrak</th><th>Kas Masuk</th><th>Kas Keluar</th></tr></thead><tbody id="report-rows"></tbody></table></div>

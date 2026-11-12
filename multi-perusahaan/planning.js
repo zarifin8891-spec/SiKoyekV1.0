@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  window.createCompanyPlanning = function (client) {
+  window.createCompanyPlanning = function (client, onSaved, openProjectList) {
     const get = id => document.getElementById(id);
     const panel = get("planning-panel");
     const projectSelect = get("planning-project");
@@ -13,6 +13,12 @@
     const budgetFields = [...budgetForm.querySelectorAll("input")];
     const cancelItem = get("planning-item-cancel");
     const cancelRecord = get("planning-record-cancel");
+    const view = window.SiKoyekProjectDetail;
+    const addItem = details.querySelector("[data-add-item]");
+    const addRecord = details.querySelector("[data-add-record]");
+    const sections = { overview: "planning-overview", rap: "planning-rap", work: "planning-work", progress: "planning-progress" };
+    let labels = {};
+    let tab = "overview";
     const format = window.SiKoyekFoundation;
     const percent = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2, style: "percent" });
     let generation = 0;
@@ -23,6 +29,7 @@
     let saving = false;
 
     function resetItem() {
+      itemForm.hidden = true;
       editId = null;
       itemForm.reset();
       itemForm.querySelector("button[type=submit]").textContent = "Tambah Item";
@@ -30,6 +37,7 @@
     }
 
     function resetRecord() {
+      recordForm.hidden = true;
       recordId = null;
       recordForm.reset();
       recordForm.querySelector("button[type=submit]").textContent = "Tambah Progress";
@@ -45,7 +53,12 @@
       notice.textContent = "";
       get("planning-items").replaceChildren();
       get("planning-history").replaceChildren();
-      get("planning-curve").replaceChildren();
+      for (const id of ["planning-heading", "planning-kpis", "planning-tabs", "planning-overview", "planning-budget-summary"]) {
+        get(id).replaceChildren();
+      }
+      labels = {};
+      tab = "overview";
+      budgetForm.hidden = true;
       resetItem();
       budgetForm.reset();
       resetRecord();
@@ -54,13 +67,17 @@
 
     const { readPages } = window.SiKoyekControl;
 
-    async function load(canRead, canWrite) {
-      clear();
-      if (!canRead("rap") && !canRead("progress")) return;
-      access = {
+    async function load(canRead, canWrite, preserve = false) {
+      const next = {
         rap: canRead("rap"), writeRap: canWrite("rap"),
         progress: canRead("progress"), writeProgress: canWrite("progress"),
+        projects: canRead("projects"), finance: canRead("transactions"),
+        costChart: canRead("transactions") && canRead("master_data"),
       };
+      if (preserve && Object.keys(next).every(key => next[key] === access[key])) return;
+      clear();
+      if (!next.rap && !next.progress) return;
+      access = next;
       const current = generation;
       panel.hidden = false;
       notice.textContent = "Memuat proyek…";
@@ -97,6 +114,7 @@
       button.type = "button";
       button.textContent = "Ubah";
       button.addEventListener("click", () => {
+        itemForm.hidden = false;
         editId = item.id;
         for (const field of itemForm.querySelectorAll("input")) field.value = item[field.name] ?? "";
         itemForm.elements.weight.value = Math.round(Number(item.weight) * 1000000) / 10000;
@@ -113,6 +131,7 @@
       button.type = "button";
       button.textContent = "Ubah";
       button.addEventListener("click", () => {
+        recordForm.hidden = false;
         recordId = record.id;
         for (const field of recordForm.querySelectorAll("input, select")) field.value = record[field.name] ?? "";
         recordForm.elements.progress_percentage.value = Math.round(Number(record.progress_percentage) * 1000000) / 10000;
@@ -127,6 +146,7 @@
       const current = ++generation;
       const project = projects.find(row => row.id === projectSelect.value);
       details.hidden = true;
+      budgetForm.hidden = true;
       resetItem();
       resetRecord();
       if (!project) {
@@ -136,30 +156,28 @@
       notice.textContent = "Memuat perincian proyek…";
       const scoped = (table, fields) => client.from(table).select(fields).eq("project_id", project.id);
       try {
-        const [budget, workItems, records] = await Promise.all([
+        const [budget, workItems, records, projectData, transactions, categories] = await Promise.all([
           access.rap ? scoped("company_project_rap", budgetFields.map(field => field.name).join(",")).maybeSingle() : {},
           readPages(() => access.rap ? scoped("company_work_items", "id,work_name,weight,duration_days,planned_start_date,sort_order")
             : client.rpc("project_progress_item_choices", { selected_project: project.id })),
           access.progress ? readPages(() => scoped("company_progress_records", "id,work_item_id,progress_date,progress_percentage,notes")) : [],
+          access.projects ? client.from("company_projects").select("status,contract_value").eq("id", project.id).maybeSingle() : {},
+          access.finance ? readPages(() => scoped("company_transactions", "id,category_id,transaction_type,amount")).catch(() => null) : [],
+          access.costChart ? readPages(() => client.from("company_master_data").select("id,name").eq("kind", "transaction_category")).catch(() => null) : [],
         ]);
         if (current !== generation) return;
-        if (budget.error) throw budget.error;
+        if (budget.error || projectData.error) throw budget.error || projectData.error;
         workItems.sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id));
         records.sort((a, b) => b.progress_date.localeCompare(a.progress_date) || a.id.localeCompare(b.id));
         const itemNames = new Map(workItems.map(item => [item.id, item.work_name]));
         for (const field of budgetFields) {
           field.value = budget.data?.[field.name] ?? 0;
-          field.readOnly = !access.writeRap;
         }
-        budgetForm.querySelector("button").hidden = !access.writeRap;
-        itemForm.hidden = !access.writeRap;
-        recordForm.hidden = !access.writeProgress || !workItems.length;
+        addItem.hidden = !access.writeRap;
+        addRecord.hidden = !access.writeProgress || !workItems.length;
         recordForm.elements.work_item_id.replaceChildren(...workItems.map(item => new Option(item.work_name, item.id)));
         recordForm.elements.progress_date.min = project.starts_on || "";
         itemForm.elements.planned_start_date.min = project.starts_on || "";
-        get("planning-rap").hidden = !access.rap;
-        get("planning-progress").hidden = !access.progress;
-        get("planning-overview").hidden = !(access.rap && access.progress);
         if (access.rap) {
           renderRows("planning-items", workItems, item => [
             item.work_name, percent.format(item.weight), item.duration_days ?? "—",
@@ -170,10 +188,37 @@
           format.formatDate(record.progress_date), itemNames.get(record.work_item_id) || "—",
           percent.format(record.progress_percentage), record.notes || "—",
         ], renderRecordEdit);
-        if (access.rap && access.progress) {
-          get("planning-curve").innerHTML = window.SiKoyekControl.curveFromWorkItems(
-            { start_date: project.starts_on, end_date: project.ends_on }, workItems, records);
-        }
+        const categoryNames = new Map((categories || []).map(row => [row.id, row.name]));
+        const model = {
+          project: { project_name: project.name, project_code: project.code, start_date: project.starts_on,
+            end_date: project.ends_on, ...projectData.data },
+          rap: budget.data, items: workItems, progress: records,
+          financeReadError: !transactions || !categories,
+          fin: (transactions || []).map(row => ({ ...row, category: categoryNames.get(row.category_id) })),
+        };
+        const curve = access.rap && access.progress;
+        const total = access.rap ? budgetFields.reduce((sum, field) => sum + Number(budget.data?.[field.name] || 0), 0) : null;
+        const spent = access.finance && transactions ? transactions.reduce((sum, row) => sum +
+          (row.transaction_type === "KELUAR" ? Number(row.amount) : 0), 0) : null;
+        const contract = model.project.contract_value;
+        const summary = {
+          total_rap: total, total_realization: spent,
+          project_progress: curve ? window.SiKoyekControl.actualSeries(workItems, records, project.starts_on).at(-1)?.value ?? 0 : null,
+          cost_ratio: spent != null && contract > 0 ? spent / contract * 100 : null,
+          rap_consumption: spent != null && total > 0 ? spent / total * 100 : null,
+        };
+        if (curve && spent != null && total > 0) summary.health_status = window.SiKoyekHealthEngine.evaluate(summary).status;
+        const display = { ...access, finance: access.finance && transactions !== null, curve };
+        const back = access.projects ? '<button type="button" class="btn ghost" data-back-projects>← Kembali</button>' : "";
+        const add = access.writeRap ? '<button type="button" class="btn primary" data-add-item>+ Item Pekerjaan</button>' : "";
+        get("planning-heading").innerHTML = view.headerMarkup(model.project, back + add);
+        get("planning-kpis").innerHTML = view.kpiMarkup(model, summary, display);
+        get("planning-overview").innerHTML = view.summaryMarkup(model, summary, display);
+        get("planning-budget-summary").innerHTML = access.rap ? view.rapMarkup(budget.data, total,
+          access.writeRap ? '<button type="button" class="btn primary" data-edit-rap>Edit RAP</button>' : "") : "";
+        labels = { overview: "Overview", ...(access.rap ? { work: "Item Pekerjaan", rap: "RAP" } : {}),
+          ...(access.progress ? { progress: "Progress" } : {}) };
+        selectTab(Object.hasOwn(labels, tab) ? tab : "overview");
         details.hidden = false;
         notice.textContent = status;
       } catch {
@@ -197,6 +242,7 @@
           if (current !== generation) return;
           if (error) throw error;
           await loadDetails("Data tersimpan.");
+          onSaved?.();
         } catch {
           if (current === generation) notice.textContent = "Data belum dapat disimpan. Periksa isian dan hak akses.";
         } finally {
@@ -223,10 +269,41 @@
       return recordId ? table.update(fields).eq("project_id", project_id).eq("id", recordId).select("id").single()
         : table.insert(values);
     });
+    function selectTab(next) {
+      tab = next;
+      get("planning-tabs").innerHTML = view.tabsMarkup(labels, tab);
+      for (const [key, id] of Object.entries(sections)) get(id).hidden = key !== tab;
+    }
+
+    details.addEventListener("click", event => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      if (Object.hasOwn(labels, button.dataset.detailTab)) {
+        selectTab(button.dataset.detailTab);
+        get("planning-tabs").querySelector('[aria-current="page"]').focus();
+      } else if (button.hasAttribute("data-back-projects") && access.projects) {
+        openProjectList?.();
+      } else if (button.hasAttribute("data-edit-rap") && access.writeRap) {
+        selectTab("rap");
+        budgetForm.hidden = false;
+        budgetFields[0].focus();
+      } else if (button.hasAttribute("data-add-item") && access.writeRap) {
+        selectTab("work");
+        resetItem();
+        itemForm.hidden = false;
+        itemForm.elements.work_name.focus();
+      } else if (button.hasAttribute("data-add-record") && access.writeProgress) {
+        resetRecord();
+        recordForm.hidden = false;
+        recordForm.elements.work_item_id.focus();
+      }
+    });
+    get("planning-budget-cancel").addEventListener("click", () => { budgetForm.reset(); loadDetails(); });
     cancelItem.addEventListener("click", resetItem);
     cancelRecord.addEventListener("click", resetRecord);
-    projectSelect.addEventListener("change", () => loadDetails());
+    projectSelect.addEventListener("change", () => { tab = "overview"; loadDetails(); });
     function open(projectId) {
+      tab = "overview";
       projectSelect.value = projectId;
       return loadDetails();
     }
