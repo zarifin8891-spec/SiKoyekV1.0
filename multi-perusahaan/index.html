@@ -5,12 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SiKoyek Multi-Perusahaan</title>
   <link rel="stylesheet" href="../foundation/tokens.css">
+  <link rel="stylesheet" href="../foundation/project-control.css">
   <link rel="stylesheet" href="./workspace.css">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="./environment.js"></script>
   <script defer src="../foundation/config.js"></script>
   <script defer src="../foundation/backend.js"></script>
   <script defer src="../foundation/runtime.js"></script>
+  <script defer src="../foundation/project-control.js"></script>
+  <script defer src="./planning.js"></script>
   <script defer src="./operations.js"></script>
   <script defer src="./staff-access.js"></script>
   <script defer src="./workspace.js"></script>
@@ -63,6 +66,8 @@
             <label>Master Data<select name="master_data"></select></label>
             <label>Proyek<select name="projects"></select></label>
             <label>Transaksi<select name="transactions"></select></label>
+            <label>RAP<select name="rap"></select></label>
+            <label>Progress<select name="progress"></select></label>
             <button type="submit">Simpan Hak Akses</button>
           </form>
           <form method="dialog"><button type="submit">Tutup</button></form>
@@ -110,6 +115,52 @@
             <button type="submit">Tambah Transaksi</button>
           </form>
           <div class="table-scroll"><table><thead><tr><th>Tanggal</th><th>Proyek</th><th>Jenis</th><th>Jumlah</th></tr></thead><tbody id="transaction-rows"></tbody></table></div>
+        </section>
+        <section id="planning-panel" hidden>
+          <h2>Perincian Proyek</h2>
+          <label>Proyek<select id="planning-project"></select></label>
+          <p id="planning-notice" role="status"></p>
+          <div id="planning-details" hidden>
+            <div id="planning-rap" class="planning-block" hidden>
+              <h3>RAP</h3>
+              <form id="planning-budget">
+                <label>Material<input name="material" type="number" min="0" step="0.01" required></label>
+                <label>Upah<input name="labor" type="number" min="0" step="0.01" required></label>
+                <label>Alat<input name="equipment" type="number" min="0" step="0.01" required></label>
+                <label>Operasional<input name="operational" type="number" min="0" step="0.01" required></label>
+                <label>SubKon<input name="subcontract" type="number" min="0" step="0.01" required></label>
+                <label>Lain-lain<input name="other" type="number" min="0" step="0.01" required></label>
+                <button type="submit">Simpan RAP</button>
+              </form>
+              <h3>Item Pekerjaan</h3>
+              <form id="planning-item">
+                <label>Nama item<input name="work_name" maxlength="160" required></label>
+                <label>Bobot (%)<input name="weight" type="number" min="0" max="100" step="0.0001" required></label>
+                <label>Durasi (hari)<input name="duration_days" type="number" min="1" max="36500" required></label>
+                <label>Mulai rencana<input name="planned_start_date" type="date"></label>
+                <label>Urutan<input name="sort_order" type="number" min="0" max="2147483647" value="0" required></label>
+                <button type="submit">Tambah Item</button>
+                <button type="button" id="planning-item-cancel" hidden>Batal</button>
+              </form>
+              <div class="table-scroll"><table><thead><tr><th>Item</th><th>Bobot</th><th>Durasi</th><th>Mulai Rencana</th><th>Urutan</th><th>Aksi</th></tr></thead><tbody id="planning-items"></tbody></table></div>
+            </div>
+            <div id="planning-progress" class="planning-block" hidden>
+              <h3>Progress</h3>
+              <form id="planning-record">
+                <label>Item pekerjaan<select name="work_item_id" required></select></label>
+                <label>Tanggal<input name="progress_date" type="date" required></label>
+                <label>Tambahan progress (%)<input name="progress_percentage" type="number" min="0" max="100" step="0.0001" required></label>
+                <label>Catatan<input name="notes" maxlength="500"></label>
+                <button type="submit">Tambah Progress</button>
+                <button type="button" id="planning-record-cancel" hidden>Batal</button>
+              </form>
+              <div class="table-scroll"><table><thead><tr><th>Tanggal</th><th>Item</th><th>Tambahan Progress</th><th>Catatan</th><th>Aksi</th></tr></thead><tbody id="planning-history"></tbody></table></div>
+            </div>
+            <div id="planning-overview" class="planning-block" hidden>
+              <h3>Kurva-S</h3>
+              <div id="planning-curve"></div>
+            </div>
+          </div>
         </section>
         <section id="report-panel" hidden>
           <h2>Ringkasan Keuangan Proyek</h2>

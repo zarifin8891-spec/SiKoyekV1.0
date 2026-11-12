@@ -8,12 +8,14 @@
     const panels = ["master-data-panel", "project-panel", "transaction-panel", "report-panel"];
     const tables = ["master-rows", "project-rows", "transaction-rows", "report-rows"];
     const format = window.SiKoyekFoundation;
+    const planning = window.createCompanyPlanning(client);
     let generation = 0;
     let account = null;
 
     function clear() {
       generation++;
       account = null;
+      planning.clear();
       root.hidden = true;
       panels.forEach(id => { get(id).hidden = true; });
       forms.forEach(id => get(id).reset());
@@ -48,7 +50,7 @@
       const master = canRead("master_data");
       const projects = canRead("projects");
       const transactions = canRead("transactions");
-      root.hidden = !(master || projects || transactions);
+      root.hidden = !(master || projects || transactions || canRead("rap") || canRead("progress"));
 
       const empty = { data: [] };
       const [catalog, projectList, ledger, report] = await Promise.all([
@@ -78,6 +80,7 @@
       [master, projects, transactions, projects && transactions].forEach((visible, index) => {
         get(panels[index]).hidden = !visible;
       });
+      await planning.load(canRead, canWrite);
     }
 
     function bind(formId, table) {

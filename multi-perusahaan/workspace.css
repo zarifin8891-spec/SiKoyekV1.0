@@ -61,3 +61,12 @@ td button { min-height: 30px; margin-inline-end: 4px; }
 #staff-access-dialog::backdrop { background: #102a4a70; }
 #staff-access-dialog form + form { margin-top: 10px; }
 #staff-access-notice:empty { display: none; }
+
+#planning-panel > label { max-width: 420px; }
+#planning-notice:empty { display: none; }
+.planning-block { margin-top: 16px; }
+.planning-block h3 { margin: 12px 0 8px; font-size: 16px; }
+#planning-items td:nth-child(n+2):nth-child(-n+5),
+#planning-rap th:nth-child(n+2):nth-child(-n+5),
+#planning-history td:nth-child(3), #planning-progress th:nth-child(3) { text-align: right; }
+#planning-curve { --control-muted: #536a80; --control-orange: #d56324; }

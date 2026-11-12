@@ -90,6 +90,8 @@
       ? {status: unassessed, level: 'neutral'}
       : global.SiKoyekHealthEngine.evaluate(row);
   }
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, char =>
+    ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
   const message = text => `<p class="control-note">${esc(text)}</p>`;
   const options = rows => rows.map(p => `<option value="${esc(p.project_id)}">${esc(p.project_name || p.project_code)}</option>`).join('');
   let chartProject = '';
