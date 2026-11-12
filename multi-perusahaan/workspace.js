@@ -8,6 +8,7 @@
   const accountPanel = byId("account-panel");
   const companySelect = byId("account-form").elements.company_id;
   let client;
+  let operations;
   let generation = 0;
 
   function notify(message, error = false) {
@@ -23,6 +24,7 @@
   }
 
   function setSignedOut() {
+    operations?.clear();
     login.hidden = false;
     logout.hidden = signedIn.hidden = companyPanel.hidden = accountPanel.hidden = true;
     byId("companies").replaceChildren();
@@ -69,6 +71,8 @@
     accountPanel.hidden = !(platform || manager);
     byId("workspace-title").textContent = platform ? "Admin Platform" : ownCompany.name;
     byId("account-name").textContent = account.full_name;
+    operations.clear();
+    if (!platform) operations.load(account).catch(() => notify("Data operasional belum dapat dimuat.", true));
     if (!(platform || manager)) return;
 
     renderCompanies(companies, platform, ownCompany);
@@ -171,6 +175,7 @@
       return;
     }
     client = window.SiKoyekBackend.getClient();
+    operations = window.createCompanyOperations(client, notify);
     bindSubmit("login-form", async (form, values) => {
       form.elements.password.value = "";
       const { error } = await client.auth.signInWithPassword({ email: values.email.trim(), password: values.password });

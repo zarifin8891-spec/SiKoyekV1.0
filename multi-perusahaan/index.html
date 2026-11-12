@@ -10,6 +10,8 @@
   <script defer src="./environment.js"></script>
   <script defer src="../foundation/config.js"></script>
   <script defer src="../foundation/backend.js"></script>
+  <script defer src="../foundation/runtime.js"></script>
+  <script defer src="./operations.js"></script>
   <script defer src="./workspace.js"></script>
 </head>
 <body>
@@ -53,6 +55,54 @@
           <table><thead><tr><th>Nama</th><th>Perusahaan</th><th>Peran</th></tr></thead><tbody id="accounts"></tbody></table>
         </div>
       </section>
+      <div id="operations" hidden>
+        <section id="master-data-panel" hidden>
+          <h2>Master Data Perusahaan</h2>
+          <form id="master-entry">
+            <label>Jenis<select name="kind">
+              <option value="project_category">Kategori Proyek</option>
+              <option value="project_manager">Project Manager</option>
+              <option value="transaction_category">Kategori Transaksi</option>
+              <option value="payment_method">Metode Pembayaran</option>
+              <option value="employee">Karyawan</option>
+              <option value="equipment">Alat</option>
+              <option value="goods">Barang</option>
+            </select></label>
+            <label>Nama<input name="name" maxlength="160" required></label>
+            <button type="submit">Tambah Master Data</button>
+          </form>
+          <div class="table-scroll"><table><thead><tr><th>Jenis</th><th>Nama</th><th>Status</th></tr></thead><tbody id="master-rows"></tbody></table></div>
+        </section>
+        <section id="project-panel" hidden>
+          <h2>Proyek</h2>
+          <form id="project-entry">
+            <label>Kode<input name="code" maxlength="40" required></label>
+            <label>Nama proyek<input name="name" maxlength="160" required></label>
+            <label>Nilai kontrak<input name="contract_value" type="number" min="0" step="0.01" value="0" required></label>
+            <label>Mulai<input name="starts_on" type="date"></label>
+            <label>Estimasi selesai<input name="ends_on" type="date"></label>
+            <button type="submit">Tambah Proyek</button>
+          </form>
+          <div class="table-scroll"><table><thead><tr><th>Kode</th><th>Nama</th><th>Nilai Kontrak</th><th>Mulai</th><th>Estimasi Selesai</th></tr></thead><tbody id="project-rows"></tbody></table></div>
+        </section>
+        <section id="transaction-panel" hidden>
+          <h2>Transaksi</h2>
+          <form id="transaction-entry">
+            <label>Proyek<select name="project_id" required></select></label>
+            <label>Kategori<select name="category_id"></select></label>
+            <label>Tanggal<input name="transaction_date" type="date" required></label>
+            <label>Jenis<select name="transaction_type"><option value="MASUK">Masuk</option><option value="KELUAR">Keluar</option></select></label>
+            <label>Jumlah<input name="amount" type="number" min="0.01" step="0.01" required></label>
+            <label>Keterangan<input name="description" maxlength="240"></label>
+            <button type="submit">Tambah Transaksi</button>
+          </form>
+          <div class="table-scroll"><table><thead><tr><th>Tanggal</th><th>Proyek</th><th>Jenis</th><th>Jumlah</th></tr></thead><tbody id="transaction-rows"></tbody></table></div>
+        </section>
+        <section id="report-panel" hidden>
+          <h2>Ringkasan Keuangan Proyek</h2>
+          <div class="table-scroll"><table><thead><tr><th>Proyek</th><th>Kontrak</th><th>Kas Masuk</th><th>Kas Keluar</th></tr></thead><tbody id="report-rows"></tbody></table></div>
+        </section>
+      </div>
     </div>
   </main>
 </body>
