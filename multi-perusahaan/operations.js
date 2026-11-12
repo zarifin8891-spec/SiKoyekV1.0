@@ -22,6 +22,16 @@
     let chartProject = "";
     const filters = { activeOnly: false, search: "" };
 
+    const masterForm = get("master-entry");
+    function updateCatalogFields() {
+      const kind = masterForm.elements.kind.value;
+      const hasCode = ["goods", "employee", "equipment"].includes(kind);
+      get("master-code").hidden = masterForm.elements.code.disabled = !hasCode;
+      get("master-unit").hidden = masterForm.elements.unit.disabled = kind !== "goods";
+    }
+    masterForm.elements.kind.addEventListener("change", updateCatalogFields);
+    masterForm.addEventListener("reset", () => queueMicrotask(updateCatalogFields));
+
     function addProject() {
       onRoutesChanged("project");
       projectForm.hidden = false;

@@ -20,9 +20,9 @@ h1 { font-size: 24px; }
 h2 { font-size: 18px; }
 #notice:empty { display: none; }
 #notice[data-error="true"] { color: #a32538; }
-#signed-in form:not(.control-period) { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
-#signed-in form:not(.control-period) label, #planning-panel > label { display: grid; gap: 4px; flex: 1 1 155px; font-size: 14px; font-weight: 600; }
-#signed-in form:not(.control-period) :is(input, select, button), #signed-in td > button:not(.linkbtn):not(.control-link) {
+#signed-in form:not(.control-period):not(.control-form) { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
+#signed-in form:not(.control-period):not(.control-form) label, #planning-panel > label { display: grid; gap: 4px; flex: 1 1 155px; font-size: 14px; font-weight: 600; }
+#signed-in form:not(.control-period):not(.control-form) :is(input, select, button), #signed-in td > button:not(.linkbtn):not(.control-link) {
   min-width: 0;
   min-height: 36px;
   padding: 6px 9px;
@@ -30,7 +30,7 @@ h2 { font-size: 18px; }
   border-radius: 7px;
   font: inherit;
 }
-#signed-in form:not(.control-period) button, #signed-in td > button:not(.linkbtn):not(.control-link) { color: #fff; background: #194a75; cursor: pointer; }
+#signed-in form:not(.control-period):not(.control-form) button, #signed-in td > button:not(.linkbtn):not(.control-link) { color: #fff; background: #194a75; cursor: pointer; }
 #signed-in button:disabled { opacity: .6; cursor: wait; }
 .table-scroll { overflow-x: auto; margin-top: 12px; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }

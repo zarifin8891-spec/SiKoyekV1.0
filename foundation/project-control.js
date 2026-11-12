@@ -561,18 +561,18 @@
     return curveFromWorkItems(project, items.value, records.value);
   }
 
-  function mountProjectTables(root, config, id, onChange) {
+  function mountProjectTables(root, config, id, onChange, backend) {
     for (const [table, definition] of Object.entries(config.tables)) {
       const section = document.createElement('section');
       section.className = 'control-card';
       root.append(section);
-      mountTable(section, table, definition, id, config.permission, onChange && (() => onChange(table)));
+      mountTable(section, table, definition, id, config.permission, onChange && (() => onChange(table)), backend);
     }
   }
 
   const projectTabs = {materials: modules.materials.title, resources: modules.resources.title};
-  function mountProjectTab(root, tab, project, refreshWorkers) {
-    if (!can('PROGRESS')) {
+  function mountProjectTab(root, tab, project, refreshWorkers, backend) {
+    if (!(backend?.canRead ?? can('PROGRESS'))) {
       root.innerHTML = message('Akses ke tab ini belum diberikan.');
       return;
     }
@@ -580,7 +580,7 @@
     root.classList.toggle('control-panel-pair', tab === 'resources');
     mountProjectTables(root, modules[tab], project.id, table => {
       if (table === 'project_worker_assignments') refreshWorkers?.();
-    });
+    }, backend);
   }
 
   async function loadSite(view, project) {
@@ -674,7 +674,10 @@
     </select></label>`;
   }
 
-  async function mountTable(section, table, definition, id, permission, onChange) {
+  async function mountTable(section, table, definition, id, permission, onChange, backend) {
+    const client = backend?.client || sb;
+    const target = backend?.tables[table] || table;
+    const permitted = action => backend ? backend.canWrite : can(permission, action);
     const [title, sort, ...fields] = definition;
     const catalog = assignmentCatalog[table];
     const editFields = catalog ? fields.filter(([name]) => !Object.hasOwn(catalog.snapshot, name)) : fields;
@@ -687,21 +690,24 @@
       let rows, choices;
       try {
         [rows, choices] = await Promise.all([
-          rowsFor(table, query => scope(query).order(sort)),
-          catalog ? rowsFor(catalog.table, query => query.eq('is_active', true).order('code')) : []
+          readPages(() => scope(client.from(target).select('*')).order(sort)),
+          catalog && (!backend || backend.canWrite)
+            ? backend ? backend.catalogChoices(catalog.reference)
+              : rowsFor(catalog.table, query => query.eq('is_active', true).order('code'))
+            : []
         ]);
       } catch {
         section.innerHTML = `<h2>${title}</h2>${message('Data belum dapat dimuat. Periksa akses dan migrasi database versi uji.')}`;
         return;
       }
       const write = editing ? 'EDIT' : 'ADD';
-      const editor = `<form class="control-form" ${can(permission, write) ? '' : 'hidden'}>${catalog ? catalogSelect(catalog, choices, editing) : ''}${editFields.map(field => fieldHTML(field, editing)).join('')}
+      const editor = `<form class="control-form" ${permitted(write) ? '' : 'hidden'}>${catalog ? catalogSelect(catalog, choices, editing) : ''}${editFields.map(field => fieldHTML(field, editing)).join('')}
         <div class="control-form-actions">${inModal ? '<button type="button" class="btn ghost" data-cancel>Batal</button>' : ''}<button class="${inModal ? 'btn' : 'control-button'} primary" data-rbac-module="${permission}" data-rbac-action="${write}">${inModal ? 'Simpan' : editing ? 'Simpan Perubahan' : 'Tambah'}</button>
         ${editing && !inModal ? '<button type="button" class="control-button" data-cancel>Batal</button>' : ''}</div>
         <p class="control-form-message" role="status"></p></form>`;
       const heading = inModal
         ? `<div class="md-card-head"><h2>${title}</h2><button type="button" class="btn primary" data-catalog-add
-          ${can(permission, 'ADD') ? '' : 'hidden'} data-rbac-module="${permission}" data-rbac-action="ADD">+ Tambah</button></div>`
+          ${permitted('ADD') ? '' : 'hidden'} data-rbac-module="${permission}" data-rbac-action="ADD">+ Tambah</button></div>`
         : `<h2>${title}</h2>`;
       section.innerHTML = heading + (inModal
         ? `<dialog class="sk-compact-editor sk-catalog-editor" aria-labelledby="catalog-editor-title">
@@ -710,8 +716,8 @@
             <p class="control-form-message" data-table-status role="status"></p>`
         : editor) + (assignment ? message(transferHelp) : '') + `<div class="control-table-wrap"><table class="control-table"><thead><tr>${fields.map(field => `<th class="${field[2] === 'number' ? 'control-number' : ''}">${field[1]}</th>`).join('')}<th>Aksi</th></tr></thead>
           <tbody>${rows.map((row, i) => `<tr>${fields.map(field => `<td class="${field[2] === 'number' ? 'control-number' : ''}">${cell(field, row[field[0]])}</td>`).join('')}
-            <td class="control-row-actions"><button class="control-link" ${can(permission, 'EDIT') ? '' : 'hidden'} data-edit="${i}" data-rbac-module="${permission}" data-rbac-action="EDIT">Edit</button>
-              <button class="control-link" ${can(permission, 'DELETE') ? '' : 'hidden'} data-delete="${i}" data-rbac-module="${permission}" data-rbac-action="DELETE">Hapus</button></td></tr>`).join('') ||
+            <td class="control-row-actions"><button class="control-link" ${permitted('EDIT') ? '' : 'hidden'} data-edit="${i}" data-rbac-module="${permission}" data-rbac-action="EDIT">Edit</button>
+              <button class="control-link" ${permitted('DELETE') ? '' : 'hidden'} data-delete="${i}" data-rbac-module="${permission}" data-rbac-action="DELETE">Hapus</button></td></tr>`).join('') ||
               `<tr><td colspan="${fields.length + 1}">Belum ada data.</td></tr>`}</tbody></table></div>`;
       const form = section.querySelector('form');
       const status = form.querySelector('[role=status]');
@@ -722,7 +728,7 @@
       }
       form.addEventListener('submit', async event => {
         event.preventDefault();
-        if (submit.disabled) return;
+        if (submit.disabled || !permitted(write)) return;
         const data = new FormData(form);
         const payload = {};
         for (const [key, label, type, , , optional] of editFields) {
@@ -753,11 +759,14 @@
         }
         submit.disabled = true;
         try {
-          const request = editing ? scope(sb.from(table).update(payload).eq('id', editing.id)) :
-            sb.from(table).insert(id === null ? payload : {...payload, project_id: id});
+          const request = editing ? scope(client.from(target).update(payload).eq('id', editing.id)) :
+            client.from(target).insert(id === null ? payload : {...payload, project_id: id});
           const {data: saved, error} = await request.select('id').maybeSingle();
           if (assignment && (error?.code === '23P01' || error?.code === '23505')) {
             throw new Error('Tanggal penempatan berbenturan dengan penempatan yang sudah tercatat. ' + transferHelp);
+          }
+          if (catalog?.reference === 'goods_id' && error?.code === '23505') {
+            throw new Error('Barang ini sudah ada di proyek. Ubah saldo pada baris yang tersedia.');
           }
           if (error || !saved) throw new Error(error?.message || 'Perubahan tidak tersimpan. Periksa hak akses.');
           await render();
@@ -781,11 +790,11 @@
       section.querySelectorAll('[data-edit]').forEach(button =>
         button.addEventListener('click', () => render(rows[Number(button.dataset.edit)], inModal)));
       section.querySelectorAll('[data-delete]').forEach(button => button.addEventListener('click', async () => {
-        if (!global.confirm('Hapus catatan ini?')) return;
+        if (!permitted('DELETE') || !global.confirm('Hapus catatan ini?')) return;
         button.disabled = true;
         try {
           const row = rows[Number(button.dataset.delete)];
-          const {data: removed, error} = await scope(sb.from(table).delete().eq('id', row.id)).select('id').maybeSingle();
+          const {data: removed, error} = await scope(client.from(target).delete().eq('id', row.id)).select('id').maybeSingle();
           if (error || !removed) throw new Error(error?.message || 'Catatan tidak terhapus. Periksa hak akses.');
           await render();
           onChange?.();
@@ -795,7 +804,7 @@
           button.disabled = false;
         }
       }));
-      global.applyRBACNav?.();
+      if (!backend) global.applyRBACNav?.();
     };
     await render();
   }

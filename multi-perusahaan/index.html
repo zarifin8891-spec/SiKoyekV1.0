@@ -96,6 +96,8 @@
               <option value="goods">Barang</option>
             </select></label>
             <label>Nama<input name="name" maxlength="160" required></label>
+            <label id="master-code" hidden>Kode<input name="code" maxlength="40" disabled></label>
+            <label id="master-unit" hidden>Satuan<input name="unit" maxlength="40" disabled></label>
             <button type="submit">Tambah Master Data</button>
           </form>
           <div class="table-scroll"><table><thead><tr><th>Jenis</th><th>Nama</th><th>Status</th></tr></thead><tbody id="master-rows"></tbody></table></div>
@@ -160,6 +162,8 @@
               </form>
               <div class="card tablecard"><div class="scroll"><table class="table"><thead><tr><th>Item</th><th>Bobot</th><th>Durasi</th><th>Mulai Rencana</th><th>Urutan</th><th>Aksi</th></tr></thead><tbody id="planning-items"></tbody></table></div></div>
             </div>
+            <div id="planning-materials" hidden></div>
+            <div id="planning-resources" hidden></div>
             <div id="planning-progress" hidden>
               <div class="sectiontitle"><h2>Riwayat Progress</h2><button type="button" class="btn primary" data-add-record>+ Input Progress</button></div>
               <form id="planning-record" hidden>

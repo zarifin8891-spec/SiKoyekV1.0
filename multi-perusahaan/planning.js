@@ -16,7 +16,17 @@
     const view = window.SiKoyekProjectDetail;
     const addItem = details.querySelector("[data-add-item]");
     const addRecord = details.querySelector("[data-add-record]");
-    const sections = { overview: "planning-overview", rap: "planning-rap", work: "planning-work", progress: "planning-progress" };
+    const sections = {
+      overview: "planning-overview", rap: "planning-rap", work: "planning-work", progress: "planning-progress",
+      materials: "planning-materials", resources: "planning-resources",
+    };
+    const control = window.SiKoyekControl;
+    const resourceTables = {
+      project_material_stocks: "company_material_stocks",
+      project_worker_assignments: "company_worker_assignments",
+      project_equipment_assignments: "company_equipment_assignments",
+    };
+    const resourceKinds = { goods_id: "goods", employee_id: "employee", equipment_id: "equipment" };
     let labels = {};
     let tab = "overview";
     const format = window.SiKoyekFoundation;
@@ -58,6 +68,8 @@
       }
       labels = {};
       tab = "overview";
+      get(sections.materials).replaceChildren();
+      get(sections.resources).replaceChildren();
       budgetForm.hidden = true;
       resetItem();
       budgetForm.reset();
@@ -146,6 +158,8 @@
       const current = ++generation;
       const project = projects.find(row => row.id === projectSelect.value);
       details.hidden = true;
+      get(sections.materials).replaceChildren();
+      get(sections.resources).replaceChildren();
       budgetForm.hidden = true;
       resetItem();
       resetRecord();
@@ -217,7 +231,7 @@
         get("planning-budget-summary").innerHTML = access.rap ? view.rapMarkup(budget.data, total,
           access.writeRap ? '<button type="button" class="btn primary" data-edit-rap>Edit RAP</button>' : "") : "";
         labels = { overview: "Overview", ...(access.rap ? { work: "Item Pekerjaan", rap: "RAP" } : {}),
-          ...(access.progress ? { progress: "Progress" } : {}) };
+          ...(access.progress ? { progress: "Progress", ...control.projectTabs } : {}) };
         selectTab(Object.hasOwn(labels, tab) ? tab : "overview");
         details.hidden = false;
         notice.textContent = status;
@@ -273,6 +287,16 @@
       tab = next;
       get("planning-tabs").innerHTML = view.tabsMarkup(labels, tab);
       for (const [key, id] of Object.entries(sections)) get(id).hidden = key !== tab;
+      if (next === "materials" || next === "resources") {
+        const root = get(sections[next]);
+        if (root.childElementCount) return;
+        control.mountProjectTab(root, next, { id: projectSelect.value }, null, {
+          client, canRead: access.progress, canWrite: access.writeProgress, tables: resourceTables,
+          catalogChoices: reference => readPages(() => client.rpc("project_resource_choices", {
+            resource_kind: resourceKinds[reference],
+          }), "name"),
+        });
+      }
     }
 
     details.addEventListener("click", event => {
