@@ -21,7 +21,7 @@
       @media (max-width:700px){.overview-timeline-v3 .ot-head{flex-direction:column}.overview-timeline-v3 .ot-metrics{justify-content:flex-start}}
     `;document.head.appendChild(s)}
   function dayDiff(a,b){return Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate())-Date.UTC(a.getFullYear(),a.getMonth(),a.getDate()))/86400000)}
-  function fmt(d){return d.toLocaleDateString('id-ID',{day:'2-digit',month:'2-digit',year:'numeric'})}
+  function fmt(d){return window.SiKoyekFoundation.formatDate(d)}
   function getProject(){return window.state?.detail?.project||null}
   function isOverviewActive(){if(window.state?.detailTab==='overview')return true;return [...document.querySelectorAll('button,[role="tab"],.tab,.nav-tab')].some(el=>{const text=(el.textContent||'').trim();return text==='Overview'&&(el.classList.contains('active')||el.getAttribute('aria-selected')==='true')})}
   function getRoot(){return document.querySelector('#page')||document.querySelector('#modal-page')||document.querySelector('#project-detail')||document.querySelector('.project-detail')}

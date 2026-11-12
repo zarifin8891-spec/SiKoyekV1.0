@@ -4,7 +4,7 @@
   if(window.__SIKOYEK_LAPORAN_PRINT_RAP_V3__)return;
   window.__SIKOYEK_LAPORAN_PRINT_RAP_V3__=true;
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
-  function dateText(v){const s=String(v||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return '';const [y,m,d]=s.split('-');return `${d}-${m}-${y}`}
+  function dateText(v){const s=String(v||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return '';return window.SiKoyekFoundation.formatDate(s)}
   function periodText(){const root=document.getElementById('reportContent')||document;const inputs=[...root.querySelectorAll('input[type="date"]')].filter(x=>x.value).map(x=>dateText(x.value)).filter(Boolean);if(inputs.length>=2)return `${inputs[0]}     s/d     ${inputs[1]}`;return 'Semua Periode'}
   function kpi(id){return document.getElementById(id)?.textContent?.trim()||''}
   function projectCount(){const body=document.getElementById('rapBiayaBody');if(!body)return 0;return [...body.querySelectorAll('tr')].filter(tr=>tr.querySelectorAll('td').length>1).length}

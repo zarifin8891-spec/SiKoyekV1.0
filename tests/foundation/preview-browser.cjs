@@ -25,9 +25,9 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   await curveProject.selectOption('p1');
   await page.locator('.control-legend .target').filter({hasText:'Target Otomatis'}).waitFor();
   const points=await page.locator('.control-dot.target title').allTextContents();
-  assert.equal(points[0],'2026-08-31 · 0%');
-  assert.equal(points[1],'2026-09-07 · 20%');
-  assert.equal(points.at(-1),'2026-10-12 · 100%');
+  assert.equal(points[0],'31 Agu 2026 · 0%');
+  assert.equal(points[1],'07 Sep 2026 · 20%');
+  assert.equal(points.at(-1),'12 Okt 2026 · 100%');
   await page.locator('.control-legend .actual').filter({hasText:'30%'}).waitFor();
   await curveProject.selectOption('p0');
   await page.getByRole('searchbox',{name:'Pencarian proyek'}).fill('Proyek Uji 1');
@@ -61,7 +61,7 @@ const root=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'d
   assert.equal(await page.locator('#page table tbody tr').count(),6);
   await page.getByRole('button',{name:'Proyek Uji 1',exact:true}).click();
   const tabs=page.locator('#page .tabs');
-  await page.locator('#project-tab-content .timeline-v4 + .project-overview-curve .control-chart').waitFor();
+  await page.locator('#project-tab-content .timeline-v4 ~ .project-overview-charts .project-overview-curve .control-chart').waitFor();
   assert.equal(await tabs.getByRole('button',{name:'Kurva-S',exact:true}).count(),0);
   assert.equal(await page.getByRole('heading',{name:/Milestones|Target Kurva-S/}).count(),0);
   assert.match(await page.locator('.sk-project-header').evaluate(el=>getComputedStyle(el).backgroundImage),/page-header-network/);

@@ -5,7 +5,7 @@
   window.__SIKOYEK_LAPORAN_PRINT_FINANCE_V1__=true;
 
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
-  const formatDate=v=>{const s=String(v||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return '';const [y,m,d]=s.split('-');return `${d}-${m}-${y}`};
+  const formatDate=v=>{const s=String(v||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return '';return window.SiKoyekFoundation.formatDate(s)};
   const text=id=>document.getElementById(id)?.textContent?.trim()||'';
   const value=id=>document.getElementById(id)?.value||'';
 

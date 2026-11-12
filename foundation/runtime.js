@@ -75,8 +75,25 @@
     };
   }
   function setStyle(element,css) {if(element.textContent!==css)element.textContent=css}
+  const dateMonths = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const dateTimeFormat = new Intl.DateTimeFormat('id-ID', {
+    timeZone:'Asia/Jakarta', year:'numeric', month:'2-digit', day:'2-digit',
+    hour:'2-digit', minute:'2-digit', hourCycle:'h23'
+  });
+  function formatDate(value, withTime = false) {
+    if (!value) return '—';
+    const dateOnly = typeof value === 'string' && /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (dateOnly) {
+      const [, year, month, day] = dateOnly;
+      return dateMonths[Number(month)-1] ? `${day} ${dateMonths[Number(month)-1]} ${year}` : '—';
+    }
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return '—';
+    const parts = Object.fromEntries(dateTimeFormat.formatToParts(date).map(({type,value}) => [type,value]));
+    return `${parts.day} ${dateMonths[Number(parts.month)-1]} ${parts.year}${withTime ? ' · '+parts.hour+':'+parts.minute : ''}`;
+  }
   global.SiKoyekFoundation = {
-    Observer, metrics, singleFlight, setStyle,
+    Observer, metrics, singleFlight, setStyle, formatDate,
     ownsModal:box=>Boolean(box?.dataset.foundationLayout),
     money:n=>moneyFormat.format(Number(n||0)),
     moneyPlain:n=>plainFormat.format(Number(n||0)),

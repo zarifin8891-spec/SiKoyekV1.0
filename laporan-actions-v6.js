@@ -10,7 +10,7 @@
   const reportId=root=>activeButton(root)?.dataset?.report||'';
   const textById=id=>document.getElementById(id)?.textContent?.trim()||'';
   const valueById=id=>document.getElementById(id)?.value||'';
-  const formatDate=v=>{const s=String(v||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return '';const [y,m,d]=s.split('-');return `${d}-${m}-${y}`};
+  const formatDate=v=>{const s=String(v||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return '';return window.SiKoyekFoundation.formatDate(s)};
   function periodText(prefixes){for(const p of prefixes){const from=formatDate(valueById(p+'From')),to=formatDate(valueById(p+'To'));if(from||to)return `${from||'...'}     s/d     ${to||'...'}`}return 'Semua Periode'}
   function selectedProject(ids){for(const id of ids){const el=document.getElementById(id);if(!el)continue;const txt=el.options?.[el.selectedIndex]?.textContent?.trim()||'';if(txt&&!/semua proyek|pilih proyek/i.test(txt))return txt}return ''}
   function readKpis(selector,exclude=[]){const root=document.querySelector(selector);if(!root)return [];return [...root.children].map(node=>({label:node.querySelector('.label,small')?.textContent?.trim()||'',value:node.querySelector('.value,strong')?.textContent?.trim()||''})).filter(x=>x.label&&!exclude.some(v=>x.label.toUpperCase()===v.toUpperCase()))}

@@ -73,8 +73,6 @@
   const icon = name => `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${icons[name]}</svg>`;
   const number = new Intl.NumberFormat('id-ID', {maximumFractionDigits: 1});
   const compact = new Intl.NumberFormat('id-ID', {notation: 'compact', maximumFractionDigits: 1});
-  const dateLabel = new Intl.DateTimeFormat('id-ID', {dateStyle: 'long'});
-  const timeLabel = new Intl.DateTimeFormat('id-ID', {dateStyle: 'short', timeStyle: 'short'});
   const isoLocal = (date = new Date()) => {
     const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
     return local.toISOString().slice(0, 16);
@@ -246,7 +244,7 @@
     const current = rows.find(p => p.project_id === chartProject) || open[0] || rows[0];
     chartProject = current?.project_id || '';
     root.innerHTML = `<div class="control-dashboard">
-      <header class="control-head dashboard-head"><div><h1>Dashboard Kontrol Proyek</h1><p>${dateLabel.format(new Date())}</p></div>
+      <header class="control-head dashboard-head"><div><h1>Dashboard Kontrol Proyek</h1><p>${global.SiKoyekFoundation.formatDate(new Date())}</p></div>
         <div class="control-actions">
           <label class="control-search">${icon('search')}<input type="search" placeholder="Pencarian proyek" aria-label="Pencarian proyek"></label>
           ${can('PROJECTS', 'ADD') ? '<button type="button" class="control-button primary" onclick="openProjectForm()">+ Proyek Baru</button>' : ''}
@@ -385,6 +383,42 @@
     return {duration_days: days, planned_start_date: start || null};
   }
 
+  function buildItemSchedule(project, items) {
+    const start = dayNumber(project.start_date);
+    if (!Number.isFinite(start)) return [];
+    const sorted = [...items].sort((a,b) =>
+      Number(a.sort_order || 0) - Number(b.sort_order || 0) || String(a.id).localeCompare(String(b.id)));
+    let next = start;
+    const schedule = [];
+    for (const item of sorted) {
+      const duration = Number(item.duration_days);
+      if (!Number.isInteger(duration) || duration < 1 || duration > 36500) continue;
+      const begin = item.planned_start_date ? dayNumber(item.planned_start_date) : next;
+      if (!Number.isFinite(begin) || begin < start) continue;
+      const finish = begin + duration - 1;
+      schedule.push({...item,begin,finish,duration});
+      next = Math.max(next, finish + 1);
+    }
+    return schedule;
+  }
+
+  function itemTimelineMarkup(project, items) {
+    const schedule = buildItemSchedule(project, items);
+    if (!schedule.length) return '';
+    const start = dayNumber(project.start_date);
+    const deadline = dayNumber(project.end_date);
+    const last = schedule.reduce((end,item) => Math.max(end,item.finish), Number.isFinite(deadline) ? deadline : start);
+    const span = last - start + 1;
+    const date = value => global.SiKoyekFoundation.formatDate(new Date(value * calendarDay).toISOString().slice(0,10));
+    const colors = ['#367cae','#c87924','#268476','#8563b4','#bb5b58','#526b98','#74822f','#a34f82'];
+    return `<div class="project-item-timeline"><h4>Jadwal Item Pekerjaan</h4>
+      ${schedule.map((item,index) => {
+        const range = `${date(item.begin)} – ${date(item.finish)} · ${item.duration} hari`;
+        return `<div class="project-item-timeline-row"><div><strong>${esc(item.work_name)}</strong><small>${range}</small></div>
+          <div class="project-item-timeline-track" aria-hidden="true"><span style="--item-start:${(item.begin-start)/span*100}%;--item-width:${item.duration/span*100}%;--item-color:${colors[index%colors.length]}"></span></div></div>`;
+      }).join('')}</div>`;
+  }
+
   function weeklyTarget(project, items) {
     const start = dayNumber(project.start_date);
     if (!Number.isFinite(start)) {
@@ -396,24 +430,15 @@
         Math.abs(total - 1) > 0.0001) {
       return {points: [], note: 'Total bobot item pekerjaan harus 100% untuk menghitung target otomatis.'};
     }
-    const planned = weighted.filter(item => item.weight > 0).sort((a, b) =>
-      Number(a.sort_order || 0) - Number(b.sort_order || 0) || String(a.id).localeCompare(String(b.id)));
+    const planned = weighted.filter(item => item.weight > 0);
     if (planned.some(item => !Number.isInteger(Number(item.duration_days)) || Number(item.duration_days) < 1)) {
       return {points: [], note: 'Isi durasi semua item berbobot untuk menghitung target otomatis.'};
     }
-    let next = start;
-    const schedule = [];
-    for (const item of planned) {
-      const begin = item.planned_start_date ? dayNumber(item.planned_start_date) : next;
-      if (!Number.isFinite(begin) || begin < start) {
-        return {points: [], note: 'Tanggal mulai rencana item harus pada atau setelah tanggal mulai proyek.'};
-      }
-      const duration = Number(item.duration_days);
-      const finish = begin + duration - 1;
-      schedule.push({begin, finish, duration, weight: item.weight});
-      next = Math.max(next, finish + 1);
+    const schedule = buildItemSchedule(project, planned);
+    if (schedule.length !== planned.length) {
+      return {points: [], note: 'Tanggal mulai rencana item harus pada atau setelah tanggal mulai proyek.'};
     }
-    const finish = next - 1;
+    const finish = Math.max(...schedule.map(item => item.finish));
     const baseline = start - 1;
     const dates = new Set([baseline, finish]);
     for (let date = baseline + 7; date < finish; date += 7) dates.add(date);
@@ -445,7 +470,7 @@
       ? `<polygon class="control-area ${kind}" points="${x(series[0].date)},${y(0)} ${points(series)} ${x(series.at(-1).date)},${y(0)}"/>`
       : '';
     const draw = (series, kind) => `${series.length > 1 ? `<polyline class="control-line ${kind}" points="${points(series)}"/>` : ''}${
-      series.map(p => `<circle class="control-dot ${kind}" cx="${x(p.date)}" cy="${y(p.value)}" r="3"><title>${esc(p.date)} · ${percentage(p.value)}</title></circle>`).join('')}`;
+      series.map(p => `<circle class="control-dot ${kind}" cx="${x(p.date)}" cy="${y(p.value)}" r="3"><title>${global.SiKoyekFoundation.formatDate(p.date)} · ${percentage(p.value)}</title></circle>`).join('')}`;
     const ticks = end === start ? [start] : Array.from({length: 5}, (_, i) => start + (end - start) * i / 4);
     const tickFormat = new Intl.DateTimeFormat('id-ID', {day: 'numeric', month: 'short', timeZone: 'UTC'});
     return `<div class="control-legend"><span class="target">${targetLabel}${target.length ? ' · ' + percentage(target.at(-1).value) : ' · belum ada data'}</span>
@@ -537,10 +562,10 @@
         const row = observations.find(value => isoLocal(new Date(value.observed_at)).slice(0, 10) === isoLocal().slice(0, 10));
         return row ? `<p>${esc(project.location || project.project_name)} · ${esc(row.condition)}
           ${row.temperature_c == null ? '' : ' · ' + number.format(row.temperature_c) + '°C'}</p>
-          ${message('Observasi ' + timeLabel.format(new Date(row.observed_at)))}` : message('Belum ada observasi cuaca hari ini.');
+          ${message('Observasi ' + global.SiKoyekFoundation.formatDate(row.observed_at, true))}` : message('Belum ada observasi cuaca hari ini.');
       }, 'Observasi cuaca belum dapat dimuat.'),
       render(panel('logs'), latest('project_field_logs', 'logged_at', 4), logs => logs.length ?
-        `<ul class="control-timeline">${logs.map(row => `<li>${esc(row.description)}<small>${timeLabel.format(new Date(row.logged_at))}</small></li>`).join('')}</ul>` :
+        `<ul class="control-timeline">${logs.map(row => `<li>${esc(row.description)}<small>${global.SiKoyekFoundation.formatDate(row.logged_at, true)}</small></li>`).join('')}</ul>` :
         message('Belum ada aktivitas lapangan.'), 'Log lapangan belum dapat dimuat.'),
       render(panel('stocks'), read('project_material_stocks'), stocks => {
         const critical = stocks.filter(row => Number(row.quantity) <= Number(row.minimum_quantity))
@@ -572,7 +597,7 @@
     if (value == null || value === '') return '—';
     if (field[2] === 'boolean') return value ? 'Aktif' : 'Nonaktif';
     if (field[2] === 'number') return number.format(value);
-    if (field[2] === 'datetime-local') return timeLabel.format(new Date(value));
+    if (field[2] === 'date' || field[2] === 'datetime-local') return global.SiKoyekFoundation.formatDate(value, field[2] === 'datetime-local');
     if (field[2] === 'url' && /^https:\/\/[^\s]+$/i.test(value)) {
       return `<a href="${esc(value)}" target="_blank" rel="noopener noreferrer">Buka dokumen</a>`;
     }
@@ -758,7 +783,7 @@
   global.SiKoyekControl = {
     nav, toggleMenu, dashboard, module: showModule, isModule: page => page === 'budget' || Object.hasOwn(modules, page),
     setIdentity, projectTabs, mountProjectTab, mountCatalog, loadWorkerCount, curveFromWorkItems,
-    itemScheduleFields, readItemSchedule,
+    itemScheduleFields, readItemSchedule, itemTimelineMarkup,
     canFinance: () => can('KEUANGAN'), canProgress: () => can('PROGRESS')
   };
 })(window);
