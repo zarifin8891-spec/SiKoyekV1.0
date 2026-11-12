@@ -111,6 +111,11 @@
       const id=crypto.randomUUID();tables.profiles.push({id,email:body.email,full_name:body.full_name,role_id:body.role_id,is_active:true,created_at:new Date().toISOString()});state.passwords[id]=body.password;
     }else if(body.action==='update'){
       const p=tables.profiles.find(p=>p.id===body.id);if(!p)return error('User tidak ditemukan');Object.assign(p,{full_name:body.full_name,role_id:body.role_id,is_active:body.is_active});
+    }else if(body.action==='reset_password'){
+      if(!tables.profiles.some(p=>p.id===body.id))return error('User tidak ditemukan');
+      if(typeof body.password!=='string'||body.password.length<8)return error('Password minimal 8 karakter');
+      if(body.password!==body.password_confirm)return error('Konfirmasi password tidak sama');
+      state.passwords[body.id]=body.password;
     }else if(body.action==='delete'){
       if(body.id===session()?.user.id)return error('Akun preview yang sedang dipakai tidak boleh dihapus');tables.profiles=tables.profiles.filter(p=>p.id!==body.id);delete state.passwords[body.id];
     }else return error('Aksi belum tersedia di preview');
