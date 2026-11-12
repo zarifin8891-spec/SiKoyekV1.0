@@ -50,3 +50,14 @@ button:disabled { opacity: .6; cursor: wait; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #dce5ef; }
 td button { min-height: 30px; margin-inline-end: 4px; }
+
+#staff-access-dialog {
+  width: min(100% - 24px, 520px);
+  padding: 16px;
+  border: 1px solid #dce5ef;
+  border-radius: 12px;
+  color: #172d48;
+}
+#staff-access-dialog::backdrop { background: #102a4a70; }
+#staff-access-dialog form + form { margin-top: 10px; }
+#staff-access-notice:empty { display: none; }

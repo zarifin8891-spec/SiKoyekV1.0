@@ -1,4 +1,4 @@
--- Run against a disposable database with both multi-company migrations.
+-- Run against a disposable database with the multi-company migrations.
 begin;
 insert into auth.users (id,email) values
   ('11000000-0000-4000-8000-000000000001','platform-ops@example.invalid'),
@@ -79,5 +79,46 @@ begin
     or exists(select 1 from public.company_transactions) or exists(select 1 from public.company_financial_report) then
     raise exception 'Admin Platform dapat membaca data operasional.';
   end if;
+end $$;
+
+select set_config('request.jwt.claim.sub','11000000-0000-4000-8000-000000000002',true);
+do $$
+declare staff uuid := '11000000-0000-4000-8000-000000000004';
+begin
+  perform public.set_company_staff_access(staff, '{"projects":"none","master_data":"write","transactions":"read"}');
+  begin
+    perform public.set_company_staff_access(staff, '{"master_data":"none","transactions":"invalid"}');
+    raise exception 'Tingkat akses yang tidak valid diterima.';
+  exception when invalid_parameter_value then null;
+  end;
+  if (select count(*) from public.company_staff_permissions where user_id = staff) <> 2
+    or not exists(select 1 from public.company_staff_permissions where user_id = staff and module = 'master_data' and can_write)
+    or not exists(select 1 from public.company_staff_permissions where user_id = staff and module = 'transactions' and not can_write) then
+    raise exception 'Pemberian atau pencabutan akses gagal.';
+  end if;
+end $$;
+
+do $$
+declare caller text;
+begin
+  foreach caller in array array[
+    '11000000-0000-4000-8000-000000000001',
+    '11000000-0000-4000-8000-000000000003',
+    '11000000-0000-4000-8000-000000000004'
+  ] loop
+    perform set_config('request.jwt.claim.sub',caller,true);
+    begin
+      perform public.set_company_staff_access('11000000-0000-4000-8000-000000000004','{"projects":"write"}');
+      raise exception 'Akun yang tidak berwenang dapat mengubah akses.';
+    exception when insufficient_privilege then null;
+    end;
+  end loop;
+  if exists(select 1 from public.company_projects)
+    or (select count(*) from public.company_transactions) <> 1 then
+    raise exception 'Izin baru tidak diterapkan pada pembacaan data staf.';
+  end if;
+  insert into public.company_master_data (kind,name) values ('goods','Barang Staf A');
+  update public.company_transactions set amount=999;
+  if found then raise exception 'Staf dengan akses baca dapat mengubah transaksi.'; end if;
 end $$;
 rollback;

@@ -9,6 +9,7 @@
   const companySelect = byId("account-form").elements.company_id;
   let client;
   let operations;
+  let staffAccess;
   let generation = 0;
 
   function notify(message, error = false) {
@@ -25,6 +26,7 @@
 
   function setSignedOut() {
     operations?.clear();
+    staffAccess?.clear();
     login.hidden = false;
     logout.hidden = signedIn.hidden = companyPanel.hidden = accountPanel.hidden = true;
     byId("companies").replaceChildren();
@@ -69,6 +71,7 @@
     login.hidden = true;
     companyPanel.hidden = !platform;
     accountPanel.hidden = !(platform || manager);
+    byId("staff-access-column").hidden = !manager;
     byId("workspace-title").textContent = platform ? "Admin Platform" : ownCompany.name;
     byId("account-name").textContent = account.full_name;
     operations.clear();
@@ -77,7 +80,7 @@
 
     renderCompanies(companies, platform, ownCompany);
     const { data: users, error: usersError } = await client.from("company_accounts")
-      .select("full_name,company_id,access_role").order("full_name");
+      .select("user_id,full_name,company_id,access_role,is_active").order("full_name");
     if (current !== generation) return;
     const list = byId("accounts");
     list.replaceChildren();
@@ -88,10 +91,24 @@
     const names = new Map(companies.map(company => [company.id, company.name]));
     for (const user of users) {
       if (platform && user.access_role !== "company_admin") continue;
-      appendRow(list, [user.full_name, names.get(user.company_id) || "—",
+      const row = appendRow(list, [user.full_name, names.get(user.company_id) || "—",
         user.access_role === "company_admin" ? "Admin Perusahaan" : "Staf"]);
+      if (manager) {
+        const action = row.insertCell();
+        if (user.access_role === "staff" && user.is_active) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = "Hak Akses";
+          button.addEventListener("click", () => staffAccess.open(user));
+          action.append(button);
+        }
+      }
     }
-    if (!list.rows.length) appendRow(list, ["Belum ada pengguna.", "—", "—"]);
+    if (!list.rows.length) {
+      const cell = list.insertRow().insertCell();
+      cell.colSpan = manager ? 4 : 3;
+      cell.textContent = "Belum ada pengguna.";
+    }
   }
 
   function renderCompanies(companies, platform, ownCompany) {
@@ -176,6 +193,7 @@
     }
     client = window.SiKoyekBackend.getClient();
     operations = window.createCompanyOperations(client, notify);
+    staffAccess = window.createCompanyStaffAccess(client);
     bindSubmit("login-form", async (form, values) => {
       form.elements.password.value = "";
       const { error } = await client.auth.signInWithPassword({ email: values.email.trim(), password: values.password });

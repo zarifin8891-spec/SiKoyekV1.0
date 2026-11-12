@@ -12,6 +12,7 @@
   <script defer src="../foundation/backend.js"></script>
   <script defer src="../foundation/runtime.js"></script>
   <script defer src="./operations.js"></script>
+  <script defer src="./staff-access.js"></script>
   <script defer src="./workspace.js"></script>
 </head>
 <body>
@@ -52,8 +53,20 @@
           <button type="submit" id="account-submit"></button>
         </form>
         <div class="table-scroll">
-          <table><thead><tr><th>Nama</th><th>Perusahaan</th><th>Peran</th></tr></thead><tbody id="accounts"></tbody></table>
+          <table><thead><tr><th>Nama</th><th>Perusahaan</th><th>Peran</th><th id="staff-access-column" hidden>Aksi</th></tr></thead><tbody id="accounts"></tbody></table>
         </div>
+        <dialog id="staff-access-dialog" aria-labelledby="staff-access-heading">
+          <h2 id="staff-access-heading">Hak Akses Staf</h2>
+          <p id="staff-access-name"></p>
+          <p id="staff-access-notice" role="status"></p>
+          <form id="staff-access-form" hidden>
+            <label>Master Data<select name="master_data"></select></label>
+            <label>Proyek<select name="projects"></select></label>
+            <label>Transaksi<select name="transactions"></select></label>
+            <button type="submit">Simpan Hak Akses</button>
+          </form>
+          <form method="dialog"><button type="submit">Tutup</button></form>
+        </dialog>
       </section>
       <div id="operations" hidden>
         <section id="master-data-panel" hidden>
