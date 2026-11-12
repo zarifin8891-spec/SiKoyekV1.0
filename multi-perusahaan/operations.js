@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  window.createCompanyOperations = function (client, notify) {
+  window.createCompanyOperations = function (client, notify, onRoutesChanged) {
     const get = id => document.getElementById(id);
     const root = get("operations");
     const forms = ["master-entry", "project-entry", "transaction-entry"];
@@ -81,6 +81,7 @@
         get(panels[index]).hidden = !visible;
       });
       await planning.load(canRead, canWrite);
+      if (generation === current) onRoutesChanged();
     }
 
     function bind(formId, table) {

@@ -6,16 +6,63 @@
   const logout = byId("logout");
   const companyPanel = byId("company-panel");
   const accountPanel = byId("account-panel");
+  login.innerHTML = window.SiKoyekLogin.markup("../");
+  const loginPanel = login.querySelector(".login-form-panel");
+  const loginForm = document.createElement("form");
+  loginForm.id = "login-form";
+  loginForm.setAttribute("aria-label", "Masuk ke SiKoyek");
+  const loginNotice = byId("loginErr");
+  loginForm.append(...[...loginPanel.children].filter(child => child !== loginNotice));
+  loginPanel.prepend(loginForm);
+  loginNotice.before(byId("login-recovery-template").content.cloneNode(true));
+  const recoveryForm = byId("login-recovery");
+  for (const id of ["email", "password"]) {
+    const field = byId(id);
+    field.name = id;
+    field.required = true;
+  }
+  byId("rememberLogin").name = "remember";
+  byId("rememberLogin").closest("label").title = "Ingat alamat email pada perangkat ini";
+  byId("loginBtn").type = "submit";
+
   const companySelect = byId("account-form").elements.company_id;
   let client;
   let operations;
   let staffAccess;
   let generation = 0;
   let recovering = false;
+  let identity = "";
+  let currentRoute = "";
+  const routes = [
+    ["company", "Data Perusahaan", "project"],
+    ["account", "Daftar User", "users"],
+    ["project", "Daftar Proyek", "project"],
+    ["planning", "Perincian Proyek", "activity"],
+    ["transaction", "Transaksi", "document"],
+    ["report", "Laporan", "document"],
+    ["master-data", "Master Data", "settings"],
+  ];
+
+  function renderRoutes(next = currentRoute) {
+    const available = routes.filter(([key]) => !byId(key + "-panel").hidden)
+      .map(([key, label, icon]) => [key, key === "account" && !companyPanel.hidden ? "Admin Perusahaan" : label, icon]);
+    currentRoute = available.some(([key]) => key === next) ? next : available[0]?.[0] || "";
+    signedIn.querySelector(".control-sidebar")?.remove();
+    signedIn.insertAdjacentHTML("afterbegin", window.SiKoyekControl.sidebar(
+      currentRoute, available, { identity, assetRoot: "../" }));
+    for (const [key] of routes) byId(key + "-panel").toggleAttribute("data-current", key === currentRoute);
+    byId("workspace-empty").hidden = Boolean(currentRoute);
+  }
+
+  signedIn.addEventListener("click", event => {
+    const route = event.target.closest("[data-workspace-route]");
+    if (!route || byId(route.dataset.workspaceRoute + "-panel")?.hidden !== false) return;
+    renderRoutes(route.dataset.workspaceRoute);
+    signedIn.querySelector('[aria-current="page"]')?.focus();
+  });
 
   function notify(message, error = false) {
     const workspaceNotice = byId("notice");
-    const loginNotice = byId("login-notice");
     const notice = login.hidden ? workspaceNotice : loginNotice;
     workspaceNotice.textContent = loginNotice.textContent = "";
     notice.textContent = message;
@@ -29,6 +76,8 @@
   }
 
   function setSignedOut() {
+    currentRoute = identity = "";
+    signedIn.querySelector(".control-sidebar")?.remove();
     operations?.clear();
     staffAccess?.clear();
     login.hidden = false;
@@ -53,7 +102,7 @@
     if (current !== generation) return;
     if (error || !account?.is_active) {
       setSignedOut();
-      logout.hidden = false;
+      await client.auth.signOut({ scope: "local" });
       notify("Akun belum aktif atau belum terdaftar di ruang kerja.", true);
       return;
     }
@@ -66,7 +115,7 @@
     const ownCompany = companies?.find(company => company.id === account.company_id);
     if (companyError || (!platform && !ownCompany?.is_active)) {
       setSignedOut();
-      logout.hidden = false;
+      await client.auth.signOut({ scope: "local" });
       notify("Perusahaan belum aktif atau belum dapat dimuat.", true);
       return;
     }
@@ -77,9 +126,12 @@
     accountPanel.hidden = !(platform || manager);
     byId("staff-access-column").hidden = !manager;
     byId("workspace-title").textContent = platform ? "Admin Platform" : ownCompany.name;
-    byId("account-name").textContent = account.full_name;
+    identity = account.full_name;
     operations.clear();
-    if (!platform) operations.load(account).catch(() => notify("Data operasional belum dapat dimuat.", true));
+    renderRoutes();
+    if (!platform) operations.load(account).catch(() => {
+      if (current === generation) notify("Data operasional belum dapat dimuat.", true);
+    });
     if (!(platform || manager)) return;
 
     renderCompanies(companies, platform, ownCompany);
@@ -196,12 +248,10 @@
       return;
     }
     client = window.SiKoyekBackend.getClient();
-    operations = window.createCompanyOperations(client, notify);
+    operations = window.createCompanyOperations(client, notify, () => renderRoutes());
     staffAccess = window.createCompanyStaffAccess(client);
-    const loginForm = byId("login-form");
-    const recoveryForm = byId("login-recovery");
     const password = loginForm.elements.password;
-    const togglePassword = byId("login-toggle-password");
+    const togglePassword = byId("togglePassword");
     const rememberKey = config.storageKey + "-remembered-email";
     try {
       const remembered = localStorage.getItem(rememberKey);
@@ -216,7 +266,7 @@
       togglePassword.setAttribute("aria-pressed", String(visible));
       togglePassword.setAttribute("aria-label", visible ? "Sembunyikan password" : "Tampilkan password");
     });
-    byId("login-forgot").addEventListener("click", event => run(event.currentTarget, async () => {
+    byId("forgotPassword").addEventListener("click", event => run(event.currentTarget, async () => {
       const email = loginForm.elements.email;
       if (!email.reportValidity()) return;
       const redirectTo = new URL(window.location.pathname, window.location.origin).href;

@@ -7,42 +7,22 @@
 * { box-sizing: border-box; }
 [hidden], #workspace [hidden] { display: none !important; }
 body { margin: 0; }
-#workspace { width: min(100% - 24px, 1000px); margin: 16px auto; }
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: #102a4a;
-  padding: 10px 16px;
-  border-radius: 12px;
-}
-header img { width: 160px; height: auto; }
-section {
+[data-workspace-page]:not([data-current]) { display: none; }
+[data-workspace-page] {
   margin-block: 12px;
   padding: 14px;
   border: 1px solid #dce5ef;
   border-radius: 12px;
   background: #fff;
 }
-#workspace:has(#login:not([hidden])) { width: 100%; margin: 0; }
-#workspace:has(#login:not([hidden])) > header:has(#logout[hidden]) { display: none; }
-#login.login-v1 { font-family: "Arial Narrow", Arial, sans-serif !important; }
-#login .login-form-panel form { display: block; }
-#login .login-options label { flex: 0 1 auto; font-weight: 400; }
-#login .login-options input { min-height: 0; margin: 0; }
-#login .forgot-link { min-height: 26px; }
-#login-notice[data-error="false"] { color: #e0edff; }
 h1, h2 { margin: 0 0 10px; }
 h1 { font-size: 24px; }
 h2 { font-size: 18px; }
-#signed-in { margin-top: 16px; }
-#account-name { margin: 0; }
 #notice:empty { display: none; }
 #notice[data-error="true"] { color: #a32538; }
-form { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
-label { display: grid; gap: 4px; flex: 1 1 155px; font-size: 14px; font-weight: 600; }
-input, select, button {
+#signed-in form { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
+#signed-in label { display: grid; gap: 4px; flex: 1 1 155px; font-size: 14px; font-weight: 600; }
+#signed-in [data-workspace-page] :is(input, select, button) {
   min-width: 0;
   min-height: 36px;
   padding: 6px 9px;
@@ -50,8 +30,8 @@ input, select, button {
   border-radius: 7px;
   font: inherit;
 }
-button { color: #fff; background: #194a75; cursor: pointer; }
-button:disabled { opacity: .6; cursor: wait; }
+#signed-in [data-workspace-page] button { color: #fff; background: #194a75; cursor: pointer; }
+#signed-in button:disabled { opacity: .6; cursor: wait; }
 .table-scroll { overflow-x: auto; margin-top: 12px; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #dce5ef; }
@@ -75,4 +55,3 @@ td button { min-height: 30px; margin-inline-end: 4px; }
 #planning-items td:nth-child(n+2):nth-child(-n+5),
 #planning-rap th:nth-child(n+2):nth-child(-n+5),
 #planning-history td:nth-child(3), #planning-progress th:nth-child(3) { text-align: right; }
-#planning-curve { --control-muted: #536a80; --control-orange: #d56324; }

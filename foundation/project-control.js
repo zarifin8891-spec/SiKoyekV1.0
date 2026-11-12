@@ -134,16 +134,20 @@
       ['master-data', 'Master Data', 'settings', 'MASTER_DATA', "go('master-data')"],
       ['users', 'Daftar User', 'users', 'USERS', "go('users')"]
     ];
+    return sidebar(page, entries.filter(([, , , permission]) => can(permission)), { identity });
+  }
+
+  function sidebar(page, entries, { identity: accountName, assetRoot = './' }) {
     return `<aside class="sidebar control-sidebar">
-      <div class="control-brand"><img src="./sikoyek-sidebar-logo.webp" width="480" height="168" alt="SiKoyek"></div>
+      <div class="control-brand"><img src="${esc(assetRoot)}sikoyek-sidebar-logo.webp" width="480" height="168" alt="SiKoyek"></div>
       <button class="control-menu" type="button" aria-expanded="false" aria-controls="control-nav" onclick="SiKoyekControl.toggleMenu(this)">${icon('menu')} Menu</button>
       <nav id="control-nav" class="nav" aria-label="Menu utama">
-        ${entries.filter(([key, , , permission]) => can(permission)).map(([key, label, glyph, permission, action]) => {
+        ${entries.map(([key, label, glyph, permission, action]) => {
           const selected = key === page || key === 'projects' && page === 'detail' || key === 'laporan' && page === 'reports';
-          return `<button type="button" data-rbac-module="${permission}" ${key === 'master-data' ? 'data-master-data-nav' : key === 'users' ? 'data-users-nav' : ''}
-            class="${selected ? 'active' : ''}" ${selected ? 'aria-current="page"' : ''} onclick="${action}">${icon(glyph)}<span>${label}</span></button>`;
+          return `<button type="button" ${permission ? `data-rbac-module="${permission}"` : `data-workspace-route="${esc(key)}"`} ${key === 'master-data' ? 'data-master-data-nav' : key === 'users' ? 'data-users-nav' : ''}
+            class="${selected ? 'active' : ''}" ${selected ? 'aria-current="page"' : ''} ${action ? `onclick="${action}"` : ''}>${icon(glyph)}<span>${esc(label)}</span></button>`;
         }).join('')}
-      </nav><div class="sidefoot control-identity" title="${esc(identity || 'Akun SiKoyek')}">${icon('users')}<span>${esc(identity || 'Akun SiKoyek')}</span></div>
+      </nav><div class="sidefoot control-identity" title="${esc(accountName || 'Akun SiKoyek')}">${icon('users')}<span>${esc(accountName || 'Akun SiKoyek')}</span></div>
     </aside>`;
   }
 
@@ -766,7 +770,7 @@
   }
 
   global.SiKoyekControl = {
-    nav, toggleMenu, dashboard, module: showModule, isModule: page => page === 'budget' || Object.hasOwn(modules, page),
+    nav, sidebar, toggleMenu, dashboard, module: showModule, isModule: page => page === 'budget' || Object.hasOwn(modules, page),
     setIdentity, projectTabs, mountProjectTab, mountCatalog, loadWorkerCount, curveFromWorkItems,
     itemScheduleFields, readItemSchedule,
     canFinance: () => can('KEUANGAN'), canProgress: () => can('PROGRESS')
