@@ -411,12 +411,26 @@
     const span = last - start + 1;
     const date = value => global.SiKoyekFoundation.formatDate(new Date(value * calendarDay).toISOString().slice(0,10));
     const colors = ['#367cae','#c87924','#268476','#8563b4','#bb5b58','#526b98','#74822f','#a34f82'];
+    const entries = schedule.map((item,index) => ({
+      ...item,
+      color: colors[index % colors.length],
+      label: `${item.work_name}: ${date(item.begin)} – ${date(item.finish)} · ${item.duration} hari`
+    }));
+    const edges = [...new Set(entries.flatMap(item => [item.begin,item.finish+1]))].sort((a,b) => a-b);
+    const segments = edges.slice(0,-1).map((begin,index) => {
+      const end = edges[index+1];
+      const active = entries.filter(item => item.begin <= begin && item.finish >= begin);
+      if (!active.length) return '';
+      const background = active.length === 1 ? active[0].color : `linear-gradient(to bottom,${active.map((item,i) =>
+        `${item.color} ${i/active.length*100}% ${(i+1)/active.length*100}%`).join(',')})`;
+      return `<span style="--item-start:${(begin-start)/span*100}%;--item-width:${(end-begin)/span*100}%;--item-color:${background}"
+        title="${esc(active.map(item => item.label).join(' | '))}"></span>`;
+    }).join('');
     return `<div class="project-item-timeline"><h4>Jadwal Item Pekerjaan</h4>
-      ${schedule.map((item,index) => {
-        const range = `${date(item.begin)} – ${date(item.finish)} · ${item.duration} hari`;
-        return `<div class="project-item-timeline-row"><div><strong>${esc(item.work_name)}</strong><small>${range}</small></div>
-          <div class="project-item-timeline-track" aria-hidden="true"><span style="--item-start:${(item.begin-start)/span*100}%;--item-width:${item.duration/span*100}%;--item-color:${colors[index%colors.length]}"></span></div></div>`;
-      }).join('')}</div>`;
+      <div class="project-item-timeline-track" aria-hidden="true">${segments}</div>
+      <div class="project-item-timeline-dates"><span>${date(start)}</span><span>${date(last)}</span></div>
+      <ul class="project-item-timeline-legend">${entries.map(item => `<li title="${esc(item.label)}" aria-label="${esc(item.label)}">
+        <span style="--item-color:${item.color}" aria-hidden="true"></span>${esc(item.work_name)}</li>`).join('')}</ul></div>`;
   }
 
   function weeklyTarget(project, items) {
