@@ -11,9 +11,13 @@
   let operations;
   let staffAccess;
   let generation = 0;
+  let recovering = false;
 
   function notify(message, error = false) {
-    const notice = byId("notice");
+    const workspaceNotice = byId("notice");
+    const loginNotice = byId("login-notice");
+    const notice = login.hidden ? workspaceNotice : loginNotice;
+    workspaceNotice.textContent = loginNotice.textContent = "";
     notice.textContent = message;
     notice.dataset.error = String(error);
   }
@@ -37,7 +41,7 @@
   async function loadWorkspace() {
     const current = ++generation;
     const { data: { session } } = await client.auth.getSession();
-    if (current !== generation) return;
+    if (current !== generation || recovering) return;
     if (!session) {
       setSignedOut();
       return;
@@ -194,11 +198,56 @@
     client = window.SiKoyekBackend.getClient();
     operations = window.createCompanyOperations(client, notify);
     staffAccess = window.createCompanyStaffAccess(client);
+    const loginForm = byId("login-form");
+    const recoveryForm = byId("login-recovery");
+    const password = loginForm.elements.password;
+    const togglePassword = byId("login-toggle-password");
+    const rememberKey = config.storageKey + "-remembered-email";
+    try {
+      const remembered = localStorage.getItem(rememberKey);
+      loginForm.elements.email.value = remembered || "";
+      loginForm.elements.remember.checked = Boolean(remembered);
+    } catch {
+      // Browsers can disable local storage. Sign-in still works.
+    }
+    togglePassword.addEventListener("click", () => {
+      const visible = password.type === "password";
+      password.type = visible ? "text" : "password";
+      togglePassword.setAttribute("aria-pressed", String(visible));
+      togglePassword.setAttribute("aria-label", visible ? "Sembunyikan password" : "Tampilkan password");
+    });
+    byId("login-forgot").addEventListener("click", event => run(event.currentTarget, async () => {
+      const email = loginForm.elements.email;
+      if (!email.reportValidity()) return;
+      const redirectTo = new URL(window.location.pathname, window.location.origin).href;
+      const { error } = await client.auth.resetPasswordForEmail(email.value.trim(), { redirectTo });
+      if (error) throw new Error("Permintaan reset belum berhasil. Silakan coba lagi.");
+      notify("Jika email terdaftar, tautan reset password akan dikirim.");
+    }));
     bindSubmit("login-form", async (form, values) => {
-      form.elements.password.value = "";
-      const { error } = await client.auth.signInWithPassword({ email: values.email.trim(), password: values.password });
+      password.value = "";
+      if (password.type === "text") togglePassword.click();
+      const email = values.email.trim();
+      const { error } = await client.auth.signInWithPassword({ email, password: values.password });
       if (error) throw new Error("Tidak dapat masuk. Periksa email dan password.");
+      try {
+        if (values.remember) localStorage.setItem(rememberKey, email);
+        else localStorage.removeItem(rememberKey);
+      } catch {
+        // Remembering the address is optional.
+      }
       await loadWorkspace();
+    });
+    bindSubmit("login-recovery", async (form, values) => {
+      if (!recovering) return;
+      const { error } = await client.auth.updateUser({ password: values.password });
+      if (error) throw new Error("Password belum dapat diubah. Coba kembali dari tautan reset.");
+      form.reset();
+      recovering = false;
+      recoveryForm.hidden = true;
+      loginForm.hidden = false;
+      await loadWorkspace();
+      if (login.hidden) notify("Password berhasil diperbarui.");
     });
     bindSubmit("company-form", async (form, values) => {
       const name = values.name.trim();
@@ -224,7 +273,19 @@
       setSignedOut();
     }));
     client.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        recovering = true;
+        generation++;
+        setSignedOut();
+        loginForm.hidden = true;
+        recoveryForm.hidden = false;
+        notify("");
+      }
       if (event === "SIGNED_OUT") {
+        recovering = false;
+        loginForm.hidden = false;
+        recoveryForm.hidden = true;
+        recoveryForm.reset();
         generation++;
         setSignedOut();
       }

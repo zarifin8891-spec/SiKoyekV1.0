@@ -25,7 +25,14 @@ section {
   border-radius: 12px;
   background: #fff;
 }
-#login { max-width: 400px; margin-inline: auto; }
+#workspace:has(#login:not([hidden])) { width: 100%; margin: 0; }
+#workspace:has(#login:not([hidden])) > header:has(#logout[hidden]) { display: none; }
+#login.login-v1 { font-family: "Arial Narrow", Arial, sans-serif !important; }
+#login .login-form-panel form { display: block; }
+#login .login-options label { flex: 0 1 auto; font-weight: 400; }
+#login .login-options input { min-height: 0; margin: 0; }
+#login .forgot-link { min-height: 26px; }
+#login-notice[data-error="false"] { color: #e0edff; }
 h1, h2 { margin: 0 0 10px; }
 h1 { font-size: 24px; }
 h2 { font-size: 18px; }
@@ -34,7 +41,6 @@ h2 { font-size: 18px; }
 #notice:empty { display: none; }
 #notice[data-error="true"] { color: #a32538; }
 form { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
-#login-form { display: grid; }
 label { display: grid; gap: 4px; flex: 1 1 155px; font-size: 14px; font-weight: 600; }
 input, select, button {
   min-width: 0;
