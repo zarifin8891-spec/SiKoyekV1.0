@@ -93,7 +93,7 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char =>
     ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
   const message = text => `<p class="control-note">${esc(text)}</p>`;
-  const options = rows => rows.map(p => `<option value="${esc(p.project_id)}">${esc(p.project_name || p.project_code)}</option>`).join('');
+  const projectOptions = rows => rows.map(p => `<option value="${esc(p.project_id)}">${esc(p.project_name || p.project_code)}</option>`).join('');
   let chartProject = '';
   let identity = '';
   let admin = false;
@@ -162,28 +162,28 @@
       <strong ${id ? `id="${id}"` : ''}>${value}</strong><div class="control-note">${detail}</div></section>`;
   }
 
-  const projectLink = p => `<button type="button" class="control-link" data-project="${esc(p.project_id)}">${esc(p.project_name || p.project_code)}</button>`;
+  const projectLink = (p, clickable = true) => clickable ? `<button type="button" class="control-link" data-project="${esc(p.project_id)}">${esc(p.project_name || p.project_code)}</button>` : esc(p.project_name || p.project_code);
   const stateClass = priority => ({TINGGI: 'red', SEDANG: 'amber', RENDAH: 'green'})[priority];
   const emptyRow = (columns, text) => `<tr><td colspan="${columns}">${esc(text)}</td></tr>`;
 
-  function tableRows(rows, finance) {
+  function tableRows(rows, finance, clickable) {
     return rows.slice(0, 8).map(p => `<tr>
-      <td>${projectLink(p)}</td><td>${esc(p.location || '—')}</td>
-      ${finance ? `<td class="control-number">${money(projectSpend(p))}</td>
-        <td class="control-number">${percentage(p.cost_ratio || 0)}</td><td class="control-number">${percentage(p.rap_consumption || 0)}</td>` : ''}
-      <td class="control-number"><progress max="100" value="${Number(p.project_progress || 0)}"></progress> ${percentage(p.project_progress || 0)}</td>
+      <td>${projectLink(p, clickable)}</td><td>${esc(p.location || '—')}</td>
+      ${finance ? `<td class="control-number">${p.total_realization == null && p.cash_out == null ? '—' : global.SiKoyekFoundation.money(projectSpend(p))}</td>
+        <td class="control-number">${p.cost_ratio == null ? '—' : percentage(p.cost_ratio)}</td><td class="control-number">${p.rap_consumption == null ? '—' : percentage(p.rap_consumption)}</td>` : ''}
+      <td class="control-number">${p.project_progress == null ? '—' : `<progress max="100" value="${Number(p.project_progress)}"></progress> ${percentage(p.project_progress)}`}</td>
       <td><span class="control-badge ${p.health.level}">${esc(p.health.status)}</span></td>
     </tr>`).join('') || emptyRow(finance ? 7 : 4, 'Tidak ada proyek untuk ditampilkan.');
   }
 
-  function decisions(rows) {
+  function decisions(rows, clickable) {
     const rank = {TINGGI: 3, SEDANG: 2, RENDAH: 1};
     const prioritized = rows.filter(row => row.health.status !== unassessed).map(row => {
       // Decision Engine v1 recognizes the original wording for the yellow Health status.
       const health = row.health.status === 'AWASI' ? {...row.health, status: 'PERLU PENGAWASAN'} : row.health;
       return {...row, decision: global.SiKoyekDecisionEngine.evaluate(row, health)};
     }).sort((a, b) => rank[b.decision.priority] - rank[a.decision.priority] || b.decision.costGap - a.decision.costGap);
-    return prioritized.slice(0, 5).map(row => `<tr><td>${projectLink(row)}</td>
+    return prioritized.slice(0, 5).map(row => `<tr><td>${projectLink(row, clickable)}</td>
       <td><span class="control-badge ${stateClass(row.decision.priority)}">${esc(row.decision.priority)}</span></td>
       <td>${esc(row.decision.reason)}</td><td>${esc(row.decision.action)}</td></tr>`).join('') ||
       emptyRow(4, 'Belum ada proyek yang dapat dinilai pada periode ini.');
@@ -200,8 +200,7 @@
     };
   }
 
-  function periodControls() {
-    const {from, to} = state.period;
+  function periodControls({from, to}) {
     const quick = Object.entries(periodRanges()).find(([, dates]) => dates[0] === from && dates[1] === to)?.[0] || '';
     return `<form class="control-card control-period" aria-label="Periode Dashboard">
       <label>Periode<select class="control-select" name="preset" id="periodPreset">
@@ -216,9 +215,8 @@
     </form>`;
   }
 
-  function bindPeriod(form) {
+  function bindPeriod(form, apply) {
     const from = form.elements.from, to = form.elements.to;
-    const apply = (start, end) => {state.period = {from: start, to: end};renderPage()};
     form.elements.preset.addEventListener('change', event => {
       const range = periodRanges()[event.target.value];
       if (range) apply(...range);
@@ -232,12 +230,22 @@
     form.querySelector('[data-reset-period]').addEventListener('click', () => apply('', ''));
   }
 
-  function dashboard(root) {
-    const rows = state.summary.filter(periodMatch).map(row => ({...row, health: dashboardHealth(row)}));
-    const finance = can('KEUANGAN') || can('RAP');
+  function dashboard(root, company) {
+    const options = company || {
+      rows: state.summary.filter(periodMatch), period: state.period, chartProject,
+      finance: can('KEUANGAN') || can('RAP'), contract: can('KEUANGAN') || can('RAP'),
+      hasProgress: true, assess: true, canAdd: can('PROJECTS', 'ADD'),
+      open: openProject, list: () => { state.activeOnly = false; go('projects'); },
+      add: openProjectForm, logout,
+      applyPeriod: (from, to) => { state.period = {from, to}; renderPage(); },
+      selectChart: id => { chartProject = id; },
+    };
+    const { finance, contract: showContract, hasProgress, assess } = options;
+    const rows = options.rows.map(row => ({...row, health: assess
+      ? dashboardHealth(row) : { status: unassessed, level: 'neutral' }}));
     const open = rows.filter(active);
     const running = open.filter(p => p.status === 'JALAN');
-    const progress = running.length
+    const progress = hasProgress && running.length
       ? running.reduce((total, p) => total + Number(p.project_progress || 0), 0) / running.length
       : null;
     const pending = rows.filter(p => p.status === 'PENDING').length;
@@ -247,36 +255,36 @@
     const contract = rows.reduce((total, p) => total + Number(p.contract_value || 0), 0);
     const budget = rows.reduce((total, p) => total + Number(p.total_rap || 0), 0);
     const spent = rows.reduce((total, p) => total + projectSpend(p), 0);
-    const current = rows.find(p => p.project_id === chartProject) || open[0] || rows[0];
-    chartProject = current?.project_id || '';
+    const current = rows.find(p => p.project_id === options.chartProject) || open[0] || rows[0];
+    options.selectChart(current?.project_id || '');
     root.innerHTML = `<div class="control-dashboard">
       <header class="control-head dashboard-head"><div><h1>Dashboard Kontrol Proyek</h1><p>${global.SiKoyekFoundation.formatDate(new Date())}</p></div>
         <div class="control-actions">
           <label class="control-search">${icon('search')}<input type="search" placeholder="Pencarian proyek" aria-label="Pencarian proyek"></label>
-          ${can('PROJECTS', 'ADD') ? '<button type="button" class="control-button primary" onclick="openProjectForm()">+ Proyek Baru</button>' : ''}
-          <button type="button" class="control-button" onclick="logout()">Keluar</button>
+          ${options.canAdd ? '<button type="button" class="control-button primary" data-dashboard-add>+ Proyek Baru</button>' : ''}
+          <button type="button" class="control-button" data-dashboard-logout>Keluar</button>
         </div>
       </header>
-      ${periodControls()}
+      ${periodControls(options.period)}
       <div class="control-kpis ${finance ? '' : 'control-kpis-compact'}">
         ${card('Total Proyek', `${rows.length} Proyek`, statusCounts, 'project')}
-        ${finance ? card('Nilai Kontrak', currency(contract), 'Semua proyek dalam filter', 'document') : ''}
-        ${card('Rata-rata Progress Fisik', progress === null ? '—' : percentage(progress), running.length
+        ${showContract ? card('Nilai Kontrak', currency(contract), 'Semua proyek dalam filter', 'document') : ''}
+        ${card('Rata-rata Progress Fisik', progress === null ? '—' : percentage(progress), !hasProgress ? 'Memerlukan akses RAP dan Progress' : running.length
           ? `<progress max="100" value="${progress}" aria-label="Rata-rata progress fisik proyek berjalan"></progress>${running.length} proyek berjalan`
           : 'Belum ada proyek berjalan', 'activity')}
-        ${finance ? card('Biaya Kumulatif', currency(spent), `/ ${currency(budget)} RAP · ${budget ? percentage(spent / budget * 100) : 'RAP belum tersedia'} · proyek dalam filter`, 'budget') : ''}
+        ${finance ? card('Biaya Kumulatif', currency(spent), options.rapUnavailable ? 'RAP memerlukan izin tambahan' : `/ ${currency(budget)} RAP · ${budget ? percentage(spent / budget * 100) : 'RAP belum tersedia'} · proyek dalam filter`, 'budget') : ''}
         ${card('Tenaga Kerja Aktif', '—', 'Penempatan di proyek aktif hari ini', 'users', 'control-worker-count')}
       </div>
       <div class="control-columns">
         <div class="control-stack">
           <section class="control-card"><header class="control-section-head"><h2>Kurva-S &amp; Kemajuan Proyek</h2>
-            <select class="control-select" data-curve-project aria-label="Proyek Kurva-S" ${current ? '' : 'disabled'}><option value="" hidden>Pilih proyek</option>${options(rows)}</select>
+            <select class="control-select" data-curve-project aria-label="Proyek Kurva-S" ${current ? '' : 'disabled'}><option value="" hidden>Pilih proyek</option>${projectOptions(rows)}</select>
           </header><div class="control-curve" aria-live="polite">${message(current ? 'Memuat Kurva-S…' : 'Belum ada proyek.')}</div></section>
           <section class="control-card control-project-list"><header class="control-section-head"><h2>Daftar Proyek Utama</h2>
-            <button type="button" class="control-link" onclick="state.activeOnly=false;go('projects')">Lihat semua</button></header>
+            <button type="button" class="control-link" data-dashboard-list>Lihat semua</button></header>
             <div class="control-table-wrap"><table class="control-table"><thead><tr><th>Nama Proyek</th><th>Lokasi</th>
               ${finance ? '<th class="control-number">Biaya Kumulatif</th><th class="control-number">Rasio Biaya</th><th class="control-number">RAP Terpakai</th>' : ''}<th class="control-number">Progress</th><th>Kondisi</th></tr></thead>
-              <tbody>${tableRows(rows, finance)}</tbody></table></div>
+              <tbody>${tableRows(rows, finance, Boolean(options.open))}</tbody></table></div>
           </section>
         </div>
         <aside class="control-stack" aria-label="Ringkasan lapangan">
@@ -285,45 +293,107 @@
           <section class="control-card"><h2>Stok Material Kritis</h2><div data-panel="stocks">${message('Memuat stok…')}</div></section>
         </aside>
       </div>
-      ${finance ? `<section class="control-card control-decisions" id="dashboard-decision-panel">
+      ${finance && assess ? `<section class="control-card control-decisions" id="dashboard-decision-panel">
         <h2>Prioritas &amp; Tindakan</h2><div class="control-table-wrap"><table class="control-table">
         <thead><tr><th>Proyek</th><th>Prioritas</th><th>Masalah Utama</th><th>Tindakan</th></tr></thead>
-        <tbody>${decisions(rows)}</tbody></table></div></section>` : ''}
-      ${can('KEUANGAN') ? '<div class="control-finance-host" aria-label="Kinerja periode"></div>' : ''}
+        <tbody>${decisions(rows, Boolean(options.open))}</tbody></table></div></section>` : ''}
+      ${!company && can('KEUANGAN') ? '<div class="control-finance-host" aria-label="Kinerja periode"></div>' : ''}
     </div>`;
 
     const view = root.querySelector('.control-dashboard');
-    bindPeriod(view.querySelector('.control-period'));
+    bindPeriod(view.querySelector('.control-period'), options.applyPeriod);
+    view.querySelector('[data-dashboard-list]').addEventListener('click', options.list);
+    view.querySelector('[data-dashboard-logout]').addEventListener('click', options.logout);
+    view.querySelector('[data-dashboard-add]')?.addEventListener('click', options.add);
     const search = view.querySelector('input[type=search]');
     search.addEventListener('input', () => {
       const query = search.value.trim().toLocaleLowerCase('id-ID');
       const filtered = rows.filter(project => [project.project_name, project.project_code, project.location]
         .some(value => String(value || '').toLocaleLowerCase('id-ID').includes(query)));
-      view.querySelector('.control-project-list tbody').innerHTML = tableRows(filtered, finance);
+      view.querySelector('.control-project-list tbody').innerHTML = tableRows(filtered, finance, Boolean(options.open));
     });
     view.addEventListener('click', event => {
       const button = event.target.closest('[data-project]');
-      if (button) openProject(button.dataset.project);
+      if (button) options.open?.(button.dataset.project);
     });
     const select = view.querySelector('[data-curve-project]');
-    select.value = chartProject;
+    select.value = current?.project_id || '';
+    const loadChart = project => {
+      if (!company) return loadSite(view, project);
+      const chart = view.querySelector('.control-curve');
+      chart.innerHTML = project ? options.curve(project) : message('Belum ada proyek.');
+    };
     select.addEventListener('change', () => {
-      chartProject = select.value;
-      loadSite(view, rows.find(p => p.project_id === chartProject));
+      options.selectChart(select.value);
+      loadChart(rows.find(p => p.project_id === select.value));
     });
-    loadSite(view, current);
-    loadWorkerCount(view.querySelector('#control-worker-count'), open.map(row => row.project_id));
+    loadChart(current);
+    const worker = view.querySelector('#control-worker-count');
+    if (company) {
+      worker.title = 'Data penempatan belum terhubung untuk ruang kerja perusahaan.';
+      for (const panel of view.querySelectorAll('[data-panel]')) {
+        panel.innerHTML = message('Data lapangan belum terhubung untuk ruang kerja perusahaan.');
+      }
+    } else {
+      loadWorkerCount(worker, open.map(row => row.project_id));
+    }
   }
 
-  async function rowsFor(table, configure = query => query) {
+  function projectList(root, rows, filters, { open, add }) {
+    const { formatDate, money } = global.SiKoyekFoundation;
+    const pct = value => value == null ? '—' : Number(value).toFixed(2) + '%';
+    const rupiah = value => value == null ? '—' : money(value);
+    const healthClass = status => status === 'SEHAT' ? 'green' : status === 'BERISIKO' ? 'red' : 'amber';
+    root.innerHTML = `<div class="top"><div><h1>Daftar Proyek</h1><p>Kelola proyek dan masuk ke detail operasional.</p></div>
+      <div class="actions"><select id="project-status-filter" class="control-select" aria-label="Filter daftar proyek">
+        <option value="all">Semua Proyek</option><option value="active">Proyek Aktif</option>
+      </select><input class="search" type="search" aria-label="Cari proyek" placeholder="Cari proyek...">
+      ${add ? '<button type="button" class="btn primary" data-list-add>+ Proyek Baru</button>' : ''}</div></div>
+      <div class="card tablecard"><div class="scroll"><table class="table project-list-table">
+      <thead><tr><th>Kode</th><th>Nama Proyek</th><th>Mulai</th><th>Estimasi Selesai</th><th>Kontrak</th>
+        <th>RAP</th><th>Progress</th><th>Cost Ratio</th><th>RAP Consumption</th><th>Health</th></tr></thead>
+      <tbody></tbody></table></div></div>`;
+    const status = root.querySelector('select');
+    const search = root.querySelector('input[type=search]');
+    const body = root.querySelector('tbody');
+    status.value = filters.activeOnly ? 'active' : 'all';
+    search.value = filters.search;
+    function renderRows() {
+      const query = filters.search.trim().toLocaleLowerCase('id-ID');
+      body.innerHTML = rows.filter(row => (!filters.activeOnly || active(row)) &&
+        (row.project_code + ' ' + row.project_name).toLocaleLowerCase('id-ID').includes(query)).map(row =>
+        `<tr><td>${esc(row.project_code)}</td><td>${open
+          ? `<button type="button" class="linkbtn" data-project="${esc(row.project_id)}">${esc(row.project_name)}</button>`
+          : esc(row.project_name)}</td><td class="project-list-date">${formatDate(row.start_date)}</td>
+        <td class="project-list-date">${formatDate(row.end_date)}</td><td>${rupiah(row.contract_value)}</td>
+        <td>${rupiah(row.total_rap)}</td><td>${pct(row.project_progress)}</td><td>${pct(row.cost_ratio)}</td>
+        <td>${pct(row.rap_consumption)}</td><td>${row.health_status
+          ? `<span class="pill ${healthClass(row.health_status)}">${esc(row.health_status)}</span>` : '—'}</td></tr>`
+      ).join('') || '<tr><td colspan="10" class="empty">Belum ada proyek.</td></tr>';
+    }
+    status.addEventListener('change', () => { filters.activeOnly = status.value === 'active'; renderRows(); });
+    search.addEventListener('input', () => { filters.search = search.value; renderRows(); });
+    body.addEventListener('click', event => {
+      const button = event.target.closest('[data-project]');
+      if (button) open?.(button.dataset.project);
+    });
+    root.querySelector('[data-list-add]')?.addEventListener('click', add);
+    renderRows();
+  }
+
+  async function readPages(query, order = 'id') {
     const rows = [];
     const size = 500;
     for (let offset = 0; ; offset += size) {
-      const {data, error} = await configure(sb.from(table).select('*')).order('id').range(offset, offset + size - 1);
-      if (error) throw new Error(error.message);
+      const {data, error} = await query().order(order).range(offset, offset + size - 1);
+      if (error) throw error;
       rows.push(...data);
       if (data.length < size) return rows;
     }
+  }
+
+  function rowsFor(table, configure = query => query) {
+    return readPages(() => configure(sb.from(table).select('*')));
   }
 
   async function loadWorkerCount(box, projectIds) {
@@ -750,7 +820,7 @@
       <p>Pilih proyek untuk melihat dan mengelola data.</p></div>
       ${page === 'reports' ? '<button type="button" class="control-button" data-open-report>Buka Laporan SiKoyek</button>' : ''}</header>
       <label class="control-project-select">Proyek <select class="control-select" ${projects.length ? '' : 'disabled'}>
-        <option value="" hidden>Pilih proyek</option>${options(projects)}</select></label>
+        <option value="" hidden>Pilih proyek</option>${projectOptions(projects)}</select></label>
       <div class="control-module-tables"></div></div>`;
     root.querySelector('[data-open-report]')?.addEventListener('click', () => go('laporan'));
     const select = root.querySelector('select'), tables = root.querySelector('.control-module-tables');
@@ -770,7 +840,7 @@
   }
 
   global.SiKoyekControl = {
-    nav, sidebar, toggleMenu, dashboard, module: showModule, isModule: page => page === 'budget' || Object.hasOwn(modules, page),
+    nav, sidebar, toggleMenu, dashboard, projectList, readPages, actualSeries, module: showModule, isModule: page => page === 'budget' || Object.hasOwn(modules, page),
     setIdentity, projectTabs, mountProjectTab, mountCatalog, loadWorkerCount, curveFromWorkItems,
     itemScheduleFields, readItemSchedule,
     canFinance: () => can('KEUANGAN'), canProgress: () => can('PROGRESS')

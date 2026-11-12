@@ -8,7 +8,7 @@
 [hidden], #workspace [hidden] { display: none !important; }
 body { margin: 0; }
 [data-workspace-page]:not([data-current]) { display: none; }
-[data-workspace-page] {
+section[data-workspace-page] {
   margin-block: 12px;
   padding: 14px;
   border: 1px solid #dce5ef;

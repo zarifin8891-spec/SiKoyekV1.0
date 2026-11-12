@@ -52,16 +52,7 @@
       recordForm.elements.work_item_id.replaceChildren();
     }
 
-    async function readPages(query) {
-      const rows = [];
-      const pageSize = 500;
-      for (let offset = 0; ; offset += pageSize) {
-        const { data, error } = await query().order("id").range(offset, offset + pageSize - 1);
-        if (error) throw error;
-        rows.push(...data);
-        if (data.length < pageSize) return rows;
-      }
-    }
+    const { readPages } = window.SiKoyekControl;
 
     async function load(canRead, canWrite) {
       clear();
@@ -235,6 +226,11 @@
     cancelItem.addEventListener("click", resetItem);
     cancelRecord.addEventListener("click", resetRecord);
     projectSelect.addEventListener("change", () => loadDetails());
-    return { clear, load };
+    function open(projectId) {
+      projectSelect.value = projectId;
+      return loadDetails();
+    }
+
+    return { clear, load, open };
   };
 })();

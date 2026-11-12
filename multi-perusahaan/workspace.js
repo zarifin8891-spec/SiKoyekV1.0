@@ -34,6 +34,7 @@
   let identity = "";
   let currentRoute = "";
   const routes = [
+    ["dashboard", "Dashboard", "dashboard"],
     ["company", "Data Perusahaan", "project"],
     ["account", "Daftar User", "users"],
     ["project", "Daftar Proyek", "project"],
@@ -52,6 +53,7 @@
       currentRoute, available, { identity, assetRoot: "../" }));
     for (const [key] of routes) byId(key + "-panel").toggleAttribute("data-current", key === currentRoute);
     byId("workspace-empty").hidden = Boolean(currentRoute);
+    byId("workspace-title").parentElement.hidden = currentRoute === "dashboard";
   }
 
   signedIn.addEventListener("click", event => {
@@ -128,9 +130,11 @@
     byId("workspace-title").textContent = platform ? "Admin Platform" : ownCompany.name;
     identity = account.full_name;
     operations.clear();
-    renderRoutes();
-    if (!platform) operations.load(account).catch(() => {
-      if (current === generation) notify("Data operasional belum dapat dimuat.", true);
+    if (platform) renderRoutes();
+    else operations.load(account).catch(() => {
+      if (current !== generation) return;
+      renderRoutes();
+      notify("Data operasional belum dapat dimuat.", true);
     });
     if (!(platform || manager)) return;
 
@@ -248,7 +252,7 @@
       return;
     }
     client = window.SiKoyekBackend.getClient();
-    operations = window.createCompanyOperations(client, notify, () => renderRoutes());
+    operations = window.createCompanyOperations(client, notify, renderRoutes);
     staffAccess = window.createCompanyStaffAccess(client);
     const password = loginForm.elements.password;
     const togglePassword = byId("togglePassword");
