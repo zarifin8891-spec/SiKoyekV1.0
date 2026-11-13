@@ -25,6 +25,30 @@
   byId("rememberLogin").closest("label").title = "Ingat alamat email pada perangkat ini";
   byId("loginBtn").type = "submit";
 
+  for (const input of document.querySelectorAll('input[type="password"][autocomplete="new-password"]')) {
+    const label = input.closest("label");
+    if (!label) continue;
+    const fieldName = label.textContent.trim().toLowerCase();
+    const wrapper = document.createElement("span");
+    wrapper.className = "sk-password-field";
+    input.before(wrapper);
+    wrapper.append(input);
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "sk-password-toggle";
+    toggle.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="2.5"/><path class="sk-password-slash" d="m3 3 18 18"/></svg>';
+    wrapper.append(toggle);
+    const show = visible => {
+      input.type = visible ? "text" : "password";
+      toggle.setAttribute("aria-pressed", String(visible));
+      toggle.setAttribute("aria-label", (visible ? "Sembunyikan " : "Tampilkan ") + fieldName);
+    };
+    show(false);
+    toggle.addEventListener("click", () => show(input.type === "password"));
+    input.form?.addEventListener("reset", () => show(false));
+    input.closest("dialog")?.addEventListener("close", () => show(false));
+  }
+
   const companySelect = byId("account-form").elements.company_id;
   let client;
   let operations;

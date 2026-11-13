@@ -336,7 +336,7 @@
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   gap: 10px 12px;
 }
-.sk-editor-fields .sk-editor-wide, .sk-editor-fields label:has(input:is([type="email"], [type="password"])) {
+.sk-editor-fields .sk-editor-wide, .sk-editor-fields label:has(input[type="email"], .sk-password-field) {
   grid-column: 1 / -1;
 }
 .sk-editor-readonly {
@@ -370,3 +370,21 @@
   white-space: normal !important;
   overflow-wrap: anywhere;
 }
+
+.sk-password-field { display: block; position: relative; min-width: 0; }
+.sk-password-field > input { width: 100%; padding-inline-end: 48px; }
+.sk-password-toggle {
+  position: absolute;
+  inset: 0 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--control-muted);
+  cursor: pointer;
+}
+.sk-password-toggle svg { width: 18px; height: 18px; }
+.sk-password-toggle[aria-pressed="false"] .sk-password-slash { display: none; }
