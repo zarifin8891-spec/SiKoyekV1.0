@@ -41,6 +41,41 @@ Deno.serve(async (request) => {
     const name = typeof body?.full_name === "string" ? body.full_name.trim() : "";
     const email = typeof body?.email === "string" ? body.email.trim() : "";
     const password = body?.password;
+    const action = body?.action ?? "create";
+    if (action !== "create") {
+      const targetId = body?.id;
+      if (!["update", "delete", "reset_password"].includes(action) || typeof targetId !== "string" || targetId === user.id) {
+        return reply(400, { error: "Aksi akun tidak valid." });
+      }
+      const { data: target, error: targetError } = await client.from("company_accounts")
+        .select("user_id,company_id,access_role").eq("user_id", targetId).maybeSingle();
+      const allowed = target && (caller.access_role === "platform_admin"
+        ? target.access_role === "company_admin"
+        : target.access_role === "staff" && target.company_id === caller.company_id);
+      if (targetError || !allowed) return reply(403, { error: "Akses pengelolaan akun ditolak." });
+      const { data: company, error: companyError } = await client.from("companies")
+        .select("is_active").eq("id", target.company_id).maybeSingle();
+      if (companyError || !company?.is_active) return reply(403, { error: "Perusahaan tidak aktif." });
+      if (action === "update") {
+        if (!name || name.length > 160 || typeof body?.is_active !== "boolean") {
+          return reply(400, { error: "Periksa nama dan status akun." });
+        }
+        const { data, error } = await admin.from("company_accounts")
+          .update({ full_name: name, is_active: body.is_active }).eq("user_id", targetId)
+          .eq("access_role", target.access_role).eq("company_id", target.company_id).select("user_id").maybeSingle();
+        return error || !data ? reply(409, { error: "Akun belum dapat diperbarui." }) : reply(200, { id: targetId });
+      }
+      if (action === "reset_password") {
+        if (typeof password !== "string" || password.length < 8 || password !== body?.password_confirm) {
+          return reply(400, { error: "Periksa password dan konfirmasinya." });
+        }
+        const { error } = await admin.auth.admin.updateUserById(targetId, { password });
+        return error ? reply(409, { error: "Password belum dapat diubah." }) : reply(200, { id: targetId });
+      }
+      const { error } = await admin.auth.admin.deleteUser(targetId);
+      return error ? reply(409, { error: "Akun belum dapat dihapus." }) : reply(200, { id: targetId });
+    }
+
     const platform = caller.access_role === "platform_admin";
     const companyId = platform ? body?.company_id : caller.company_id;
     if (!name || name.length > 160 || !email || typeof password !== "string" || password.length < 8 ||

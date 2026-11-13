@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="./foundation/visual.css">
 <script src="./environment.js"></script>
 <script src="./foundation/config.js"></script>
+<script src="./foundation/company-session.js"></script>
 <script src="./foundation/runtime.js"></script>
 <script src="./foundation/visual.js" defer></script>
 <script src="./foundation/backend.js"></script>
@@ -44,13 +45,27 @@ function healthClass(s){return s==='SEHAT'?'green':s==='BERISIKO'?'red':'amber'}
 function toast(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
 function loginHTML(){return `<div class="login"><div class="loginbox"><div class="brand">SiKoyek <b>V 1.0</b></div><h2>Sistem Kontrol Proyek V1.0</h2><div class="field"><label>Email</label><input id="email" type="email" placeholder="nama@email.com" autocomplete="username"></div><div class="field"><label>Password</label><div class="password-wrap"><input id="password" type="password" placeholder="" autocomplete="current-password"><button id="togglePassword" class="toggle-password" type="button" aria-label="Tampilkan password" title="Tampilkan password"><svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.1 12s3.6-6 9.9-6 9.9 6 9.9 6-3.6 6-9.9 6-9.9-6-9.9-6Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button></div></div><button id="loginBtn" class="btn primary full" type="button">Masuk</button><div id="loginErr" class="err"></div><div class="forgot-wrap"><button id="forgotPassword" class="forgot-link" type="button">Lupa password?</button></div></div></div>`}
 function togglePassword(){const input=document.getElementById('password'),btn=document.getElementById('togglePassword'),icon=document.getElementById('eyeIcon');if(!input)return;const show=input.type==='password';input.type=show?'text':'password';if(btn){btn.setAttribute('aria-label',show?'Sembunyikan password':'Tampilkan password');btn.title=show?'Sembunyikan password':'Tampilkan password'}if(icon){icon.innerHTML=show?'<path d="M3 3l18 18"></path><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"></path><path d="M9.9 5.1A10.9 10.9 0 0 1 12 5c6.3 0 9.9 7 9.9 7a18.6 18.6 0 0 1-3.1 3.8"></path><path d="M6.2 6.2C3.6 8.1 2.1 12 2.1 12a18.7 18.7 0 0 0 5.2 5.1A10.8 10.8 0 0 0 12 19c6.3 0 9.9-7 9.9-7"></path>':'<path d="M2.1 12s3.6-6 9.9-6 9.9 6 9.9 6-3.6 6-9.9 6-9.9-6-9.9-6Z"></path><circle cx="12" cy="12" r="2.5"></circle>'}}
-async function enterAuthenticatedApp(user){await SiKoyekControl.setIdentity(user);await loadSummary();renderApp()}
+async function enterAuthenticatedApp(user){
+  if(SiKoyekCompanySession.enabled){
+    let scope;
+    try{scope=await SiKoyekCompanySession.identify(sb,user)}
+    catch(error){
+      await sb.auth.signOut({scope:'local'});
+      location.replace('./multi-perusahaan/');
+      return;
+    }
+    if(scope.account.access_role==='platform_admin'){location.replace('./multi-perusahaan/');return}
+    window.SiKoyekCompanyIdentity=scope;
+    window.__SIKOYEK_RBAC_PERMISSIONS_V6__=scope.permissions;
+  }
+  await SiKoyekControl.setIdentity(user);await loadSummary();renderApp()
+}
 async function login(){const btn=document.getElementById('loginBtn'),errEl=document.getElementById('loginErr');const email=document.getElementById('email').value.trim();const password=document.getElementById('password').value;if(!email||!password){errEl.textContent='Email dan password wajib diisi.';return}btn.disabled=true;btn.textContent='Memproses...';errEl.textContent='';try{const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;await enterAuthenticatedApp(data.user)}catch(error){errEl.textContent=error?.message||'Login gagal.';btn.disabled=false;btn.textContent='Masuk'}}
 async function forgotPassword(){const email=document.getElementById('email')?.value.trim();const errEl=document.getElementById('loginErr');if(!email){errEl.textContent='Masukkan email terlebih dahulu untuk reset password.';return}const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});if(error){errEl.textContent=error.message;return}errEl.style.color='var(--green)';errEl.textContent='Link reset password sudah dikirim ke email.'}
 async function logout(){await sb.auth.signOut();location.reload()}
 function nav(active){return window.SiKoyekControl.nav(active)}
 async function loadSummary(){const [{data,error},{data:projects,error:projectsError}]=await Promise.all([sb.from('project_summary').select('*').order('project_code'),sb.from('projects').select('id,project_date,start_date,end_date,location,status')]);if(error||projectsError){toast((error||projectsError).message);state.summary=[];return}const dates=Object.fromEntries((projects||[]).map(p=>[p.id,p]));state.summary=(data||[]).map(x=>({...x,...(dates[x.project_id]||{})}))}
-async function boot(){const {data:{session}}=await sb.auth.getSession();if(!session){document.getElementById('app').innerHTML=loginHTML();document.getElementById('togglePassword')?.addEventListener('click',togglePassword);document.getElementById('loginBtn')?.addEventListener('click',login);document.getElementById('forgotPassword')?.addEventListener('click',forgotPassword);document.getElementById('password')?.addEventListener('keydown',e=>{if(e.key==='Enter')login()});return}await enterAuthenticatedApp(session.user)}
+async function boot(){const {data:{session}}=await sb.auth.getSession();if(!session){if(SiKoyekCompanySession.enabled){location.replace('./multi-perusahaan/');return}document.getElementById('app').innerHTML=loginHTML();document.getElementById('togglePassword')?.addEventListener('click',togglePassword);document.getElementById('loginBtn')?.addEventListener('click',login);document.getElementById('forgotPassword')?.addEventListener('click',forgotPassword);document.getElementById('password')?.addEventListener('keydown',e=>{if(e.key==='Enter')login()});return}await enterAuthenticatedApp(session.user)}
 async function go(page){state.page=page;state.selected=null;state.detail=null;await loadSummary();renderApp()}
 function renderApp(){document.getElementById('app').innerHTML=`<div class="shell control-shell">${nav(state.page)}<main class="content"><div id="page"></div></main></div>`;renderPage()}
 function renderPage(){const el=document.getElementById('page');if(state.page==='dashboard')window.SiKoyekControl.dashboard(el);else if(state.page==='projects')projects(el);else if(window.SiKoyekControl.isModule(state.page))window.SiKoyekControl.module(el,state.page);else renderDetail(el)}

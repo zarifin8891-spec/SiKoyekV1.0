@@ -113,6 +113,7 @@
   }
 
   async function load(){
+    if(window.SiKoyekCompanySession?.enabled){if(perms())apply();return}
     const client=window.SK?.sb||window.sb;if(!client?.auth||!client?.from)return;
     try{
       const {data:{user},error:ue}=await client.auth.getUser();if(ue||!user)return;

@@ -133,21 +133,20 @@
       return;
     }
 
+    if (!platform) {
+      location.replace("../index.html");
+      return;
+    }
     signedIn.hidden = logout.hidden = false;
     login.hidden = true;
     companyPanel.hidden = !platform;
     accountPanel.hidden = !(platform || manager);
     byId("staff-access-column").hidden = false;
-    byId("staff-access-column").textContent = platform ? "Status" : "Aksi";
+    byId("staff-access-column").textContent = "Aksi";
     byId("workspace-title").textContent = platform ? "Admin Platform" : ownCompany.name;
     identity = account.full_name;
     operations.clear();
-    if (platform) renderRoutes();
-    else operations.load(account).catch(() => {
-      if (current !== generation) return;
-      renderRoutes();
-      notify("Data operasional belum dapat dimuat.", true);
-    });
+    renderRoutes();
     if (!(platform || manager)) return;
 
     renderCompanies(companies, platform, ownCompany);
@@ -169,7 +168,18 @@
         const action = row.insertCell();
         const status = document.createElement("span");
         status.textContent = user.is_active ? "Aktif" : "Nonaktif";
-        action.append(status);
+        const edit = document.createElement("button");
+        edit.type = "button";
+        edit.textContent = "Ubah Nama";
+        edit.onclick = () => {
+          const name = window.prompt("Nama Admin Perusahaan", user.full_name)?.trim();
+          if (name && name !== user.full_name) updatePlatformAccount(edit, user, name, user.is_active);
+        };
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.textContent = user.is_active ? "Nonaktifkan" : "Aktifkan";
+        toggle.onclick = () => updatePlatformAccount(toggle, user, user.full_name, !user.is_active);
+        action.append(status, edit, toggle);
       } else if (manager) {
         const action = row.insertCell();
         if (user.access_role === "staff" && user.is_active) {
@@ -245,6 +255,17 @@
       if (error || !data) throw new Error("Perusahaan belum berhasil diperbarui.");
       await loadWorkspace();
       notify("Data perusahaan diperbarui.");
+    });
+  }
+
+  function updatePlatformAccount(button, user, fullName, active) {
+    return run(button, async () => {
+      const { data, error } = await client.functions.invoke("company-accounts", {
+        body: { action: "update", id: user.user_id, full_name: fullName, is_active: active },
+      });
+      if (error || !data?.id) throw new Error("Admin Perusahaan belum berhasil diperbarui.");
+      await loadWorkspace();
+      notify("Admin Perusahaan diperbarui.");
     });
   }
 

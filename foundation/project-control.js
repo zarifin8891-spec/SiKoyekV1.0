@@ -106,6 +106,16 @@
     admin = false;
     access = new Set();
     if (!user?.id) return;
+    const company = global.SiKoyekCompanyIdentity;
+    if (company) {
+      identity = company.account.full_name;
+      admin = company.permissions.role === 'admin';
+      for (const module of Object.keys(company.permissions.views)) access.add(module + '.VIEW');
+      for (const [module, actions] of Object.entries(company.permissions.actions)) {
+        for (const action of Object.keys(actions)) access.add(module + '.' + action);
+      }
+      return;
+    }
     try {
       const {data: profile} = await sb.from('profiles')
         .select('full_name,is_active,role_id,roles(name,is_active)').eq('id', user.id).maybeSingle();
