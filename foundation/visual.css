@@ -957,3 +957,16 @@
 @media (max-width: 780px) {
   .sk-theme { --control-section-gap: 10px; --control-field-height: 44px; --control-field-font: 16px; }
 }
+
+@media screen {
+  .sk-theme #modal .modalbox:has(.entry-table) {
+    width: min(960px, calc(100vw - 28px));
+    max-width: calc(100vw - 28px);
+    overflow: auto;
+  }
+  .sk-theme #modal .entry-table-wrap { overflow-x: auto; max-width: 100%; }
+  .sk-theme #modal .entry-table { min-width: 680px; }
+  .sk-theme #modal .entry-table input { width: 100%; min-width: 64px; }
+  .sk-theme #modal .entry-table input:is(#wi_name, [name=notes]) { min-width: 145px; }
+  .sk-theme #modal .entry-table th[scope=row] { text-align: left; font-weight: 400; }
+}

@@ -100,13 +100,17 @@
     const item=editId?state.detail.items.find(x=>String(x.id)===String(editId)):null;
     modal(item?'Edit Item Pekerjaan':'Tambah Item Pekerjaan',`
       <div class="ui-help">Gunakan bobot untuk membentuk progress proyek. Total bobot seluruh item tidak boleh melebihi 100%.</div>
-      <div class="field"><label>Nama Item Pekerjaan *</label><input id="wi_name" value="${esc(item?.work_name||'')}" placeholder="Contoh: Pekerjaan Pondasi"></div>
-      <div class="formgrid">
-        <div class="field"><label>Bobot (%) *</label><input id="wi_weight" type="number" min="0" max="100" step="0.01" value="${item?Number(item.weight||0)*100:0}"></div>
-        <div class="field"><label>Urutan</label><input id="wi_sort" type="number" min="0" value="${item?.sort_order??state.detail.items.length+1}"></div>
-        ${SiKoyekControl.itemScheduleFields('wi',item)}
-      </div>
-      <div class="field"><label>Catatan</label><textarea id="wi_notes" placeholder="Catatan pekerjaan (opsional)">${esc(item?.notes||'')}</textarea></div>
+      <div class="scroll entry-table-wrap"><table class="table entry-table"><thead><tr>
+        <th scope="col">Urutan</th><th scope="col">Nama Pekerjaan</th><th scope="col">Bobot (%)</th>
+        <th scope="col">Durasi (hari)</th><th scope="col">Rencana Mulai</th><th scope="col">Keterangan</th>
+      </tr></thead><tbody><tr>
+        <td><input aria-label="Urutan" id="wi_sort" type="number" min="0" value="${item?.sort_order??state.detail.items.length+1}"></td>
+        <td><input aria-label="Nama Pekerjaan" id="wi_name" value="${esc(item?.work_name||'')}"></td>
+        <td><input aria-label="Bobot (%)" id="wi_weight" type="number" min="0" max="100" step="0.01" value="${item?Number(item.weight||0)*100:0}"></td>
+        <td><input aria-label="Durasi (hari)" id="wi_duration" type="number" min="1" max="36500" step="1" value="${esc(item?.duration_days??'')}"></td>
+        <td><input aria-label="Rencana Mulai" id="wi_planned_start" type="date" value="${esc(item?.planned_start_date??'')}"></td>
+        <td><input aria-label="Keterangan" id="wi_notes" value="${esc(item?.notes||'')}"></td>
+      </tr></tbody></table></div>
       <div class="ui-total"><span>Total bobot saat ini</span><strong id="wiTotalPreview">${pct(state.detail.items.reduce((s,x)=>s+Number(x.weight||0),0)*100)}</strong></div>
       <div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn primary" onclick="${item?'saveItemEdit(\''+item.id+'\')':'saveItem()'}">Simpan Item</button></div>`);
     const refresh=()=>{const current=state.detail.items.reduce((s,x)=>s+(String(x.id)===String(editId)?0:Number(x.weight||0)),0)+Number(document.getElementById('wi_weight')?.value||0)/100;const el=document.getElementById('wiTotalPreview');if(el)el.textContent=pct(current*100)};
@@ -139,25 +143,47 @@
     const items=state.detail.items||[];
     if(!items.length){toast('Tambahkan Item Pekerjaan terlebih dahulu sebelum menginput progress');return;}
     modal('Input Progress Proyek',`
-      <div class="ui-help">Progress dicatat per Item Pekerjaan. Dashboard akan menghitung progress proyek berdasarkan bobot pekerjaan, sehingga angka total tidak perlu dimasukkan manual.</div>
-      <div class="formgrid">
-        <div class="field"><label>Tanggal Progress *</label><input id="pr_date" type="date" value="${today()}"></div>
-        <div class="field"><label>Item Pekerjaan *</label><select id="pr_item">${items.map(x=>`<option value="${esc(x.id)}">${esc(x.work_name)} — bobot ${pct(Number(x.weight||0)*100)}</option>`).join('')}</select></div>
-        <div class="field"><label>Progress Item (%) *</label><input id="pr_pct" type="number" min="0" max="100" step="0.01" value="0"></div>
-      </div>
-      <div class="field"><label>Catatan</label><textarea id="pr_notes" placeholder="Contoh: pekerjaan pondasi lantai 1 selesai..."></textarea></div>
-      <div class="ui-progress-card"><div class="ui-progress-callout"><div class="headline">Bobot Item</div><div id="pr_weight" class="big">${pct(Number(items[0]?.weight||0)*100)}</div><p>Progress proyek dihitung dari Bobot × Progress Item.</p></div><div class="ui-progress-callout"><div class="headline">Kontribusi Progress</div><div id="pr_contrib" class="big">0.00%</div><p>Perkiraan kontribusi item ini terhadap progress proyek.</p></div></div>
-      <div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn primary" onclick="saveProgress()">Simpan Progress</button></div>`);
-    const refresh=()=>{const item=items.find(x=>String(x.id)===String(document.getElementById('pr_item')?.value));const p=Number(document.getElementById('pr_pct')?.value||0);const w=Number(item?.weight||0);const we=document.getElementById('pr_weight'),co=document.getElementById('pr_contrib');if(we)we.textContent=pct(w*100);if(co)co.textContent=pct(w*p)};
-    document.getElementById('pr_item')?.addEventListener('change',refresh);document.getElementById('pr_pct')?.addEventListener('input',refresh);refresh();
+      <form id="progress-entry">
+        <div class="field"><label for="pr_date">Tanggal Progress *</label><input id="pr_date" type="date" value="${today()}" required></div>
+        <div class="scroll entry-table-wrap"><table class="table entry-table">
+          <thead><tr><th scope="col">Urutan</th><th scope="col">Nama Pekerjaan</th><th scope="col">Bobot (%)</th><th scope="col">Tambahan Progress (%)</th><th scope="col">Keterangan</th></tr></thead>
+          <tbody>${items.map((item,index)=>`<tr data-progress-item="${esc(item.id)}">
+            <td>${esc(item.sort_order??index+1)}</td><th scope="row">${esc(item.work_name)}</th>
+            <td>${pct(Number(item.weight||0)*100)}</td>
+            <td><input name="progress" aria-label="Progress ${esc(item.work_name)}" type="number" min="0" max="100" step="0.01"></td>
+            <td><input name="notes" aria-label="Keterangan ${esc(item.work_name)}"></td>
+          </tr>`).join('')}</tbody>
+        </table></div>
+        <div class="formactions"><button type="button" class="btn ghost" onclick="closeModal()">Batal</button><button type="submit" class="btn primary">Simpan Progress</button></div>
+      </form>`);
+    document.getElementById('progress-entry').addEventListener('submit',window.saveProgress);
   };
 
-  window.saveProgress=async function(){
-    const row={project_id:state.selected,work_item_id:document.getElementById('pr_item').value,progress_date:document.getElementById('pr_date').value,progress_percentage:Number(document.getElementById('pr_pct').value||0)/100,notes:document.getElementById('pr_notes').value.trim()||null};
-    if(!row.work_item_id||!row.progress_date||row.progress_percentage<0||row.progress_percentage>1){toast('Item, tanggal, dan progress 0–100% wajib valid');return}
-    const {error}=await sb.from('progress_records').insert(row);
-    if(error){toast(error.message);return}
-    closeModal();await loadSummary();await openProject(state.selected);toast('Progress berhasil disimpan');
+  window.saveProgress=async function(event){
+    event.preventDefault();
+    const form=event.currentTarget;
+    const button=form.querySelector('[type=submit]');
+    if(button.disabled||!form.reportValidity())return;
+    const project=state.selected;
+    const date=form.querySelector('#pr_date').value;
+    const rows=[...form.querySelectorAll('[data-progress-item]')].flatMap(row=>{
+      const progress=row.querySelector('[name=progress]').value;
+      return progress===''?[]:[{
+        project_id:project, work_item_id:row.dataset.progressItem, progress_date:date,
+        progress_percentage:Number(progress)/100, notes:row.querySelector('[name=notes]').value.trim()||null,
+      }];
+    });
+    if(!rows.length){toast('Isi progress minimal satu pekerjaan');return}
+    button.disabled=true;
+    try {
+      const {error}=await sb.from('progress_records').insert(rows);
+      if(error){toast(error.message);return}
+      if(!form.isConnected)return;
+      closeModal();
+      await loadSummary();
+      if(state.selected===project)await openProject(project);
+      toast('Progress berhasil disimpan');
+    } finally { button.disabled=false; }
   };
 
   window.progressView=function(d){
