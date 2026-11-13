@@ -659,12 +659,48 @@
 /* Legacy modules inject unlayered important styles after page load. */
 @layer neon-surfaces {
   @media screen {
-    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(.filters, .finance-toolbar, .progress-project-toolbar, .rap-biaya-filter, .rap-period-toolbar, .kinerja-toolbar, .kv2-toolbar, .extra-period-grid, .cashflow-v4-filters, .um-toolbar, .dashboard-period, .modalbox, .sk-compact-editor, .p6-body > .formactions, .ui-total, .ui-final-grid, .ui-final-help, .ui-final-summary, .um-add-section, .form-section) {
+    /* Shared surface roles for both static and dynamically rendered modules. */
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(
+      .card, .control-card, .md-card, .um-card, .tablecard, .dashboard-panel,
+      .summary-panel, .timeline-v4, .overview-timeline-v3, .rap-item, .rap-total,
+      .cost-item, .timeline-v4-stat, .kpi, .extra-kpi, .finance-kpi, .kinerja-kpi,
+      .rap-biaya-kpi, .rap-period-kpi, .cashflow-v4-kpi, .kv2-kpi, .pp-kpi-v4,
+      .kinerja-section, .cashflow-v4-section, .kv2-sec, .pp-panel-v4, .note-card,
+      .filters, .finance-toolbar, .progress-project-toolbar, .progress-project-filter,
+      .rap-biaya-filter, .rap-period-toolbar, .rap-period-filter, .kinerja-toolbar,
+      .kinerja-filter, .kinerja-trend-filter, .kv2-toolbar, .kv2-filter, .kv2-trend,
+      .extra-period-grid, .cashflow-v4-filters, .cashflow-v4-filter, .um-toolbar,
+      .dashboard-period, .modalbox, .sk-compact-editor, .formactions, .ui-total,
+      .ui-final-grid, .ui-final-help, .ui-final-summary, .ui-help, .ui-progress-card,
+      .ui-progress-callout, .um-add-section, .form-section, .category-master-table,
+      .category-master-toolbar, .category-master-add, .um-role-item
+    ) {
+      --control-ink: var(--control-workspace-ink);
+      --control-muted: var(--control-workspace-muted);
+      --text: var(--control-ink);
+      --muted: var(--control-muted);
       background: var(--control-panel-gradient) !important;
-      border: 1px solid var(--control-panel-border) !important;
+      border-color: var(--control-panel-border) !important;
+      border-style: solid;
+      border-width: 1px;
       border-radius: var(--control-control-radius);
       box-shadow: var(--control-panel-glow) !important;
-      color: var(--control-workspace-ink) !important;
+      color: var(--control-ink) !important;
+    }
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(
+      .pp-header-v4, .category-master-table .cm-head, .ui-step, .extra-report-tab,
+      .cashflow-v4-actions button, .um-reset-btn
+    ) {
+      background: var(--control-table-head) !important;
+      color: var(--control-data-ink) !important;
+      border-color: var(--control-panel-border) !important;
+    }
+    .sk-theme :is(.content, .main, .wrap) :is(.pp-data-v4, .category-master-table .cm-row) {
+      background: var(--control-table-surface) !important;
+      color: var(--control-data-ink) !important;
+    }
+    .sk-theme :is(.content, .main, .wrap) :is(.pp-data-v4, .category-master-table .cm-row):hover {
+      background: var(--control-table-hover) !important;
     }
     .sk-theme .content #reportContent .card:has(> .filters) {
       background: none !important;
@@ -717,12 +753,12 @@
     .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(.field label, .ui-final-field label, .control-period label, .control-form label, .sk-editor-field) {
       color: var(--control-workspace-muted) !important;
     }
-    .sk-theme :is(.content, .main, .wrap) table :is(th, td) {
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) table :is(th, td) {
       background: var(--control-table-surface) !important;
       color: var(--control-data-ink) !important;
     }
-    .sk-theme :is(.content, .main, .wrap) table thead th { background: var(--control-table-head) !important; }
-    .sk-theme :is(.content, .main, .wrap) table tbody tr:hover td { background: var(--control-table-hover) !important; }
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) table thead th { background: var(--control-table-head) !important; }
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) table tbody tr:hover td { background: var(--control-table-hover) !important; }
     .sk-theme .content #reportContent > :is(.card, .kpis, .extra-kpis, .rap-biaya-kpis, .finance-summary, .kinerja-section, .progress-project-toolbar, .finance-toolbar, .rap-period-toolbar, .kinerja-toolbar) + * {
       margin-block-start: var(--control-section-gap) !important;
     }
