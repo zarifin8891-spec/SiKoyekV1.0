@@ -376,6 +376,16 @@
 .sk-editor-fields .sk-editor-wide, .sk-editor-fields label:has(input[type="email"], .sk-password-field) {
   grid-column: 1 / -1;
 }
+@media (min-width: 561px) {
+  .sk-editor-stacked .md-ordered-fields {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  }
+  .sk-editor-stacked .md-ordered-fields:has(#md_pm_code) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 3fr);
+  }
+  .md-ordered-fields label:has(#md_pm_phone) { grid-column: span 2; }
+  .md-ordered-fields label:has(#md_pm_email) { grid-column: auto; }
+}
 .sk-editor-readonly {
   padding: 6px 8px;
   background: var(--sk-canvas);

@@ -90,7 +90,7 @@
     dialog.setAttribute('aria-labelledby','md-editor-title');
     dialog.innerHTML=`<div class="modalhead"><h3 id="md-editor-title">${esc(title)}</h3><button type="button" class="btn ghost" data-dismiss>Tutup</button></div>
       <form class="control-form sk-editor-stacked">
-        <div class="sk-editor-fields">${fields}</div>
+        <div class="sk-editor-fields md-ordered-fields">${fields}</div>
         <div class="control-form-actions"><button type="button" class="btn ghost" data-dismiss>Batal</button><button type="submit" class="btn primary">Simpan</button></div>
       </form>`;
     const submit=dialog.querySelector('[type=submit]');
@@ -116,15 +116,15 @@
     return `<label class="sk-editor-field" for="${id}">${label}<input id="${id}" type="${type}" value="${esc(value)}" placeholder="${esc(placeholder)}"></label>`;
   }
   function categoryFields(label,data,placeholder){
-    return masterField('md_name',label,data?.name,'text',placeholder)
-      +masterField('md_sort','Urutan',data?Number(data.sort_order||0):1,'number');
+    return masterField('md_sort','Urutan',data?Number(data.sort_order||0):1,'number')
+      +masterField('md_name',label,data?.name,'text',placeholder);
   }
   function managerFields(data){
-    return masterField('md_pm_code','Kode *',data?.code,'text','PM-001')
+    return masterField('md_pm_sort','Urutan',data?Number(data.sort_order||0):1,'number')
+      +masterField('md_pm_code','Kode *',data?.code,'text','PM-001')
       +masterField('md_pm_name','Nama *',data?.name)
       +masterField('md_pm_phone','No. Telepon',data?.phone,'tel')
-      +masterField('md_pm_email','Email',data?.email,'email')
-      +masterField('md_pm_sort','Urutan',data?Number(data.sort_order||0):1,'number');
+      +masterField('md_pm_email','Email',data?.email,'email');
   }
   window.mdAddProjectCategory=()=>openMasterEditor('Tambah Kategori Proyek',categoryFields('Nama Kategori *'),window.mdSaveProjectCategory);
   window.mdSaveProjectCategory=async function(){const name=q('md_name')?.value.trim(),sort=Number(q('md_sort')?.value||0);if(!name){toast('Nama kategori wajib diisi');return}const {error}=await db().from('project_categories').insert({name,sort_order:sort,is_active:true});if(error){toast(error.message);return}closeMasterEditor();toast('Kategori proyek ditambahkan');refresh()};
