@@ -53,8 +53,8 @@
       group.querySelectorAll("input,select").forEach(field => { field.disabled = hidden; });
     }
     byId("platform-edit-company").hidden = !company;
-    platformForm.elements.company_display.value = company || "";
-    platformForm.elements.email_display.value = user.email || "";
+    byId("platform-company-value").textContent = company || "";
+    byId("platform-email-value").textContent = user.email || "—";
     platformForm.elements.full_name.value = user.full_name;
     platformForm.elements.is_active.disabled = reset || user.user_id === callerId;
     platformForm.elements.is_active.value = String(user.is_active);
@@ -81,8 +81,6 @@
       platformStatus.textContent = "Konfirmasi password tidak sama.";
       return;
     }
-    delete values.company_display;
-    delete values.email_display;
     if (target.action === "update") {
       values.full_name = values.full_name.trim();
       if (!values.full_name) {
@@ -171,6 +169,9 @@
     byId("platform-admins").replaceChildren();
     byId("platform-create-form").reset();
     if (platformDialog.open) platformDialog.close();
+    for (const dialog of document.querySelectorAll("dialog:has([data-editor-cancel])")) {
+      if (dialog.open) dialog.close();
+    }
     currentRoute = identity = "";
     signedIn.querySelector(".control-sidebar")?.remove();
     operations?.clear();
@@ -378,7 +379,13 @@
     form.addEventListener("submit", event => {
       event.preventDefault();
       run(button, async () => {
+        const status = form.querySelector('[role="status"]');
+        if (status) status.textContent = "";
         try { await task(form, Object.fromEntries(new FormData(form))); }
+        catch (error) {
+          if (!status) throw error;
+          status.textContent = error.message;
+        }
         finally { if (id === "account-form") button.disabled = companySelect.options.length === 0; }
       });
     });
@@ -453,13 +460,24 @@
       await loadWorkspace();
       notify("Perusahaan ditambahkan.");
     });
+    for (const trigger of document.querySelectorAll("[data-editor-open]")) {
+      const dialog = byId(trigger.dataset.editorOpen);
+      const form = dialog.querySelector("form");
+      const submit = form.querySelector('[type="submit"]');
+      trigger.addEventListener("click", () => dialog.showModal());
+      dialog.querySelector("[data-editor-cancel]").addEventListener("click", () => {
+        if (!submit.disabled) dialog.close();
+      });
+      dialog.addEventListener("cancel", event => { if (submit.disabled) event.preventDefault(); });
+      dialog.addEventListener("close", () => { form.reset(); form.querySelector('[role="status"]').textContent = ""; });
+    }
     bindSubmit("platform-create-form", async (form, values) => {
       if (platformPanel.hidden) return;
       const { data, error } = await client.functions.invoke("company-accounts", {
         body: { ...values, account_type: "platform_admin" },
       });
       if (error || !data?.id) throw new Error("Admin Platform belum berhasil dibuat. Periksa email dan password.");
-      form.reset();
+      form.closest("dialog").close();
       await loadWorkspace();
       notify("Admin Platform ditambahkan.");
     });
@@ -467,8 +485,8 @@
       form.elements.password.value = "";
       const { data, error } = await client.functions.invoke("company-accounts", { body: values });
       if (error || !data?.id) throw new Error("Akun belum berhasil dibuat. Periksa email dan data akun.");
+      form.closest("dialog").close();
       await loadWorkspace();
-      form.reset();
       notify("Akun berhasil dibuat.");
     });
     logout.addEventListener("click", () => run(logout, async () => {

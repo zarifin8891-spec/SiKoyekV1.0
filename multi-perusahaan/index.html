@@ -57,13 +57,23 @@
       </section>
       <section id="account-panel" data-workspace-page hidden>
         <h2 id="account-heading"></h2>
-        <form id="account-form">
-          <label id="company-field">Perusahaan<select name="company_id"></select></label>
-          <label>Nama lengkap<input name="full_name" maxlength="160" required autocomplete="off"></label>
-          <label>Email<input name="email" type="email" required autocomplete="off"></label>
-          <label>Password awal<input name="password" type="password" required minlength="8" autocomplete="new-password"></label>
-          <button type="submit" id="account-submit"></button>
-        </form>
+        <button type="button" class="btn primary" data-editor-open="account-form-dialog">Tambah Admin Perusahaan</button>
+        <dialog id="account-form-dialog" class="sk-compact-editor" aria-labelledby="account-form-heading">
+          <div class="modalhead"><h3 id="account-form-heading">Tambah Akun</h3></div>
+          <form class="control-form sk-editor-stacked" id="account-form">
+            <div class="sk-editor-fields">
+          <label class="sk-editor-field" id="company-field">Perusahaan<select name="company_id"></select></label>
+          <label class="sk-editor-field">Nama lengkap<input name="full_name" maxlength="160" required autocomplete="off"></label>
+          <label class="sk-editor-field">Email<input name="email" type="email" required autocomplete="off"></label>
+          <label class="sk-editor-field">Password awal<input name="password" type="password" required minlength="8" autocomplete="new-password"></label>
+            </div>
+            <p class="control-form-message" role="status"></p>
+            <div class="control-form-actions">
+              <button type="button" class="btn ghost" data-editor-cancel>Batal</button>
+              <button type="submit" id="account-submit"></button>
+            </div>
+          </form>
+        </dialog>
         <div class="table-scroll">
           <table><thead><tr><th>Nama</th><th>Email</th><th>Perusahaan</th><th>Peran</th><th>Status</th><th id="staff-access-column" hidden>Aksi</th></tr></thead><tbody id="accounts"></tbody></table>
         </div>
@@ -86,15 +96,15 @@
           <div class="modalhead">
             <h3 id="platform-account-heading"></h3>
           </div>
-          <form id="platform-account-form" class="control-form">
+          <form id="platform-account-form" class="control-form sk-editor-stacked">
             <p id="platform-account-target"></p>
-            <div id="platform-edit-fields" class="formgrid">
-              <label id="platform-edit-company">Perusahaan<input name="company_display" readonly></label>
-              <label>Email<input name="email_display" type="email" readonly></label>
-              <label>Nama lengkap<input name="full_name" maxlength="160" required></label>
+            <div id="platform-edit-fields" class="sk-editor-fields">
+              <label id="platform-edit-company" class="sk-editor-wide">Perusahaan<span id="platform-company-value" class="sk-editor-readonly"></span></label>
+              <label class="sk-editor-wide">Email<span id="platform-email-value" class="sk-editor-readonly"></span></label>
+              <label>Nama lengkap<input name="full_name" maxlength="160" required autofocus></label>
               <label>Status<select name="is_active"><option value="true">Aktif</option><option value="false">Nonaktif</option></select></label>
             </div>
-            <div id="platform-password-fields" class="formgrid" hidden>
+            <div id="platform-password-fields" class="sk-editor-fields" hidden>
               <label>Password baru<input name="password" type="password" minlength="8" required autocomplete="new-password"></label>
               <label>Konfirmasi password<input name="password_confirm" type="password" minlength="8" required autocomplete="new-password"></label>
             </div>
@@ -107,12 +117,22 @@
         </dialog>
       <section id="platform-admin-panel" data-workspace-page hidden>
         <h2>Admin Platform</h2>
-        <form id="platform-create-form" autocomplete="off">
-          <label>Nama lengkap<input name="full_name" maxlength="160" required></label>
-          <label>Email<input name="email" type="email" required></label>
-          <label>Password awal<input name="password" type="password" minlength="8" required autocomplete="new-password"></label>
-          <button type="submit" class="btn primary">Tambah Admin Platform</button>
-        </form>
+        <button type="button" class="btn primary" data-editor-open="platform-create-form-dialog">Tambah Admin Platform</button>
+        <dialog id="platform-create-form-dialog" class="sk-compact-editor" aria-labelledby="platform-create-form-heading">
+          <div class="modalhead"><h3 id="platform-create-form-heading">Tambah Admin Platform</h3></div>
+          <form class="control-form sk-editor-stacked" id="platform-create-form" autocomplete="off">
+            <div class="sk-editor-fields">
+          <label class="sk-editor-field">Nama lengkap<input name="full_name" maxlength="160" required></label>
+          <label class="sk-editor-field">Email<input name="email" type="email" required></label>
+          <label class="sk-editor-field">Password awal<input name="password" type="password" minlength="8" required autocomplete="new-password"></label>
+            </div>
+            <p class="control-form-message" role="status"></p>
+            <div class="control-form-actions">
+              <button type="button" class="btn ghost" data-editor-cancel>Batal</button>
+              <button type="submit" class="btn primary">Tambah Admin Platform</button>
+            </div>
+          </form>
+        </dialog>
         <div class="table-scroll"><table><thead><tr><th>Nama</th><th>Email</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="platform-admins"></tbody></table></div>
       </section>
       <div id="operations" hidden>

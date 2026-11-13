@@ -325,6 +325,30 @@
   .sk-theme .sk-compact-editor :is(input, select, .btn) { min-height: 44px; }
 }
 
+/* Compact data-entry dialogs with groups that span the full editor. */
+.sk-theme .sk-compact-editor > .sk-editor-stacked:not([hidden]) {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+.sk-editor-stacked > p { margin: 0; overflow-wrap: anywhere; }
+.sk-editor-stacked .sk-editor-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 10px 12px;
+}
+.sk-editor-fields .sk-editor-wide, .sk-editor-fields label:has(input:is([type="email"], [type="password"])) {
+  grid-column: 1 / -1;
+}
+.sk-editor-readonly {
+  padding: 6px 8px;
+  background: var(--sk-canvas);
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 560px) {
+  .sk-editor-stacked .sk-editor-fields { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* A shared type scale for the KPI cards across report tabs. */
 .sk-theme :is(.laporan-v3, #reportContent, .kinerja-v2) {
   --sk-report-kpi-label-size: 11px;
