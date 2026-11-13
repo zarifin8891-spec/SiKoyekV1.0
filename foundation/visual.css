@@ -970,3 +970,28 @@
   .sk-theme #modal .entry-table input:is(#wi_name, [name=notes]) { min-width: 145px; }
   .sk-theme #modal .entry-table th[scope=row] { text-align: left; font-weight: 400; }
 }
+
+@layer neon-surfaces {
+  @media screen {
+    .sk-theme #modal :is(.ui-final-summary strong, #wiTotalPreview) {
+      color: var(--control-data-ink) !important;
+    }
+    .sk-theme #modal #item-entry .ui-total { color: var(--control-workspace-ink) !important; }
+    .sk-theme #modal #item-entry .entry-table thead th {
+      font-weight: 400 !important;
+      text-transform: none !important;
+      letter-spacing: normal !important;
+    }
+    .sk-theme #modal #item-entry .entry-table input {
+      border: 1px solid var(--control-secondary-line) !important;
+      padding-inline: 8px !important;
+      box-shadow: none !important;
+    }
+    .sk-theme #modal #item-entry .entry-table input[type=number] { text-align: left !important; }
+    .sk-theme #modal #item-entry .entry-table [name=work_name] { min-width: 145px; }
+    .sk-theme #modal #item-entry .entry-table [data-remove-item] {
+      min-height: 32px !important;
+      padding: 4px 8px !important;
+    }
+  }
+}

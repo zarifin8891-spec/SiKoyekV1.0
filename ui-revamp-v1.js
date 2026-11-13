@@ -97,35 +97,82 @@
   };
 
   window.openItemForm=function(editId){
-    const item=editId?state.detail.items.find(x=>String(x.id)===String(editId)):null;
+    const project=state.selected;
+    const items=state.detail.items;
+    const item=editId?items.find(x=>String(x.id)===String(editId)):null;
+    if(editId&&!item)return;
+    let nextOrder=items.reduce((max,x)=>Math.max(max,Number(x.sort_order)||0),0)+1;
+    const rowMarkup=()=>`<tr>
+      <td><input aria-label="Urutan" name="sort_order" type="number" min="0" max="2147483647" required value="${item?.sort_order??nextOrder++}"></td>
+      <td><input aria-label="Nama Pekerjaan" name="work_name" required value="${esc(item?.work_name||'')}"></td>
+      <td><input aria-label="Bobot (%)" name="weight" type="number" min="0" max="100" step="0.01" required value="${item?Number(item.weight||0)*100:0}"></td>
+      <td><input aria-label="Durasi (hari)" name="duration_days" type="number" min="1" max="36500" value="${esc(item?.duration_days??'')}"></td>
+      <td><input aria-label="Rencana Mulai" name="planned_start_date" type="date" value="${esc(item?.planned_start_date??'')}"></td>
+      <td><input aria-label="Keterangan" name="notes" value="${esc(item?.notes||'')}"></td>
+      ${item?'':'<td><button type="button" class="btn ghost" data-remove-item>Hapus</button></td>'}
+    </tr>`;
     modal(item?'Edit Item Pekerjaan':'Tambah Item Pekerjaan',`
-      <div class="ui-help">Gunakan bobot untuk membentuk progress proyek. Total bobot seluruh item tidak boleh melebihi 100%.</div>
-      <div class="scroll entry-table-wrap"><table class="table entry-table"><thead><tr>
-        <th scope="col">Urutan</th><th scope="col">Nama Pekerjaan</th><th scope="col">Bobot (%)</th>
-        <th scope="col">Durasi (hari)</th><th scope="col">Rencana Mulai</th><th scope="col">Keterangan</th>
-      </tr></thead><tbody><tr>
-        <td><input aria-label="Urutan" id="wi_sort" type="number" min="0" value="${item?.sort_order??state.detail.items.length+1}"></td>
-        <td><input aria-label="Nama Pekerjaan" id="wi_name" value="${esc(item?.work_name||'')}"></td>
-        <td><input aria-label="Bobot (%)" id="wi_weight" type="number" min="0" max="100" step="0.01" value="${item?Number(item.weight||0)*100:0}"></td>
-        <td><input aria-label="Durasi (hari)" id="wi_duration" type="number" min="1" max="36500" step="1" value="${esc(item?.duration_days??'')}"></td>
-        <td><input aria-label="Rencana Mulai" id="wi_planned_start" type="date" value="${esc(item?.planned_start_date??'')}"></td>
-        <td><input aria-label="Keterangan" id="wi_notes" value="${esc(item?.notes||'')}"></td>
-      </tr></tbody></table></div>
-      <div class="ui-total"><span>Total bobot saat ini</span><strong id="wiTotalPreview">${pct(state.detail.items.reduce((s,x)=>s+Number(x.weight||0),0)*100)}</strong></div>
-      <div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn primary" onclick="${item?'saveItemEdit(\''+item.id+'\')':'saveItem()'}">Simpan Item</button></div>`);
-    const refresh=()=>{const current=state.detail.items.reduce((s,x)=>s+(String(x.id)===String(editId)?0:Number(x.weight||0)),0)+Number(document.getElementById('wi_weight')?.value||0)/100;const el=document.getElementById('wiTotalPreview');if(el)el.textContent=pct(current*100)};
-    document.getElementById('wi_weight')?.addEventListener('input',refresh);
-  };
-
-  window.saveItemEdit=async function(id){
-    const schedule=SiKoyekControl.readItemSchedule('wi');if(!schedule)return;
-    const row={...schedule,work_name:document.getElementById('wi_name').value.trim(),weight:Number(document.getElementById('wi_weight').value||0)/100,sort_order:Number(document.getElementById('wi_sort').value||0),notes:document.getElementById('wi_notes').value.trim()||null};
-    if(!row.work_name){toast('Nama item wajib diisi');return}
-    const other=state.detail.items.filter(x=>String(x.id)!==String(id)).reduce((s,x)=>s+Number(x.weight||0),0);
-    if(other+row.weight>1.000001){toast('Total bobot proyek tidak boleh lebih dari 100%');return}
-    const {error}=await sb.from('project_work_items').update(row).eq('id',id);
-    if(error){toast(error.message);return}
-    closeModal();await loadSummary();await openProject(state.selected);toast('Item pekerjaan diperbarui');
+      <form id="item-entry">
+        <div class="scroll entry-table-wrap"><table class="table entry-table"><thead><tr>
+          <th scope="col">Urutan</th><th scope="col">Nama Pekerjaan</th><th scope="col">Bobot (%)</th>
+          <th scope="col">Durasi (hari)</th><th scope="col">Rencana Mulai</th><th scope="col">Keterangan</th>
+          ${item?'':'<th scope="col">Aksi</th>'}
+        </tr></thead><tbody>${rowMarkup()}</tbody></table></div>
+        <div class="ui-total"><span>Total bobot</span><strong id="wiTotalPreview"></strong></div>
+        <div class="formactions">
+          ${item?'':'<button type="button" class="btn ghost" data-add-item-row>+ Tambah Baris</button>'}
+          <button type="button" class="btn ghost" onclick="closeModal()">Batal</button>
+          <button type="submit" class="btn primary">Simpan Item</button>
+        </div>
+      </form>`);
+    const form=document.getElementById('item-entry');
+    const body=form.querySelector('tbody');
+    const submit=form.querySelector('[type=submit]');
+    const existingWeight=items.reduce((sum,x)=>sum+(x===item?0:Number(x.weight||0)),0);
+    const refresh=()=>{
+      const draftWeight=[...body.querySelectorAll('[name=weight]')].reduce((sum,input)=>sum+Number(input.value||0)/100,0);
+      form.querySelector('#wiTotalPreview').textContent=pct((existingWeight+draftWeight)*100);
+    };
+    form.addEventListener('input',refresh);
+    form.querySelector('[data-add-item-row]')?.addEventListener('click',()=>{
+      if(submit.disabled)return;
+      body.insertAdjacentHTML('beforeend',rowMarkup());
+      body.lastElementChild.querySelector('[name=work_name]').focus();
+      refresh();
+    });
+    body.addEventListener('click',event=>{
+      const remove=event.target.closest('[data-remove-item]');
+      if(!remove||submit.disabled)return;
+      remove.closest('tr').remove();
+      refresh();
+    });
+    form.addEventListener('submit',async event=>{
+      event.preventDefault();
+      if(submit.disabled||!form.reportValidity())return;
+      const rows=[...body.rows].map(row=>{
+        const value=name=>row.querySelector(`[name="${name}"]`).value.trim();
+        return {
+          project_id:project, sort_order:Number(value('sort_order')), work_name:value('work_name'),
+          weight:Number(value('weight'))/100, duration_days:Number(value('duration_days'))||null,
+          planned_start_date:value('planned_start_date')||null, notes:value('notes')||null,
+        };
+      });
+      if(!rows.length||rows.some(row=>!row.work_name)){toast('Isi nama pekerjaan pada setiap baris');return}
+      if(rows.some(row=>row.planned_start_date&&!row.duration_days)){toast('Tanggal rencana mulai memerlukan durasi');return}
+      if(existingWeight+rows.reduce((sum,row)=>sum+row.weight,0)>1.000001){toast('Total bobot proyek tidak boleh lebih dari 100%');return}
+      submit.disabled=true;
+      try {
+        const table=sb.from('project_work_items');
+        const {error}=await (item?table.update(rows[0]).eq('id',item.id).eq('project_id',project):table.insert(rows));
+        if(error){toast(error.message);return}
+        if(form.isConnected)closeModal();
+        await loadSummary();
+        if(state.selected===project)await openProject(project);
+        toast(item?'Item pekerjaan diperbarui':'Item pekerjaan ditambahkan');
+      } catch(error){toast(error.message||'Gagal menyimpan item pekerjaan')}
+      finally{submit.disabled=false}
+    });
+    refresh();
   };
 
   window.openRapForm=function(){
