@@ -40,13 +40,13 @@
     </template>
     <div id="signed-in" class="shell control-shell" hidden>
       <div class="content">
-        <div class="control-head">
-          <h1 id="workspace-title"></h1>
+        <div class="workspace-account-bar">
+          <span id="workspace-title"></span>
           <button type="button" id="logout" class="control-button" hidden>Keluar</button>
         </div>
         <p id="workspace-empty" hidden>Belum ada modul yang dapat diakses.</p>
       <section id="company-panel" data-workspace-page hidden>
-        <h2>Master Data Perusahaan</h2>
+        <header class="sk-page-banner"><h2>Master Data Perusahaan</h2></header>
         <form id="company-form">
           <label>Nama perusahaan<input name="name" maxlength="160" required></label>
           <button type="submit">Tambah Perusahaan</button>
@@ -56,7 +56,7 @@
         </div>
       </section>
       <section id="account-panel" data-workspace-page hidden>
-        <h2 id="account-heading"></h2>
+        <header class="sk-page-banner"><h2 id="account-heading"></h2></header>
         <button type="button" class="btn primary" data-editor-open="account-form-dialog">Tambah Admin Perusahaan</button>
         <dialog id="account-form-dialog" class="sk-compact-editor" aria-labelledby="account-form-heading">
           <div class="modalhead"><h3 id="account-form-heading">Tambah Akun</h3></div>
@@ -116,7 +116,7 @@
           </form>
         </dialog>
       <section id="platform-admin-panel" data-workspace-page hidden>
-        <h2>Admin Platform</h2>
+        <header class="sk-page-banner"><h2>Admin Platform</h2></header>
         <button type="button" class="btn primary" data-editor-open="platform-create-form-dialog">Tambah Admin Platform</button>
         <dialog id="platform-create-form-dialog" class="sk-compact-editor" aria-labelledby="platform-create-form-heading">
           <div class="modalhead"><h3 id="platform-create-form-heading">Tambah Admin Platform</h3></div>
@@ -137,7 +137,7 @@
       </section>
       <div id="operations" hidden>
         <section id="master-data-panel" data-workspace-page hidden>
-          <h2>Master Data Perusahaan</h2>
+          <header class="sk-page-banner"><h2>Master Data Perusahaan</h2></header>
           <form id="master-entry">
             <label>Jenis<select name="kind">
               <option value="project_category">Kategori Proyek</option>
@@ -169,7 +169,7 @@
           </form>
         </div>
         <section id="transaction-panel" data-workspace-page hidden>
-          <h2>Transaksi</h2>
+          <header class="sk-page-banner"><h2>Transaksi</h2></header>
           <form id="transaction-entry">
             <label>Proyek<select name="project_id" required></select></label>
             <label>Kategori<select name="category_id"></select></label>
@@ -232,8 +232,8 @@
           </div>
         </div>
         <section id="report-panel" data-workspace-page hidden>
-          <div class="sectiontitle"><h2>Ringkasan Keuangan Proyek</h2>
-            <button type="button" class="btn ghost" data-open-workspace-page="transaction">Buka Transaksi</button></div>
+          <header class="sk-page-banner"><div><h1>Laporan</h1><p>Ringkasan Keuangan Proyek</p></div>
+            <button type="button" class="btn ghost" data-open-workspace-page="transaction">Buka Transaksi</button></header>
           <div class="table-scroll"><table><thead><tr><th>Proyek</th><th>Kontrak</th><th>Kas Masuk</th><th>Kas Keluar</th></tr></thead><tbody id="report-rows"></tbody></table></div>
         </section>
       </div>

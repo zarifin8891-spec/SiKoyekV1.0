@@ -8,6 +8,17 @@
 [hidden], #workspace [hidden] { display: none !important; }
 body { margin: 0; }
 [data-workspace-page]:not([data-current]) { display: none; }
+#signed-in .workspace-account-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+#signed-in .workspace-account-bar .control-button { flex-shrink: 0; }
 section[data-workspace-page] {
   margin-block: 12px;
   padding: 14px;
@@ -15,6 +26,7 @@ section[data-workspace-page] {
   border-radius: 12px;
   background: #fff;
 }
+section[data-workspace-page] > .sk-page-banner { margin: -15px -15px 16px; }
 h1, h2 { margin: 0 0 10px; }
 h1 { font-size: 24px; }
 h2 { font-size: 18px; }
