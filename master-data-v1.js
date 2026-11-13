@@ -81,25 +81,70 @@
   async function refresh(){try{const [pc,pm,fc,pay]=await Promise.all([list('project_categories'),managers(),list('transaction_categories'),list('payment_methods')]);renderList('md-project-cats',pc,'mdEditProjectCategory','mdDeleteProjectCategory');renderManagerList(pm,'mdEditManager','mdDeleteManager');renderList('md-finance-cats',fc,'mdEditFinanceCategory','mdDeleteFinanceCategory');renderList('md-payment-methods',pay,'mdEditPaymentMethod','mdDeletePaymentMethod')}catch(e){toast(e?.message||'Gagal memuat Master Data')}}
   function openMasterData(){state.page='master-data';state.selected=null;state.detail=null;const page=q('page');if(page){page.innerHTML=masterHTML();bindMasterTabs(page);refresh()}document.querySelectorAll('.sidebar .nav button').forEach(b=>b.classList.remove('active'));document.querySelector('[data-master-data-nav]')?.classList.add('active');cleanProjectCategoryControl()}
   window.openMasterData=openMasterData;
-  window.mdAddProjectCategory=function(){modal('Tambah Kategori Proyek',`<div class="field"><label>Nama Kategori *</label><input id="md_name"></div><div class="field"><label>Urutan</label><input id="md_sort" type="number" value="1"></div><div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn primary" onclick="mdSaveProjectCategory()">Simpan</button></div>`)};
-  window.mdSaveProjectCategory=async function(){const name=q('md_name')?.value.trim(),sort=Number(q('md_sort')?.value||0);if(!name){toast('Nama kategori wajib diisi');return}const {error}=await db().from('project_categories').insert({name,sort_order:sort,is_active:true});if(error){toast(error.message);return}closeModal();toast('Kategori proyek ditambahkan');refresh()};
-  window.mdEditProjectCategory=async function(id){const {data,error}=await db().from('project_categories').select('*').eq('id',id).single();if(error){toast(error.message);return}modal('Edit Kategori Proyek',`<div class="field"><label>Nama Kategori *</label><input id="md_name" value="${esc(data.name)}"></div><div class="field"><label>Urutan</label><input id="md_sort" type="number" value="${Number(data.sort_order||0)}"></div><div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn primary" onclick="mdSaveProjectCategoryEdit('${id}')">Simpan</button></div>`)};
-  window.mdSaveProjectCategoryEdit=async function(id){const name=q('md_name')?.value.trim(),sort=Number(q('md_sort')?.value||0);if(!name){toast('Nama kategori wajib diisi');return}const {error}=await db().from('project_categories').update({name,sort_order:sort,updated_at:new Date().toISOString()}).eq('id',id);if(error){toast(error.message);return}closeModal();refresh()};
+  let masterEditor;
+  function closeMasterEditor(){ masterEditor?.close(); }
+  function openMasterEditor(title, fields, save){
+    closeMasterEditor();
+    const dialog=document.createElement('dialog');
+    dialog.className='sk-compact-editor sk-catalog-editor';
+    dialog.setAttribute('aria-labelledby','md-editor-title');
+    dialog.innerHTML=`<div class="modalhead"><h3 id="md-editor-title">${esc(title)}</h3><button type="button" class="btn ghost" data-dismiss>Tutup</button></div>
+      <form class="control-form sk-editor-stacked">
+        <div class="sk-editor-fields">${fields}</div>
+        <div class="control-form-actions"><button type="button" class="btn ghost" data-dismiss>Batal</button><button type="submit" class="btn primary">Simpan</button></div>
+      </form>`;
+    const submit=dialog.querySelector('[type=submit]');
+    dialog.querySelectorAll('[data-dismiss]').forEach(button=>button.addEventListener('click',()=>{if(!submit.disabled)dialog.close();}));
+    dialog.addEventListener('cancel',event=>{if(submit.disabled)event.preventDefault();});
+    dialog.addEventListener('close',()=>{
+      if(masterEditor===dialog)masterEditor=null;
+      dialog.remove();
+    });
+    dialog.querySelector('form').addEventListener('submit',async event=>{
+      event.preventDefault();
+      if(submit.disabled)return;
+      submit.disabled=true;
+      try { await save(); }
+      catch(error){ toast(error?.message||'Gagal menyimpan data'); }
+      finally { submit.disabled=false; }
+    });
+    masterEditor=dialog;
+    document.body.append(dialog);
+    dialog.showModal();
+  }
+  function masterField(id,label,value='',type='text',placeholder=''){
+    return `<label class="sk-editor-field" for="${id}">${label}<input id="${id}" type="${type}" value="${esc(value)}" placeholder="${esc(placeholder)}"></label>`;
+  }
+  function categoryFields(label,data,placeholder){
+    return masterField('md_name',label,data?.name,'text',placeholder)
+      +masterField('md_sort','Urutan',data?Number(data.sort_order||0):1,'number');
+  }
+  function managerFields(data){
+    return masterField('md_pm_code','Kode *',data?.code,'text','PM-001')
+      +masterField('md_pm_name','Nama *',data?.name)
+      +masterField('md_pm_phone','No. Telepon',data?.phone,'tel')
+      +masterField('md_pm_email','Email',data?.email,'email')
+      +masterField('md_pm_sort','Urutan',data?Number(data.sort_order||0):1,'number');
+  }
+  window.mdAddProjectCategory=()=>openMasterEditor('Tambah Kategori Proyek',categoryFields('Nama Kategori *'),window.mdSaveProjectCategory);
+  window.mdSaveProjectCategory=async function(){const name=q('md_name')?.value.trim(),sort=Number(q('md_sort')?.value||0);if(!name){toast('Nama kategori wajib diisi');return}const {error}=await db().from('project_categories').insert({name,sort_order:sort,is_active:true});if(error){toast(error.message);return}closeMasterEditor();toast('Kategori proyek ditambahkan');refresh()};
+  window.mdEditProjectCategory=async function(id){const {data,error}=await db().from('project_categories').select('*').eq('id',id).single();if(error){toast(error.message);return}openMasterEditor('Edit Kategori Proyek',categoryFields('Nama Kategori *',data),()=>window.mdSaveProjectCategoryEdit(id));};
+  window.mdSaveProjectCategoryEdit=async function(id){const name=q('md_name')?.value.trim(),sort=Number(q('md_sort')?.value||0);if(!name){toast('Nama kategori wajib diisi');return}const {error}=await db().from('project_categories').update({name,sort_order:sort,updated_at:new Date().toISOString()}).eq('id',id);if(error){toast(error.message);return}closeMasterEditor();refresh()};
   window.mdDeleteProjectCategory=function(id,name){modal('Hapus Kategori Proyek',`<p>Yakin menghapus <strong>${esc(name)}</strong>?</p><div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn danger" onclick="mdConfirmDeleteProjectCategory('${id}')">Hapus Data</button></div>`)};
   window.mdConfirmDeleteProjectCategory=async function(id){const {error}=await db().from('project_categories').delete().eq('id',id);if(error){toast(error.message);return}closeModal();refresh()};
-  window.mdAddManager=function(){modal('Tambah Project Manager',`<div class="formgrid"><div class="field"><label>Nama *</label><input id="md_pm_name"></div><div class="field"><label>Kode *</label><input id="md_pm_code" placeholder="PM-001"></div><div class="field"><label>No. Telepon</label><input id="md_pm_phone"></div><div class="field"><label>Email</label><input id="md_pm_email" type="email"></div><div class="field"><label>Urutan</label><input id="md_pm_sort" type="number" value="1"></div></div><div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn primary" onclick="mdSaveManager()">Simpan</button></div>`)};
-  window.mdSaveManager=async function(){const row={name:q('md_pm_name')?.value.trim(),code:q('md_pm_code')?.value.trim(),phone:q('md_pm_phone')?.value.trim()||null,email:q('md_pm_email')?.value.trim()||null,sort_order:Number(q('md_pm_sort')?.value||0),is_active:true};if(!row.name||!row.code){toast('Nama dan kode wajib diisi');return}const {error}=await db().from('project_managers').insert(row);if(error){toast(error.message);return}closeModal();refresh()};
-  window.mdEditManager=async function(id){const {data,error}=await db().from('project_managers').select('*').eq('id',id).single();if(error){toast(error.message);return}modal('Edit Project Manager',`<div class="formgrid"><div class="field"><label>Nama *</label><input id="md_pm_name" value="${esc(data.name)}"></div><div class="field"><label>Kode *</label><input id="md_pm_code" value="${esc(data.code)}"></div><div class="field"><label>No. Telepon</label><input id="md_pm_phone" value="${esc(data.phone||'')}"></div><div class="field"><label>Email</label><input id="md_pm_email" value="${esc(data.email||'')}"></div><div class="field"><label>Urutan</label><input id="md_pm_sort" type="number" value="${Number(data.sort_order||0)}"></div></div><div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn primary" onclick="mdSaveManagerEdit('${id}')">Simpan</button></div>`)};
-  window.mdSaveManagerEdit=async function(id){const row={name:q('md_pm_name')?.value.trim(),code:q('md_pm_code')?.value.trim(),phone:q('md_pm_phone')?.value.trim()||null,email:q('md_pm_email')?.value.trim()||null,sort_order:Number(q('md_pm_sort')?.value||0),updated_at:new Date().toISOString()};if(!row.name||!row.code){toast('Nama dan kode wajib diisi');return}const {error}=await db().from('project_managers').update(row).eq('id',id);if(error){toast(error.message);return}closeModal();refresh()};
+  window.mdAddManager=()=>openMasterEditor('Tambah Project Manager',managerFields(),window.mdSaveManager);
+  window.mdSaveManager=async function(){const row={name:q('md_pm_name')?.value.trim(),code:q('md_pm_code')?.value.trim(),phone:q('md_pm_phone')?.value.trim()||null,email:q('md_pm_email')?.value.trim()||null,sort_order:Number(q('md_pm_sort')?.value||0),is_active:true};if(!row.name||!row.code){toast('Nama dan kode wajib diisi');return}const {error}=await db().from('project_managers').insert(row);if(error){toast(error.message);return}closeMasterEditor();refresh()};
+  window.mdEditManager=async function(id){const {data,error}=await db().from('project_managers').select('*').eq('id',id).single();if(error){toast(error.message);return}openMasterEditor('Edit Project Manager',managerFields(data),()=>window.mdSaveManagerEdit(id));};
+  window.mdSaveManagerEdit=async function(id){const row={name:q('md_pm_name')?.value.trim(),code:q('md_pm_code')?.value.trim(),phone:q('md_pm_phone')?.value.trim()||null,email:q('md_pm_email')?.value.trim()||null,sort_order:Number(q('md_pm_sort')?.value||0),updated_at:new Date().toISOString()};if(!row.name||!row.code){toast('Nama dan kode wajib diisi');return}const {error}=await db().from('project_managers').update(row).eq('id',id);if(error){toast(error.message);return}closeMasterEditor();refresh()};
   window.mdDeleteManager=function(id,name){modal('Hapus Project Manager',`<p>Yakin menghapus <strong>${esc(name)}</strong>?</p><div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn danger" onclick="mdConfirmDeleteManager('${id}')">Hapus Data</button></div>`)};
   window.mdConfirmDeleteManager=async function(id){const {error}=await db().from('project_managers').delete().eq('id',id);if(error){toast(error.message);return}closeModal();refresh()};
-  async function add(table,title){const name=q('md_name')?.value.trim(),sort=Number(q('md_sort')?.value||0);if(!name){toast('Nama wajib diisi');return}const {error}=await db().from(table).insert({name,sort_order:sort,is_active:true});if(error){toast(error.message);return}closeModal();toast(title+' ditambahkan');refresh()}
-  window.mdAddFinanceCategory=function(){modal('Tambah Kategori Keuangan',`<div class="field"><label>Nama Kategori *</label><input id="md_name" placeholder="Contoh: Material"></div><div class="field"><label>Urutan</label><input id="md_sort" type="number" value="1"></div><div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn primary" onclick="add('transaction_categories','Kategori Keuangan')">Simpan</button></div>`)};
-  window.mdAddPaymentMethod=function(){modal('Tambah Metode Pembayaran',`<div class="field"><label>Nama Metode *</label><input id="md_name" placeholder="Contoh: Transfer"></div><div class="field"><label>Urutan</label><input id="md_sort" type="number" value="1"></div><div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn primary" onclick="add('payment_methods','Metode Pembayaran')">Simpan</button></div>`)};
-  async function edit(table,title,id){const {data,error}=await db().from(table).select('*').eq('id',id).single();if(error){toast(error.message);return}modal('Edit '+title,`<div class="field"><label>Nama *</label><input id="md_name" value="${esc(data.name)}"></div><div class="field"><label>Urutan</label><input id="md_sort" type="number" value="${Number(data.sort_order||0)}"></div><div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn primary" onclick="saveEdit('${table}','${title}','${id}')">Simpan</button></div>`)}
+  async function add(table,title){const name=q('md_name')?.value.trim(),sort=Number(q('md_sort')?.value||0);if(!name){toast('Nama wajib diisi');return}const {error}=await db().from(table).insert({name,sort_order:sort,is_active:true});if(error){toast(error.message);return}closeMasterEditor();toast(title+' ditambahkan');refresh()}
+  window.mdAddFinanceCategory=()=>openMasterEditor('Tambah Kategori Keuangan',categoryFields('Nama Kategori *',null,'Contoh: Material'),()=>add('transaction_categories','Kategori Keuangan'));
+  window.mdAddPaymentMethod=()=>openMasterEditor('Tambah Metode Pembayaran',categoryFields('Nama Metode *',null,'Contoh: Transfer'),()=>add('payment_methods','Metode Pembayaran'));
+  async function edit(table,title,id){const {data,error}=await db().from(table).select('*').eq('id',id).single();if(error){toast(error.message);return}openMasterEditor('Edit '+title,categoryFields(table==='payment_methods'?'Nama Metode *':'Nama Kategori *',data),()=>window.saveEdit(table,title,id));}
   window.mdEditFinanceCategory=id=>edit('transaction_categories','Kategori Keuangan',id);
   window.mdEditPaymentMethod=id=>edit('payment_methods','Metode Pembayaran',id);
-  window.saveEdit=async function(table,title,id){const name=q('md_name')?.value.trim(),sort=Number(q('md_sort')?.value||0);if(!name){toast('Nama wajib diisi');return}const {error}=await db().from(table).update({name,sort_order:sort,updated_at:new Date().toISOString()}).eq('id',id);if(error){toast(error.message);return}closeModal();toast(title+' diperbarui');refresh()};
+  window.saveEdit=async function(table,title,id){const name=q('md_name')?.value.trim(),sort=Number(q('md_sort')?.value||0);if(!name){toast('Nama wajib diisi');return}const {error}=await db().from(table).update({name,sort_order:sort,updated_at:new Date().toISOString()}).eq('id',id);if(error){toast(error.message);return}closeMasterEditor();toast(title+' diperbarui');refresh()};
   window.mdDeleteFinanceCategory=(id,name)=>del('transaction_categories','Kategori Keuangan',id,name);
   window.mdDeletePaymentMethod=(id,name)=>del('payment_methods','Metode Pembayaran',id,name);
   function del(table,title,id,name){modal('Hapus '+title,`<p>Yakin menghapus <strong>${esc(name)}</strong>?</p><div class="formactions"><button class="btn ghost" onclick="closeModal()">Batal</button><button class="btn danger" onclick="confirmDel('${table}','${id}')">Hapus Data</button></div>`)}
