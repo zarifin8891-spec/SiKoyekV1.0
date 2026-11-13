@@ -504,16 +504,16 @@
   color: var(--control-workspace-ink);
 }
 /* Panels and table wrappers share one surface; table cells and editable controls retain light contrast. */
-.sk-theme :is(.content, .main, .wrap) :is(.card, .control-card, .md-card, .um-card, .summary-panel, .kpi, .extra-kpi, .kinerja-kpi, section[data-workspace-page]) {
+.sk-theme :is(.content, .main, .wrap) :is(.card, .control-card, .md-card, .um-card, .summary-panel, .timeline-v4, .rap-item, .rap-total, .cost-item, .timeline-v4-stat, .kpi, .extra-kpi, .kinerja-kpi, .rap-biaya-kpi, .note-card, section[data-workspace-page]) {
   --control-ink: var(--control-workspace-ink);
   --control-muted: var(--control-workspace-muted);
   --control-orange: var(--control-accent);
-  --control-line: #24619a;
+  --control-line: #55e5ff;
   --text: var(--control-ink);
   --muted: var(--control-muted);
   --control-panel-gradient: linear-gradient(150deg, #10477e, #09264e 62%, #081e42);
   background: var(--control-panel-gradient);
-  box-shadow: inset 0 1px 0 #53e2ff3b, 0 5px 14px #020b2459;
+  box-shadow: inset 0 1px 2px #77ebff42, 0 0 9px #36dfff49, 0 6px 13px #020b2490;
   border-color: var(--control-line);
   color: var(--control-ink);
 }
@@ -597,7 +597,7 @@
   color: var(--control-data-ink);
 }
 .sk-theme .content .control-search { background-color: var(--control-field-surface); }
-.sk-theme :is(.content, .main, .wrap) table :is(th, td) { color: var(--control-data-ink); }
+.sk-theme :is(.content, .main, .wrap) table :is(th, td) { color: var(--control-data-ink) !important; }
 .sk-theme :is(.content, .main, .wrap) table thead th {
   background: var(--control-table-head) !important;
 }
@@ -610,7 +610,7 @@
 
 .sk-theme .content .control-search :is(input, svg),
 .sk-theme :is(.content, .main, .wrap) table :is(.control-link, .linkbtn) {
-  color: var(--control-data-ink);
+  color: var(--control-data-ink) !important;
 }
 .sk-theme :is(.content, .main, .wrap, dialog, #modal, .login-form-panel) :is(input, textarea)::placeholder {
   color: #a5cbe5;
@@ -618,3 +618,40 @@
 }
 .sk-theme :is(.content, .main, .wrap) table { --control-row-line: #24619a; }
 .sk-theme :is(.content, .main, .wrap) table tbody td { border-bottom-color: var(--control-row-line); }
+
+/* Keep project detail surfaces and data labels legible across legacy modules. */
+.sk-theme :is(.content, .main, .wrap) :is(.timeline-v4, .rap-item, .rap-total, .cost-item, .timeline-v4-stat) {
+  background: var(--control-panel-gradient) !important;
+  border: 1px solid var(--control-line);
+}
+.sk-theme :is(.summary-panel, .timeline-v4) :is(.note, .label, .subheading, .timeline-v4-dates, .timeline-v4-current-date) {
+  color: #b8dcf5 !important;
+}
+.sk-theme :is(.summary-panel, .timeline-v4) :is(.value, strong, h3) {
+  color: #eefaff !important;
+}
+.sk-theme .timeline-v4-badge {
+  background: #123e68;
+  color: #d7f6ff;
+}
+.sk-theme :is(.content, .main, .wrap) table :is(.control-badge.neutral, .pill.neutral) {
+  background: #173e65;
+  color: #d6f4ff;
+}
+.sk-theme :is(.content, .main, .wrap) table :is(.control-link, .linkbtn) {
+  background: transparent;
+}
+
+/* Navigation and command buttons share the same selected and unselected colors. */
+.sk-theme :is(.shell, .wrap, dialog, #modal) :is(.btn, .control-button, .report-tabs button, .tabs button, .md-tabs button, .sidebar .nav button, .sidebar .nav a, .side .nav a):not(:is(.danger, .active, .selected, [aria-selected="true"], [aria-pressed="true"], [aria-current="page"])) {
+  background: #a7efff !important;
+  color: #091f40 !important;
+  border-color: #63dbf6;
+}
+.sk-theme :is(.shell, .wrap, dialog, #modal) :is(.btn, .control-button, .report-tabs button, .tabs button, .md-tabs button, .sidebar .nav button, .sidebar .nav a, .side .nav a):is(.active, .selected, [aria-selected="true"], [aria-pressed="true"], [aria-current="page"]) {
+  background: #0d3054 !important;
+  color: #fff !important;
+  border-color: #21567f;
+  box-shadow: inset 0 -2px 0 #53e2ff, 0 2px 8px #36dfff35;
+}
+.sk-theme .sidebar .nav :is(button, a) svg { color: currentColor; }
