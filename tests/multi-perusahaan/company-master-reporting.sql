@@ -21,6 +21,15 @@ insert into public.project_work_items(id,project_id,work_name,weight)
 values ('45000000-0000-4000-8000-000000000001','35000000-0000-4000-8000-000000000001','Pondasi',1);
 insert into public.progress_records(project_id,work_item_id,progress_date,progress_percentage)
 values ('35000000-0000-4000-8000-000000000001','45000000-0000-4000-8000-000000000001','2026-11-13',0.4);
+do $$
+begin
+  begin
+    insert into public.progress_records(project_id,work_item_id,progress_date,progress_percentage)
+    values ('35000000-0000-4000-8000-000000000001','45000000-0000-4000-8000-000000000001','2026-11-14',0.7);
+    raise exception 'Total Progress di atas 100%% diterima.';
+  exception when check_violation then null;
+  end;
+end $$;
 insert into public.project_rap(project_id,material) values ('35000000-0000-4000-8000-000000000001',1000)
 on conflict (project_id) do update set material=excluded.material;
 insert into public.project_rap(project_id,material) values ('35000000-0000-4000-8000-000000000001',1200)

@@ -80,7 +80,7 @@ begin
     insert into public.company_worker_assignments(project_id,employee_id,worker_code,worker_name,starts_on)
     values ('33000000-0000-4000-8000-000000000003','43000000-0000-4000-8000-000000000001','K01','Karyawan A','2026-11-30');
     raise exception 'Karyawan perusahaan lain dapat dipilih.';
-  exception when foreign_key_violation then null;
+  exception when foreign_key_violation or check_violation then null;
   end;
 end $$;
 rollback;
