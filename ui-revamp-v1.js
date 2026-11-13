@@ -127,7 +127,6 @@
   window.openRapForm=function(){
     const r=state.detail.rap||{};
     modal('RAP Proyek — Kontrol Anggaran',`
-      <div class="ui-help">RAP V1.1 memakai enam kelompok biaya. Total akan dihitung otomatis dan menjadi dasar kontrol Cost Ratio serta RAP Consumption.</div>
       <div class="formgrid">${[['material','Material'],['labor','Upah'],['equipment','Alat'],['operational','Operasional'],['subcontract','Subkon'],['other','Lain-Lain']].map(([k,l])=>`<div class="field"><label>${l}</label><input id="rap_${k}" type="number" min="0" step="1000" value="${Number(r[k]||0)}"></div>`).join('')}</div>
       <div class="ui-total"><span>Total RAP</span><strong id="rapTotalPreview">Rp0</strong></div>
       <div class="note">Catatan: struktur RAP tetap kompatibel dengan model database saat ini.</div>

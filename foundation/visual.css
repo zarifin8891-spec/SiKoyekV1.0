@@ -915,8 +915,33 @@
       height: auto !important;
       min-height: calc(var(--control-field-height) + 12px) !important;
     }
-    .sk-theme :is(.modalbox, .sk-compact-editor) :is(.formactions, .ui-final-actions, .control-form-actions) button {
-      min-height: var(--control-field-height) !important;
+    .sk-theme :is(.modalbox, .sk-compact-editor) :is(.formactions, .ui-final-actions, .control-form-actions, .op-actions-bar) button {
+      height: var(--control-form-button-height, 32px) !important;
+      min-height: var(--control-form-button-height, 32px) !important;
+    }
+    .sk-theme #rapTotalPreview { color: var(--control-data-ink) !important; }
+
+    /* Entry rows share the existing inputs, date pickers and save handlers. */
+    .sk-theme #modal .modalbox:has(:is(#wi_name, #pr_item, #op_wi_name, #op_pr_date)) :is(.formgrid, .op-grid) {
+      grid-template-columns: minmax(0, 1fr) !important;
+      gap: 0 !important;
+    }
+    .sk-theme #modal .modalbox:has(:is(#wi_name, #pr_item, #op_wi_name, #op_pr_date)) .field,
+    .sk-theme :is(#planning-item, #planning-record) > label {
+      display: grid !important;
+      grid-template-columns: minmax(105px, 28%) minmax(0, 1fr);
+      align-items: center !important;
+      gap: 8px !important;
+      padding-block: 6px !important;
+      border-bottom: 1px solid var(--control-row-line);
+    }
+    .sk-theme #modal .modalbox:has(:is(#wi_name, #pr_item, #op_wi_name, #op_pr_date)) .field > label {
+      margin: 0 !important;
+    }
+    .sk-theme #signed-in :is(#planning-item, #planning-record):not([hidden]) { display: block; }
+    .sk-theme :is(#planning-item, #planning-record) > button { margin-top: 8px; }
+    @media (max-width: 480px) {
+      .sk-theme { --control-form-button-height: 40px; }
     }
     .sk-theme #modal :is(.ui-final-project, .ui-final-content) { min-width: 0; }
     .sk-theme #modal .ui-final-content { overflow: auto !important; }
