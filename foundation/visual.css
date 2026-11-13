@@ -666,6 +666,7 @@
       .cost-item, .timeline-v4-stat, .kpi, .extra-kpi, .finance-kpi, .kinerja-kpi,
       .rap-biaya-kpi, .rap-period-kpi, .cashflow-v4-kpi, .kv2-kpi, .pp-kpi-v4,
       .kinerja-section, .cashflow-v4-section, .kv2-sec, .pp-panel-v4, .note-card,
+      .dfk-card, .ccv7-card, .ccv7-panel,
       .filters, .finance-toolbar, .progress-project-toolbar, .progress-project-filter,
       .rap-biaya-filter, .rap-period-toolbar, .rap-period-filter, .kinerja-toolbar,
       .kinerja-filter, .kinerja-trend-filter, .kv2-toolbar, .kv2-filter, .kv2-trend,
@@ -759,9 +760,61 @@
     }
     .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) table thead th { background: var(--control-table-head) !important; }
     .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) table tbody tr:hover td { background: var(--control-table-hover) !important; }
-    .sk-theme .content #reportContent > :is(.card, .kpis, .extra-kpis, .rap-biaya-kpis, .finance-summary, .kinerja-section, .progress-project-toolbar, .finance-toolbar, .rap-period-toolbar, .kinerja-toolbar) + * {
-      margin-block-start: var(--control-section-gap) !important;
+    .sk-theme .content :is(#reportContent, .kinerja-v2, #cost-control-v7) {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--control-section-gap) !important;
     }
+    .sk-theme .content :is(#reportContent, .kinerja-v2, #cost-control-v7) > * {
+      min-width: 0;
+      margin-block: 0 !important;
+    }
+    .sk-theme .content :is(#reportContent .scroll, .kv2-scroll, .ccv7-panel) {
+      min-width: 0;
+      overflow-x: auto;
+    }
+    .sk-theme .content :is(.finance-summary, .rap-period-kpis, .rap-biaya-kpis, .kv2-toolbar, .detail-finance-kpi, .ccv7-kpis) {
+      gap: var(--control-section-gap) !important;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 132px), 1fr)) !important;
+    }
+    .sk-theme .content .detail-finance-kpi { margin-block: 12px !important; }
+    .sk-theme .content #cost-control-v7 { margin-block-start: 12px !important; }
+    .sk-theme .content :is(.dfk-label, .ccv7-label) {
+      color: var(--control-workspace-muted) !important;
+      font-weight: 400 !important;
+    }
+    .sk-theme .content :is(.dfk-value, .ccv7-value) { color: var(--control-data-ink); }
+    .sk-theme .um-page .um-role-item:not(.active) {
+      background: #a7efff !important;
+      color: #091f40 !important;
+      box-shadow: none !important;
+    }
+    .sk-theme .um-page .um-role-item.active {
+      background: #0d3054 !important;
+      color: #fff !important;
+      box-shadow: inset 0 -3px 0 var(--control-accent), var(--control-panel-glow) !important;
+    }
+    .sk-theme .um-page .um-role-item small { color: inherit !important; }
+    .sk-theme :is(.modalbox, .sk-compact-editor) :is(.field, .ui-final-field, .sk-editor-field) {
+      min-width: 0;
+    }
+    .sk-theme :is(.modalbox, .sk-compact-editor) :is(.formactions, .ui-final-actions, .control-form-actions) {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      gap: 8px !important;
+      height: auto !important;
+      min-height: calc(var(--control-field-height) + 12px) !important;
+    }
+    .sk-theme :is(.modalbox, .sk-compact-editor) :is(.formactions, .ui-final-actions, .control-form-actions) button {
+      min-height: var(--control-field-height) !important;
+    }
+    .sk-theme #modal :is(.ui-final-project, .ui-final-content) { min-width: 0; }
+    .sk-theme #modal .ui-final-content { overflow: auto !important; }
+    .sk-theme #modal .modalbox:has(.ui-final-project) { overflow-y: auto !important; }
+    .sk-theme #modal .ui-final-project { max-height: none !important; }
+
   }
 }
 .sk-theme .content :is(.filters, .finance-toolbar, .progress-project-toolbar, .rap-biaya-filter, .kinerja-toolbar) { padding: 12px; }
