@@ -776,6 +776,59 @@
     .sk-theme .content .rap-period-filter { min-width: 0; margin: 0 !important; padding: 0 !important; }
     .sk-theme .content :is(.kv2-toolbar, .rap-period-toolbar) > * { min-width: 0; }
     .sk-theme .content :is(.kv2-kpi, .rap-period-kpi) strong { overflow-wrap: anywhere; }
+    /* Shared inline filters and compact editor layout. */
+    .sk-theme .laporan-v3 #reportContent :is(.filters:has(#sumPeriod), .extra-period-grid:has(#finPeriod), .finance-toolbar) {
+      display: flex !important;
+      flex-wrap: wrap;
+      align-items: center !important;
+      gap: 8px 12px !important;
+      padding: 10px 12px !important;
+    }
+    .sk-theme .laporan-v3 #reportContent :is(.filters:has(#sumPeriod), .extra-period-grid:has(#finPeriod), .finance-toolbar) .field {
+      display: grid !important;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      flex: 1 1 200px;
+      gap: 8px;
+      min-width: 0;
+      margin: 0 !important;
+    }
+    .sk-theme .laporan-v3 #reportContent :is(.filters:has(#sumPeriod), .extra-period-grid:has(#finPeriod), .finance-toolbar) .field label {
+      margin: 0 !important;
+      white-space: nowrap;
+    }
+    .sk-theme .laporan-v3 #reportContent .extra-period-grid:has(#finPeriod) .extra-actions { margin: 0 !important; }
+    .sk-theme .laporan-v3 #reportContent .extra-period-grid:has(#finPeriod) button {
+      height: var(--control-field-height) !important;
+      margin: 0 !important;
+    }
+    .sk-theme :is(.content, .main, .wrap, .modal, #modal, dialog) tbody :is(td, strong, b, .pill, .control-badge, button, a) {
+      font-weight: 400 !important;
+    }
+    .sk-theme :is(.modal, #modal, dialog) :is(.modalbox, .sk-compact-editor) {
+      --control-editor-padding: 14px 18px;
+      max-height: calc(100dvh - 28px) !important;
+      overflow-y: auto !important;
+    }
+    .sk-theme :is(.modal, #modal, dialog) :is(.modalbox, .sk-compact-editor) :is(.formgrid, .ui-final-grid, .um-modal-grid, .sk-editor-fields) {
+      align-items: start;
+      row-gap: 10px !important;
+      column-gap: 12px !important;
+    }
+    .sk-theme :is(.modal, #modal, dialog) :is(.modalbox, .sk-compact-editor) :is(.field, .ui-final-field, .sk-editor-field) {
+      min-inline-size: 0;
+    }
+    .sk-theme :is(.modal, #modal, dialog) :is(.modalbox, .sk-compact-editor) :is(.field, .ui-final-field, .sk-editor-field) :is(input:not([type=checkbox],[type=radio]), select, textarea) {
+      max-inline-size: 100%;
+    }
+    .sk-theme :is(.modal, #modal, dialog) :is(.modalbox, .sk-compact-editor) > .modalhead {
+      padding: var(--control-editor-padding) !important;
+    }
+    @media (max-width: 560px) {
+      .sk-theme :is(.modal, #modal, dialog) :is(.formgrid, .um-modal-grid, .sk-editor-fields) {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+    }
     .sk-theme .content .report-results { display: grid; min-width: 0; gap: var(--control-section-gap); }
     .sk-theme .content .report-results > * { min-width: 0; margin-block: 0 !important; }
     .sk-theme :is(.modal, #modal, dialog) :is(.formgrid, .sk-editor-fields, .p6-body) {
