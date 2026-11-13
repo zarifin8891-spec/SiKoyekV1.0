@@ -35,31 +35,42 @@
   let currentRoute = "";
   const routes = [
     ["dashboard", "Dashboard", "dashboard"],
-    ["company", "Data Perusahaan", "project"],
-    ["account", "Daftar User", "users"],
     ["project", "Daftar Proyek", "project"],
-    ["planning", "Perincian Proyek", "activity"],
-    ["transaction", "Transaksi", "document"],
     ["report", "Laporan", "document"],
     ["master-data", "Master Data", "settings"],
+    ["company", "Data Perusahaan", "project"],
+    ["account", "Daftar User", "users"],
+  ];
+  const nestedRoutes = [
+    ["planning", "Perincian Proyek", "activity"],
+    ["transaction", "Transaksi", "document"],
   ];
 
   function renderRoutes(next = currentRoute) {
-    const available = routes.filter(([key]) => !byId(key + "-panel").hidden)
-      .map(([key, label, icon]) => [key, key === "account" && !companyPanel.hidden ? "Admin Perusahaan" : label, icon]);
-    currentRoute = available.some(([key]) => key === next) ? next : available[0]?.[0] || "";
+    const visible = ([key]) => !byId(key + "-panel").hidden;
+    const available = routes.filter(visible);
+    if (!available.some(([key]) => key === "project") && visible(nestedRoutes[0])) available.push(nestedRoutes[0]);
+    if (!available.some(([key]) => key === "report") && visible(nestedRoutes[1])) available.push(nestedRoutes[1]);
+    const pages = [...routes, ...nestedRoutes];
+    currentRoute = pages.some(route => route[0] === next && visible(route)) ? next : available[0]?.[0] || "";
+    const active = currentRoute === "planning" && available.some(([key]) => key === "project") ? "project"
+      : currentRoute === "transaction" && available.some(([key]) => key === "report") ? "report" : currentRoute;
+    const sidebar = available.map(([key, label, icon]) => [
+      key, key === "account" && !companyPanel.hidden ? "Admin Perusahaan" : label, icon,
+    ]);
     signedIn.querySelector(".control-sidebar")?.remove();
     signedIn.insertAdjacentHTML("afterbegin", window.SiKoyekControl.sidebar(
-      currentRoute, available, { identity, assetRoot: "../" }));
-    for (const [key] of routes) byId(key + "-panel").toggleAttribute("data-current", key === currentRoute);
+      active, sidebar, { identity, assetRoot: "../" }));
+    for (const [key] of pages) byId(key + "-panel").toggleAttribute("data-current", key === currentRoute);
     byId("workspace-empty").hidden = Boolean(currentRoute);
     byId("workspace-title").parentElement.hidden = currentRoute === "dashboard";
   }
 
   signedIn.addEventListener("click", event => {
-    const route = event.target.closest("[data-workspace-route]");
-    if (!route || byId(route.dataset.workspaceRoute + "-panel")?.hidden !== false) return;
-    renderRoutes(route.dataset.workspaceRoute);
+    const route = event.target.closest("[data-workspace-route], [data-open-workspace-page]");
+    const next = route?.dataset.workspaceRoute || route?.dataset.openWorkspacePage;
+    if (!next || byId(next + "-panel")?.hidden !== false) return;
+    renderRoutes(next);
     signedIn.querySelector('[aria-current="page"]')?.focus();
   });
 
