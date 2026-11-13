@@ -583,29 +583,9 @@
 .sk-theme .control-card .control-chart line { stroke: #39608a; }
 .sk-theme .control-card > .control-section-head > .control-link { color: var(--control-accent); }
 
-/* Apply color directly to cells and controls that carry their own legacy surface. */
+/* Shared screen-only details complement the form and table rules below. */
 @media screen {
-.sk-theme :is(.content, .main, .wrap, dialog, #modal, .login-form-panel) :is(input:not([type=checkbox],[type=radio],[type=range],[type=color],[type=hidden],[type=submit],[type=button],[type=reset],[type=image]), select, textarea) {
-  color-scheme: dark;
-  background-color: var(--control-field-surface) !important;
-  color: var(--control-data-ink) !important;
-}
-.sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) select option {
-  background-color: var(--control-field-surface);
-  color: var(--control-data-ink);
-}
 .sk-theme .content .control-search { background-color: var(--control-field-surface); }
-.sk-theme :is(.content, .main, .wrap) table :is(th, td) { color: var(--control-data-ink) !important; }
-.sk-theme :is(.content, .main, .wrap) table thead th {
-  background: var(--control-table-head) !important;
-}
-.sk-theme :is(.content, .main, .wrap) table tbody td {
-  background: var(--control-table-surface) !important;
-}
-.sk-theme :is(.content, .main, .wrap) table tbody tr:hover td {
-  background: var(--control-table-hover) !important;
-}
-
 .sk-theme .content .control-search :is(input, svg),
 .sk-theme :is(.content, .main, .wrap) table :is(.control-link, .linkbtn) {
   color: var(--control-data-ink) !important;
@@ -709,7 +689,8 @@
       padding: 0 !important;
       box-shadow: none !important;
     }
-    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(input:not([type=checkbox],[type=radio],[type=range],[type=color],[type=hidden],[type=submit],[type=button],[type=reset],[type=image]), select, textarea, select option) {
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal, .login-form-panel) :is(input:not([type=checkbox],[type=radio],[type=range],[type=color],[type=hidden],[type=submit],[type=button],[type=reset],[type=image]), select, textarea, select option) {
+      color-scheme: dark;
       background-color: var(--control-field-surface) !important;
       color: var(--control-data-ink) !important;
       font-weight: 400 !important;
@@ -740,9 +721,6 @@
       color: #fff !important;
       box-shadow: inset 0 -2px 0 var(--control-accent) !important;
     }
-    .sk-theme :is(.modal, #modal, dialog) :is(.ui-final-grid, .formgrid, .sk-editor-fields) {
-      gap: 8px 12px !important;
-    }
     .sk-theme :is(.modal, #modal, dialog) :is(.ui-final-summary, .ui-final-help) {
       height: auto !important;
       min-height: 32px;
@@ -754,12 +732,12 @@
     .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(.field label, .ui-final-field label, .control-period label, .control-form label, .sk-editor-field) {
       color: var(--control-workspace-muted) !important;
     }
-    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) table :is(th, td) {
+    .sk-theme table :is(th, td) {
       background: var(--control-table-surface) !important;
       color: var(--control-data-ink) !important;
     }
-    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) table thead th { background: var(--control-table-head) !important; }
-    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) table tbody tr:hover td { background: var(--control-table-hover) !important; }
+    .sk-theme table thead th { background: var(--control-table-head) !important; }
+    .sk-theme table tbody tr:hover td { background: var(--control-table-hover) !important; }
     .sk-theme .content :is(.kv2-toolbar, .rap-period-toolbar, .rap-period-filter, .card > .extra-period-grid) {
       background: transparent !important;
       border: 0 !important;
@@ -816,7 +794,7 @@
       line-height: 1.15 !important;
       margin-block: 0 !important;
     }
-    .sk-theme :is(.modalbox, .sk-compact-editor) :is(.control-form, .formgrid, .op-body, .op-grid, .ui-final-grid, .ui-progress-card, .sk-editor-fields) {
+    .sk-theme :is(.modalbox, .sk-compact-editor) :is(.control-form, .formgrid, .op-body, .op-grid, .ui-final-grid, .ui-progress-card, .sk-editor-fields, .p6-body) {
       background: transparent !important;
       border-color: transparent !important;
       box-shadow: none !important;
@@ -833,9 +811,6 @@
       background: linear-gradient(135deg, #102a4a, #173b67 55%, #1f6274) !important;
       border-bottom: 1px solid var(--control-panel-border) !important;
       color: var(--control-workspace-ink) !important;
-    }
-    .sk-theme .sk-compact-editor .sk-editor-field {
-      color: var(--control-workspace-muted) !important;
     }
     .sk-theme #modal .modalbox:has(:is(#rap_material, #wi_name, #pr_date, #tx_date, .op-grid)) {
       min-width: 0 !important;
@@ -872,14 +847,9 @@
     }
     .sk-theme .content .report-results { display: grid; min-width: 0; gap: var(--control-section-gap); }
     .sk-theme .content .report-results > * { min-width: 0; margin-block: 0 !important; }
-    .sk-theme :is(.modal, #modal, dialog) :is(.formgrid, .sk-editor-fields, .p6-body) {
-      background: transparent !important;
-      color: var(--control-workspace-ink) !important;
-    }
     .sk-theme :is(.modal, #modal, dialog) .formgrid {
       display: grid !important;
       grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
-      gap: 12px !important;
     }
     .sk-theme :is(.modal, #modal, dialog) :is(.formgrid, .ui-final-grid, .sk-editor-fields) > :is(.field, .ui-final-field, .sk-editor-field) {
       margin: 0 !important;
@@ -924,9 +894,6 @@
       box-shadow: inset 0 -3px 0 var(--control-accent), var(--control-panel-glow) !important;
     }
     .sk-theme .um-page .um-role-item small { color: inherit !important; }
-    .sk-theme :is(.modalbox, .sk-compact-editor) :is(.field, .ui-final-field, .sk-editor-field) {
-      min-width: 0;
-    }
     .sk-theme :is(.modalbox, .sk-compact-editor) :is(.formactions, .ui-final-actions, .control-form-actions) {
       display: flex !important;
       flex-wrap: wrap !important;
