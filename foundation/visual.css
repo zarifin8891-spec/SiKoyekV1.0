@@ -154,7 +154,7 @@
   border-color: var(--control-line);
   border-radius: var(--control-radius);
   background-color: var(--control-surface);
-  background-image: linear-gradient(160deg, #fff, #f2f8f5);
+  background-image: var(--control-panel-gradient, linear-gradient(160deg, #fff, #f2f8f5));
   box-shadow: var(--control-shadow);
 }
 .sk-theme :is(.content, .main, .wrap, #modal) :is(.btn, .field input:not([type=checkbox]):not([type=radio]), .field select, .field textarea) {
@@ -496,20 +496,35 @@
 .sk-theme .shell > :is(.content, .main) {
   color: var(--control-workspace-ink);
 }
-.sk-theme :is(.control-kpi, .detail-kpi-v2, .project-overview-costs, .project-overview-curve) {
+/* Panels and table wrappers share one surface; table cells and editable controls retain light contrast. */
+.sk-theme :is(.content, .main, .wrap) :is(.card, .control-card, .md-card, .um-card, .summary-panel, .kpi, .extra-kpi, .kinerja-kpi, section[data-workspace-page]) {
   --control-ink: var(--control-workspace-ink);
   --control-muted: var(--control-workspace-muted);
   --control-orange: var(--control-gold);
   --control-line: #3d6e64;
-  background: linear-gradient(150deg, #1b5048, #103936);
+  --text: var(--control-ink);
+  --muted: var(--control-muted);
+  --control-panel-gradient: linear-gradient(150deg, #1b5048, #103936);
+  background: var(--control-panel-gradient);
   border-color: var(--control-line);
   color: var(--control-ink);
 }
-.sk-theme :is(.control-kpi, .detail-kpi-v2) :is(.label, .control-note, small) {
+.sk-theme :is(.content, .main, .wrap) :is(table, input, select, textarea, .control-search, .btn.ghost, .control-button:not(.primary), .control-select, .control-link) {
+  --control-ink: #152d2a;
+  --control-muted: #49635d;
+  --control-line: #becfc9;
+  --text: var(--control-ink);
+  --muted: var(--control-muted);
+  color: var(--control-ink);
+}
+.sk-theme :is(.content, .main, .wrap) :is(table, .btn.ghost, .control-button:not(.primary)) {
+  background-color: var(--control-surface);
+}
+.sk-theme :is(.content, .main, .wrap) table .control-link { color: #104a47; }
+.sk-theme .content :is(.control-kpi, .detail-kpi-v2, .kpi, .extra-kpi, .kinerja-kpi) :is(.label, .control-note, small) {
   color: var(--control-muted);
 }
-.sk-theme :is(.control-kpi, .detail-kpi-v2) :is(.value, strong) { color: var(--control-ink); }
-.sk-theme :is(.card, .control-card, .md-card, .um-card, section[data-workspace-page], .sk-compact-editor):not(:is(.control-kpi, .detail-kpi-v2, .project-overview-costs, .project-overview-curve)) {
+.sk-theme .content :is(.control-kpi, .detail-kpi-v2, .kpi, .extra-kpi, .kinerja-kpi) :is(.value, strong) {
   color: var(--control-ink);
 }
 .sk-theme .content :is(.sectiontitle, .md-card-head, .um-card-head, .control-section-head) :is(h2, h3) {
@@ -519,14 +534,14 @@
 .sk-theme #planning-panel > :is(label, #planning-notice) {
   color: var(--control-workspace-ink);
 }
-.sk-theme .content :is(.control-search, .control-period, .filters, .finance-toolbar, .progress-project-toolbar, .rap-biaya-filter, .kinerja-toolbar, .extra-period-grid) {
+.sk-theme .content :is(.control-search, .filters, .finance-toolbar, .progress-project-toolbar, .rap-biaya-filter, .kinerja-toolbar, .extra-period-grid) {
   color: var(--control-ink);
 }
 .sk-theme .content :is(.filters, .finance-toolbar, .progress-project-toolbar, .rap-biaya-filter, .kinerja-toolbar):not(.card),
 .sk-theme #signed-in form:not(.control-form):not(.control-period) {
   background-color: var(--control-surface);
   border-radius: var(--control-control-radius);
-  color: var(--control-ink);
+  color: #152d2a;
   padding: 10px;
 }
 .sk-theme .content :is(.btn.primary, .control-button.primary),
