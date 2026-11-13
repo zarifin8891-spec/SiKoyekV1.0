@@ -1,28 +1,34 @@
-/* Shared SiKoyek visual foundation. Operational layouts remain in their module styles. */
+/* SiKoyek Soft 3D · Dark Teal–Gold */
 .sk-theme {
   --control-font: "Arial Narrow", "Liberation Sans Narrow", "Nimbus Sans Narrow", "Roboto Condensed", Arial, sans-serif;
-  --control-navy: #153858;
-  --control-orange: #e77819;
-  --control-canvas: #e9eef2;
-  --control-ink: #112234;
-  --control-muted: #526575;
-  --control-line: #cdd7df;
-  --control-surface: #fff;
-  --control-radius: 12px;
-  --control-shadow: 0 2px 5px #1538580a;
-  --control-sidebar: linear-gradient(150deg, #102640, #122d4b 65%, #0e2138);
-  --control-nav-active: #294767;
+  --control-navy: #104a47;
+  --control-gold: #e9bc62;
+  --control-gold-ink: #795515;
+  --control-deep: #092f2e;
+  --control-control-radius: 11px;
+  --control-raised: linear-gradient(155deg, #20625b, var(--control-deep));
+  --control-button-shadow: inset 0 1px 0 #fff3, 0 2px 4px #143e392b;
+  --control-orange: var(--control-gold-ink);
+  --control-canvas: #e8f0ed;
+  --control-ink: #152d2a;
+  --control-muted: #49635d;
+  --control-line: #becfc9;
+  --control-surface: #f9fcfa;
+  --control-radius: 17px;
+  --control-shadow: inset 0 1px 0 #fff, 0 4px 12px #143e3914;
+  --control-sidebar: linear-gradient(150deg, #194e49, #103b38 52%, #092b2b);
+  --control-nav-active: #265c53;
   --control-size: 14px;
   --control-cell-padding: 7px 10px;
-  --control-row-line: #e2e8ee;
-  --control-table-head: #e9eef2;
+  --control-row-line: #d9e5e0;
+  --control-table-head: #e5efea;
   --control-panel-title: 20px;
   --sk-ink: var(--control-ink);
   --sk-muted: var(--control-muted);
   --sk-line: var(--control-line);
   --sk-canvas: var(--control-canvas);
   --sk-blue: var(--control-navy);
-  --sk-navy: #102640;
+  --sk-navy: var(--control-deep);
   --bg: var(--control-canvas);
   --text: var(--control-ink);
   --line: var(--control-line);
@@ -35,7 +41,7 @@
 }
 .sk-theme :is(button, input, textarea, select) { font-family: inherit; }
 .sk-theme :is(button, a, input, textarea, select, summary, .sk-table-region):focus-visible {
-  outline: 2px solid #d55e0a;
+  outline: 2px solid var(--control-gold-ink);
   outline-offset: 2px;
 }
 .sk-theme .shell:not(.control-shell) { grid-template-columns: 236px minmax(0, 1fr); min-height: 100vh; }
@@ -58,7 +64,7 @@
   font-size: 28px;
   line-height: 1.2;
 }
-.sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) :is(.brand, .sidebrand) b { color: #ffc18a; }
+.sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) :is(.brand, .sidebrand) b { color: var(--control-gold); }
 .sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) .nav { display: grid; gap: 5px; }
 .sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) :is(.nav a, .nav button, .sk-side-links button) {
   width: 100%;
@@ -88,12 +94,12 @@
   gap: 12px 24px;
   margin-bottom: 16px;
   padding: clamp(14px, 2vw, 24px) !important;
-  border: 1px solid #27516e;
+  border: 1px solid #2d6359;
   border-radius: var(--control-radius);
   color: #fff;
-  background: linear-gradient(105deg, #081c32f7 0%, #0b2d49e8 42%, #123d5a70 100%),
-    #092b43 url("../page-header-network.png") center right / cover no-repeat !important;
-  box-shadow: inset 0 2px 0 #71d9f2a6, var(--control-shadow);
+  background: linear-gradient(105deg, #092f2efa, #104a47ed 54%, #104a47a6),
+    var(--control-deep) url("../page-header-network.png") center right / cover no-repeat !important;
+  box-shadow: inset 0 2px 0 var(--control-gold), 0 4px 12px #143e3926;
   overflow: visible;
 }
 .sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner):has(> :is(h1, h2), > div > h1, > .detailtitle > h2)::after {
@@ -106,17 +112,15 @@
   line-height: 1.12;
   letter-spacing: -.02em;
   overflow-wrap: anywhere;
-  text-shadow: 0 1px 6px #081c32;
 }
 .sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner):has(> :is(h1, h2), > div > h1, > .detailtitle > h2) p {
   margin: 6px 0 0;
-  color: #e2effa !important;
+  color: #e3f2ed !important;
   font-size: 15px;
   overflow-wrap: anywhere;
-  text-shadow: 0 1px 6px #081c32;
 }
 .sk-theme .control-head .control-button { color: var(--control-ink); }
-.sk-theme .control-head .control-button.primary { color: #fff; border-color: #84abc5; }
+.sk-theme .control-head .control-button.primary { color: #fff; border-color: #86ada3; }
 .sk-theme :is(.control-head, .sk-project-header, .sk-page-banner) :is(.control-actions, .actions) {
   display: flex;
   flex-wrap: wrap;
@@ -138,10 +142,14 @@
 .sk-theme #module .grid { margin-bottom: 12px; }
 .sk-theme #modal :is(#uiFinalProject .ui-final-head, .op-crud-box .modalhead) { background: var(--control-navy) !important; }
 .sk-theme #modal #uiFinalProject .ui-final-actions > button[hidden] { display: none !important; }
-.sk-theme .control-shell .control-sidebar .nav button.active { background: var(--control-nav-active); }
+.sk-theme .control-shell .control-sidebar .nav button.active {
+  background: var(--control-nav-active);
+  box-shadow: inset 3px 0 0 var(--control-gold);
+}
+.sk-theme :is(.sidebar, .side, .login-v1) :focus-visible { outline-color: var(--control-gold); }
 
 
-.sk-theme :is(.content, .main, .wrap, #modal) :is(.card, .um-card, .md-card, .modalbox) {
+.sk-theme :is(.content, .main, .wrap, #modal) :is(.card, .um-card, .md-card, .modalbox, .control-card, .sk-compact-editor, section[data-workspace-page]) {
   min-width: 0;
   border-color: var(--control-line);
   border-radius: var(--control-radius);
@@ -152,7 +160,7 @@
   min-width: 0;
   max-width: 100%;
   min-height: 36px;
-  border-radius: 7px;
+  border-radius: var(--control-control-radius);
   font-family: inherit;
 }
 .sk-theme :is(.content, .main, .wrap, #modal) :is(.field input:not([type=checkbox]):not([type=radio]), .field select, .field textarea) {
@@ -160,8 +168,9 @@
   color: var(--control-ink);
 }
 .sk-theme :is(.content, .main, .wrap, #modal) :is(.btn.primary, .btn:not(.ghost):not(.danger):not(.secondary):not(.outline)) {
-  background: var(--control-navy);
+  background: var(--control-raised);
   color: #fff;
+  box-shadow: var(--control-button-shadow);
 }
 .sk-theme :is(.content, .main, .wrap, #modal) .btn.ghost { border-color: var(--control-line); }
 .sk-theme :is(.content, .main, .wrap, #modal) .field label { font-size: var(--control-size); }
@@ -190,7 +199,7 @@
   font-variant-numeric: tabular-nums;
 }
 .sk-theme .sk-table-region > table .sk-table-actions { white-space: nowrap; }
-.sk-theme .sk-table-region > table tbody tr:hover { background-color: #f3f7fa; }
+.sk-theme .sk-table-region > table tbody tr:hover { background-color: #edf5f0; }
 
 @media (max-width: 1120px) {
   .sk-theme .shell:not(.control-shell) { grid-template-columns: 190px minmax(0, 1fr); }
@@ -217,7 +226,7 @@
     margin: 0;
     padding: 0 10px;
     border: 1px solid #50708e;
-    border-radius: 7px;
+    border-radius: var(--control-control-radius);
     color: #fff;
     background: var(--control-nav-active);
   }
@@ -246,15 +255,16 @@
 }
 .sk-theme :is(.tabs, .report-tabs) button {
   border: 1px solid var(--control-line);
-  border-radius: 7px;
+  border-radius: var(--control-control-radius);
   background: var(--control-surface);
   color: var(--control-ink);
   font-family: inherit;
 }
 .sk-theme :is(.tabs, .report-tabs) button.active {
   border-color: var(--control-navy);
-  background: var(--control-navy);
+  background: var(--control-raised);
   color: #fff;
+  box-shadow: var(--control-button-shadow);
 }
 .sk-theme :is(.pill, .control-badge).green { background: #dff2e7; color: #176842; }
 .sk-theme :is(.pill, .control-badge).amber { background: #fff2da; color: #8b510b; }
@@ -428,4 +438,46 @@
 }
 @media print {
   .sk-theme .report-toolbar { display: none; }
+}
+
+.sk-theme :is(.control-button, .control-select, .control-form input, .control-form select, .control-search) {
+  border-radius: var(--control-control-radius);
+}
+.sk-theme .control-button.primary {
+  background: var(--control-raised);
+  box-shadow: var(--control-button-shadow);
+}
+.sk-theme .control-head .control-button.primary { border-color: var(--control-gold); }
+.sk-theme .btn.ghost:not(:disabled), .sk-theme .control-button:not(.primary):not(:disabled) {
+  box-shadow: var(--control-button-shadow);
+}
+.sk-theme :is(.btn, .control-button):not(:disabled):hover { filter: brightness(.94); }
+.sk-theme :is(.btn, .control-button):not(:disabled):active {
+  box-shadow: inset 0 2px 5px #092f2e35;
+}
+.sk-theme :is(.field, .control-form, .sk-editor-fields) :is(input:not([type=checkbox],[type=radio]), select, textarea) {
+  border-color: var(--control-line);
+  box-shadow: inset 0 1px 3px #143e3912;
+}
+.sk-theme :is(.control-table, .table, .table-scroll > table) thead th {
+  background-color: var(--control-table-head);
+  color: var(--control-ink);
+  border-bottom-color: var(--control-line);
+}
+.sk-theme :is(.control-table, .table, .table-scroll > table) tbody td {
+  border-bottom-color: var(--control-row-line);
+  font-variant-numeric: tabular-nums;
+}
+.sk-theme :is(.control-table, .table, .table-scroll > table) tbody tr:hover { background-color: #edf5f0; }
+.sk-theme .login-v1 :is(.login-brand-panel, .login-form-panel) { background: var(--control-raised); }
+.sk-theme .login-v1 .login-submit {
+  color: var(--control-deep) !important;
+  background: linear-gradient(145deg, #f5d992, var(--control-gold)) !important;
+  box-shadow: var(--control-button-shadow);
+}
+@media (max-width: 780px) {
+  .sk-theme {
+    --control-shadow: 0 2px 5px #143e3914;
+    --control-button-shadow: 0 1px 2px #143e3920;
+  }
 }
