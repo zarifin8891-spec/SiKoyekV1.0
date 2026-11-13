@@ -38,7 +38,7 @@
     ["project", "Daftar Proyek", "project"],
     ["report", "Laporan", "document"],
     ["master-data", "Master Data", "settings"],
-    ["company", "Data Perusahaan", "project"],
+    ["company", "Master Data Perusahaan", "project"],
     ["account", "Daftar User", "users"],
   ];
   const nestedRoutes = [
@@ -56,7 +56,7 @@
     const active = currentRoute === "planning" && available.some(([key]) => key === "project") ? "project"
       : currentRoute === "transaction" && available.some(([key]) => key === "report") ? "report" : currentRoute;
     const sidebar = available.map(([key, label, icon]) => [
-      key, key === "account" && !companyPanel.hidden ? "Admin Perusahaan" : label, icon,
+      key, key === "account" && !companyPanel.hidden ? "Data User" : label, icon,
     ]);
     signedIn.querySelector(".control-sidebar")?.remove();
     signedIn.insertAdjacentHTML("afterbegin", window.SiKoyekControl.sidebar(
@@ -137,7 +137,8 @@
     login.hidden = true;
     companyPanel.hidden = !platform;
     accountPanel.hidden = !(platform || manager);
-    byId("staff-access-column").hidden = !manager;
+    byId("staff-access-column").hidden = false;
+    byId("staff-access-column").textContent = platform ? "Status" : "Aksi";
     byId("workspace-title").textContent = platform ? "Admin Platform" : ownCompany.name;
     identity = account.full_name;
     operations.clear();
@@ -164,7 +165,12 @@
       if (platform && user.access_role !== "company_admin") continue;
       const row = appendRow(list, [user.full_name, names.get(user.company_id) || "—",
         user.access_role === "company_admin" ? "Admin Perusahaan" : "Staf"]);
-      if (manager) {
+      if (platform) {
+        const action = row.insertCell();
+        const status = document.createElement("span");
+        status.textContent = user.is_active ? "Aktif" : "Nonaktif";
+        action.append(status);
+      } else if (manager) {
         const action = row.insertCell();
         if (user.access_role === "staff" && user.is_active) {
           const button = document.createElement("button");
@@ -177,7 +183,7 @@
     }
     if (!list.rows.length) {
       const cell = list.insertRow().insertCell();
-      cell.colSpan = manager ? 4 : 3;
+      cell.colSpan = 4;
       cell.textContent = "Belum ada pengguna.";
     }
   }
@@ -194,7 +200,7 @@
     const accountSubmit = byId("account-submit");
     accountSubmit.disabled = companyChoices.length === 0;
     accountSubmit.textContent = platform ? "Buat Admin Perusahaan" : "Buat Akun Staf";
-    byId("account-heading").textContent = platform ? "Admin Perusahaan" : "Pengguna Perusahaan";
+    byId("account-heading").textContent = platform ? "Data User — Admin Perusahaan" : "Pengguna Perusahaan";
     if (!platform) return;
 
     for (const company of companies) {
