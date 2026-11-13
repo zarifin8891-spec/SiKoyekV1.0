@@ -65,8 +65,29 @@
           <button type="submit" id="account-submit"></button>
         </form>
         <div class="table-scroll">
-          <table><thead><tr><th>Nama</th><th>Perusahaan</th><th>Peran</th><th id="staff-access-column" hidden>Aksi</th></tr></thead><tbody id="accounts"></tbody></table>
+          <table><thead><tr><th>Nama</th><th>Perusahaan</th><th>Peran</th><th>Status</th><th id="staff-access-column" hidden>Aksi</th></tr></thead><tbody id="accounts"></tbody></table>
         </div>
+        <dialog id="platform-account-dialog" class="sk-compact-editor" aria-labelledby="platform-account-heading">
+          <div class="modalhead">
+            <h3 id="platform-account-heading"></h3>
+          </div>
+          <form id="platform-account-form" class="control-form">
+            <p id="platform-account-target"></p>
+            <div id="platform-edit-fields" class="formgrid">
+              <label>Nama lengkap<input name="full_name" maxlength="160" required></label>
+              <label>Status<select name="is_active"><option value="true">Aktif</option><option value="false">Nonaktif</option></select></label>
+            </div>
+            <div id="platform-password-fields" class="formgrid" hidden>
+              <label>Password baru<input name="password" type="password" minlength="8" required autocomplete="new-password"></label>
+              <label>Konfirmasi password<input name="password_confirm" type="password" minlength="8" required autocomplete="new-password"></label>
+            </div>
+            <p class="control-form-message" role="status"></p>
+            <div class="control-form-actions">
+              <button type="button" class="btn ghost" id="platform-account-cancel">Batal</button>
+              <button type="submit" class="btn primary">Simpan</button>
+            </div>
+          </form>
+        </dialog>
         <dialog id="staff-access-dialog" aria-labelledby="staff-access-heading">
           <h2 id="staff-access-heading">Hak Akses Staf</h2>
           <p id="staff-access-name"></p>

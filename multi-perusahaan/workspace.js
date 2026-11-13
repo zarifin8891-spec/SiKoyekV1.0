@@ -31,6 +31,73 @@
   let staffAccess;
   let generation = 0;
   let recovering = false;
+  const platformDialog = byId("platform-account-dialog");
+  const platformForm = byId("platform-account-form");
+  const platformStatus = platformForm.querySelector('[role="status"]');
+  const platformSave = platformForm.querySelector('[type="submit"]');
+  let platformEdit = null;
+
+  function openPlatformAccount(user, company, action) {
+    if (companyPanel.hidden || user.access_role !== "company_admin" || platformDialog.open) return;
+    platformForm.reset();
+    platformStatus.textContent = "";
+    platformEdit = { id: user.user_id, action };
+    const reset = action === "reset_password";
+    byId("platform-account-heading").textContent = reset ? "Reset Password" : "Edit Admin Perusahaan";
+    byId("platform-account-target").textContent = user.full_name + " · " + company;
+    for (const [id, hidden] of [["platform-edit-fields", reset], ["platform-password-fields", !reset]]) {
+      const group = byId(id);
+      group.hidden = hidden;
+      group.querySelectorAll("input,select").forEach(field => { field.disabled = hidden; });
+    }
+    platformForm.elements.full_name.value = user.full_name;
+    platformForm.elements.is_active.value = String(user.is_active);
+    platformDialog.showModal();
+  }
+
+  byId("platform-account-cancel").addEventListener("click", () => {
+    if (!platformSave.disabled) platformDialog.close();
+  });
+  platformDialog.addEventListener("cancel", event => {
+    if (platformSave.disabled) event.preventDefault();
+  });
+  platformDialog.addEventListener("close", () => {
+    if (platformDialog.open) return;
+    platformForm.reset();
+    platformEdit = null;
+  });
+  platformForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!platformEdit || companyPanel.hidden || platformSave.disabled) return;
+    const target = platformEdit;
+    const values = Object.fromEntries(new FormData(platformForm));
+    if (target.action === "reset_password" && values.password !== values.password_confirm) {
+      platformStatus.textContent = "Konfirmasi password tidak sama.";
+      return;
+    }
+    if (target.action === "update") {
+      values.full_name = values.full_name.trim();
+      if (!values.full_name) {
+        platformStatus.textContent = "Nama lengkap wajib diisi.";
+        return;
+      }
+      values.is_active = values.is_active === "true";
+    }
+    platformSave.disabled = true;
+    platformStatus.textContent = "Menyimpan…";
+    try {
+      const { data, error } = await client.functions.invoke("company-accounts", { body: { ...values, ...target } });
+      if (error || !data?.id) throw new Error("Perubahan belum berhasil disimpan.");
+      if (platformEdit !== target) return;
+      platformDialog.close();
+      await loadWorkspace();
+      notify(target.action === "reset_password" ? "Password Admin Perusahaan berhasil direset." : "Admin Perusahaan diperbarui.");
+    } catch (error) {
+      if (platformEdit === target) platformStatus.textContent = error.message;
+    } finally {
+      platformSave.disabled = false;
+    }
+  });
   let identity = "";
   let currentRoute = "";
   const routes = [
@@ -89,6 +156,8 @@
   }
 
   function setSignedOut() {
+    platformEdit = null;
+    if (platformDialog.open) platformDialog.close();
     currentRoute = identity = "";
     signedIn.querySelector(".control-sidebar")?.remove();
     operations?.clear();
@@ -162,24 +231,24 @@
     const names = new Map(companies.map(company => [company.id, company.name]));
     for (const user of users) {
       if (platform && user.access_role !== "company_admin") continue;
-      const row = appendRow(list, [user.full_name, names.get(user.company_id) || "—",
-        user.access_role === "company_admin" ? "Admin Perusahaan" : "Staf"]);
+      const company = names.get(user.company_id) || "—";
+      const row = appendRow(list, [user.full_name, company,
+        user.access_role === "company_admin" ? "Admin Perusahaan" : "Staf", ""]);
+      const status = document.createElement("span");
+      status.className = "pill " + (user.is_active ? "green" : "amber");
+      status.textContent = user.is_active ? "Aktif" : "Nonaktif";
+      row.cells[3].append(status);
       if (platform) {
         const action = row.insertCell();
-        const status = document.createElement("span");
-        status.textContent = user.is_active ? "Aktif" : "Nonaktif";
-        const edit = document.createElement("button");
-        edit.type = "button";
-        edit.textContent = "Ubah Nama";
-        edit.onclick = () => {
-          const name = window.prompt("Nama Admin Perusahaan", user.full_name)?.trim();
-          if (name && name !== user.full_name) updatePlatformAccount(edit, user, name, user.is_active);
-        };
-        const toggle = document.createElement("button");
-        toggle.type = "button";
-        toggle.textContent = user.is_active ? "Nonaktifkan" : "Aktifkan";
-        toggle.onclick = () => updatePlatformAccount(toggle, user, user.full_name, !user.is_active);
-        action.append(status, edit, toggle);
+        action.className = "control-row-actions";
+        for (const [label, mode] of [["Edit", "update"], ["Reset Password", "reset_password"]]) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "btn ghost";
+          button.textContent = label;
+          button.onclick = () => openPlatformAccount(user, company, mode);
+          action.append(button);
+        }
       } else if (manager) {
         const action = row.insertCell();
         if (user.access_role === "staff" && user.is_active) {
@@ -193,7 +262,7 @@
     }
     if (!list.rows.length) {
       const cell = list.insertRow().insertCell();
-      cell.colSpan = 4;
+      cell.colSpan = 5;
       cell.textContent = "Belum ada pengguna.";
     }
   }
@@ -255,17 +324,6 @@
       if (error || !data) throw new Error("Perusahaan belum berhasil diperbarui.");
       await loadWorkspace();
       notify("Data perusahaan diperbarui.");
-    });
-  }
-
-  function updatePlatformAccount(button, user, fullName, active) {
-    return run(button, async () => {
-      const { data, error } = await client.functions.invoke("company-accounts", {
-        body: { action: "update", id: user.user_id, full_name: fullName, is_active: active },
-      });
-      if (error || !data?.id) throw new Error("Admin Perusahaan belum berhasil diperbarui.");
-      await loadWorkspace();
-      notify("Admin Perusahaan diperbarui.");
     });
   }
 
