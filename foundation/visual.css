@@ -671,8 +671,8 @@
       .rap-biaya-filter, .kinerja-toolbar,
       .kinerja-filter, .kinerja-trend-filter, .kv2-filter, .kv2-trend,
       .extra-period-grid, .cashflow-v4-filters, .cashflow-v4-filter, .um-toolbar,
-      .dashboard-period, .modalbox, .sk-compact-editor, .formactions, .ui-total,
-      .ui-final-grid, .ui-final-help, .ui-final-summary, .ui-help, .ui-progress-card,
+      .dashboard-period, .modalbox, .sk-compact-editor, .ui-total,
+      .ui-final-help, .ui-final-summary, .ui-help,
       .ui-progress-callout, .um-add-section, .form-section, .category-master-table,
       .category-master-toolbar, .category-master-add, .um-role-item
     ) {
@@ -802,8 +802,49 @@
       height: var(--control-field-height) !important;
       margin: 0 !important;
     }
-    .sk-theme :is(.content, .main, .wrap, .modal, #modal, dialog) tbody :is(td, strong, b, .pill, .control-badge, button, a) {
+    .sk-theme tbody :is(td, td *) {
       font-weight: 400 !important;
+    }
+    .sk-theme tbody :is(.md-actions, .control-row-actions, .op-actions, .um-actions) {
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .sk-theme tbody :is(.md-actions, .control-row-actions, .op-actions, .um-actions, .op-action-cell) :is(button, a) {
+      block-size: var(--control-table-action-height, 26px) !important;
+      min-block-size: var(--control-table-action-height, 26px) !important;
+      padding: 0 8px !important;
+      line-height: 1.15 !important;
+      margin-block: 0 !important;
+    }
+    .sk-theme :is(.modalbox, .sk-compact-editor) :is(.control-form, .formgrid, .op-body, .op-grid, .ui-final-grid, .ui-progress-card, .sk-editor-fields) {
+      background: transparent !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+    }
+    .sk-theme :is(.modalbox, .sk-compact-editor) :is(.formactions, .control-form-actions, .op-actions-bar, .ui-final-actions) {
+      background: transparent !important;
+      border: 0 !important;
+      border-top: 1px solid var(--control-panel-border) !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+    }
+    .sk-theme .sk-compact-editor > .modalhead,
+    .sk-theme #modal .modalbox:has(:is(#rap_material, #wi_name, #pr_date, #tx_date, .op-grid)) > .modalhead {
+      background: linear-gradient(135deg, #102a4a, #173b67 55%, #1f6274) !important;
+      border-bottom: 1px solid var(--control-panel-border) !important;
+      color: var(--control-workspace-ink) !important;
+    }
+    .sk-theme .sk-compact-editor .sk-editor-field {
+      color: var(--control-workspace-muted) !important;
+    }
+    .sk-theme #modal .modalbox:has(:is(#rap_material, #wi_name, #pr_date, #tx_date, .op-grid)) {
+      min-width: 0 !important;
+      max-width: calc(100vw - 28px) !important;
+      max-height: calc(100dvh - 28px) !important;
+      overflow-y: auto !important;
+    }
+    @media (max-width: 780px) {
+      .sk-theme { --control-table-action-height: 36px; }
     }
     .sk-theme :is(.modal, #modal, dialog) :is(.modalbox, .sk-compact-editor) {
       --control-editor-padding: 14px 18px;
