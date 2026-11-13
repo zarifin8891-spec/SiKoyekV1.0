@@ -639,6 +639,8 @@
 /* Legacy modules inject unlayered important styles after page load. */
 @layer neon-surfaces {
   @media screen {
+    /* Native dialogs can be mounted directly under body. */
+    .sk-theme dialog.sk-compact-editor,
     /* Shared surface roles for both static and dynamically rendered modules. */
     .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(
       .card, .control-card, .md-card, .um-card, .tablecard, .dashboard-panel,
