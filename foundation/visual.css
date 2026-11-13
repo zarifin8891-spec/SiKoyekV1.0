@@ -492,6 +492,10 @@
 /* Dark canvas and summary panels share the sidebar palette. Data-entry surfaces stay light. */
 .sk-theme {
   --control-workspace: #050f29;
+  --control-panel-gradient: linear-gradient(150deg, #10477e, #09264e 62%, #081e42);
+  --control-panel-border: #55e5ff;
+  --control-panel-glow: inset 0 1px 2px #77ebff42, 0 0 9px #36dfff49, 0 6px 13px #020b2490;
+  --control-section-gap: 12px;
   --control-workspace-ink: #edf7ff;
   --control-workspace-muted: #b2d2ef;
 }
@@ -511,9 +515,8 @@
   --control-line: #55e5ff;
   --text: var(--control-ink);
   --muted: var(--control-muted);
-  --control-panel-gradient: linear-gradient(150deg, #10477e, #09264e 62%, #081e42);
   background: var(--control-panel-gradient);
-  box-shadow: inset 0 1px 2px #77ebff42, 0 0 9px #36dfff49, 0 6px 13px #020b2490;
+  box-shadow: var(--control-panel-glow);
   border-color: var(--control-line);
   color: var(--control-ink);
 }
@@ -550,16 +553,8 @@
 .sk-theme #planning-panel > :is(label, #planning-notice) {
   color: var(--control-workspace-ink);
 }
-.sk-theme .content :is(.control-search, .filters, .finance-toolbar, .progress-project-toolbar, .rap-biaya-filter, .kinerja-toolbar, .extra-period-grid) {
-  color: var(--control-ink);
-}
-.sk-theme .content :is(.filters, .finance-toolbar, .progress-project-toolbar, .rap-biaya-filter, .kinerja-toolbar):not(.card),
-.sk-theme #signed-in form:not(.control-form):not(.control-period) {
-  background-color: var(--control-surface);
-  border-radius: var(--control-control-radius);
-  color: #122b48;
-  padding: 10px;
-}
+.sk-theme .content .control-search { color: var(--control-data-ink); }
+
 .sk-theme .content :is(.btn.primary, .control-button.primary),
 .sk-theme #signed-in form:not(.control-form):not(.control-period) button[type=submit] {
   background: linear-gradient(155deg, #76e8ff, var(--control-accent));
@@ -587,6 +582,7 @@
 .sk-theme .control-card > .control-section-head > .control-link { color: var(--control-accent); }
 
 /* Apply color directly to cells and controls that carry their own legacy surface. */
+@media screen {
 .sk-theme :is(.content, .main, .wrap, dialog, #modal, .login-form-panel) :is(input:not([type=checkbox],[type=radio],[type=range],[type=color],[type=hidden],[type=submit],[type=button],[type=reset],[type=image]), select, textarea) {
   color-scheme: dark;
   background-color: var(--control-field-surface) !important;
@@ -618,6 +614,8 @@
 }
 .sk-theme :is(.content, .main, .wrap) table { --control-row-line: #24619a; }
 .sk-theme :is(.content, .main, .wrap) table tbody td { border-bottom-color: var(--control-row-line); }
+
+}
 
 /* Keep project detail surfaces and data labels legible across legacy modules. */
 .sk-theme :is(.content, .main, .wrap) :is(.timeline-v4, .rap-item, .rap-total, .cost-item, .timeline-v4-stat) {
@@ -655,3 +653,50 @@
   box-shadow: inset 0 -2px 0 #53e2ff, 0 2px 8px #36dfff35;
 }
 .sk-theme .sidebar .nav :is(button, a) svg { color: currentColor; }
+
+/* Legacy modules inject unlayered important styles after page load. */
+@layer neon-surfaces {
+  @media screen {
+    .sk-theme :is(.content, .main, .wrap, dialog, #modal) :is(.filters, .finance-toolbar, .progress-project-toolbar, .rap-biaya-filter, .rap-period-toolbar, .kinerja-toolbar, .kv2-toolbar, .extra-period-grid, .cashflow-v4-filters, .um-toolbar, .dashboard-period, .modalbox, .sk-compact-editor, .p6-body > .formactions, .ui-total) {
+      background: var(--control-panel-gradient) !important;
+      border: 1px solid var(--control-panel-border) !important;
+      border-radius: var(--control-control-radius);
+      box-shadow: var(--control-panel-glow) !important;
+      color: var(--control-workspace-ink) !important;
+    }
+    .sk-theme .content #reportContent .card:has(> .filters) {
+      background: none !important;
+      border: 0 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+    }
+    .sk-theme :is(.content, .main, .wrap, dialog, #modal) :is(input:not([type=checkbox],[type=radio],[type=range],[type=color],[type=hidden],[type=submit],[type=button],[type=reset],[type=image]), select, textarea, select option) {
+      background-color: var(--control-field-surface) !important;
+      color: var(--control-data-ink) !important;
+      font-weight: 400 !important;
+    }
+    .sk-theme :is(.content, .main, .wrap, dialog, #modal) :is(.field label, .control-period label, .control-form label, .sk-editor-field, td > strong, td .control-link, .timeline-v4-stat .label, .rap-item .label, .cost-item .note) {
+      font-weight: 400 !important;
+      font-family: var(--control-font) !important;
+    }
+    .sk-theme :is(.content, .main, .wrap, dialog, #modal) :is(.field label, .control-period label, .control-form label, .sk-editor-field) {
+      color: var(--control-workspace-muted) !important;
+    }
+    .sk-theme :is(.content, .main, .wrap) table :is(th, td) {
+      background: var(--control-table-surface) !important;
+      color: var(--control-data-ink) !important;
+    }
+    .sk-theme :is(.content, .main, .wrap) table thead th { background: var(--control-table-head) !important; }
+    .sk-theme :is(.content, .main, .wrap) table tbody tr:hover td { background: var(--control-table-hover) !important; }
+    .sk-theme .content #reportContent > :is(.card, .kpis, .extra-kpis, .rap-biaya-kpis, .finance-summary, .kinerja-section, .progress-project-toolbar, .finance-toolbar, .rap-period-toolbar, .kinerja-toolbar) + * {
+      margin-block-start: var(--control-section-gap) !important;
+    }
+  }
+}
+.sk-theme .content :is(.filters, .finance-toolbar, .progress-project-toolbar, .rap-biaya-filter, .kinerja-toolbar) { padding: 12px; }
+.sk-theme .content #reportContent .period-custom label { font-family: var(--control-font); }
+.sk-theme .content :is(.summary-panels, .project-overview-charts, .control-kpis, .control-columns, .control-stack) { gap: var(--control-section-gap); }
+.sk-theme .content :is(.summary-panels, .timeline-v4) + :is(.timeline-v4, .project-overview-charts) { margin-block-start: var(--control-section-gap); }
+@media (max-width: 780px) {
+  .sk-theme { --control-section-gap: 10px; }
+}
