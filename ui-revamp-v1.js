@@ -109,27 +109,29 @@
       <td><input aria-label="Durasi (hari)" name="duration_days" type="number" min="1" max="36500" value="${esc(item?.duration_days??'')}"></td>
       <td><input aria-label="Rencana Mulai" name="planned_start_date" type="date" value="${esc(item?.planned_start_date??'')}"></td>
       <td><input aria-label="Keterangan" name="notes" value="${esc(item?.notes||'')}"></td>
-      ${item?'':'<td><button type="button" class="btn ghost" data-remove-item>Hapus</button></td>'}
+      ${item?'':'<td><input type="checkbox" name="selected_item" aria-label="Pilih baris untuk dihapus"></td>'}
     </tr>`;
     modal(item?'Edit Item Pekerjaan':'Tambah Item Pekerjaan',`
       <form id="item-entry">
-        <div class="scroll entry-table-wrap"><table class="table entry-table"><thead><tr>
+        <div class="scroll entry-table-wrap"><table class="table entry-table"><colgroup><col class="entry-order"><col class="entry-name"><col class="entry-weight"><col class="entry-duration"><col class="entry-date"><col class="entry-notes">${item?'':'<col class="entry-select">'}</colgroup><thead><tr>
           <th scope="col">Urutan</th><th scope="col">Nama Pekerjaan</th><th scope="col">Bobot (%)</th>
           <th scope="col">Durasi (hari)</th><th scope="col">Rencana Mulai</th><th scope="col">Keterangan</th>
-          ${item?'':'<th scope="col">Aksi</th>'}
+          ${item?'':'<th scope="col">Pilih</th>'}
         </tr></thead><tbody>${rowMarkup()}</tbody></table></div>
         <div class="ui-total"><span>Total bobot</span><strong id="wiTotalPreview"></strong></div>
         <div class="formactions">
-          ${item?'':'<button type="button" class="btn ghost" data-add-item-row>+ Tambah Baris</button>'}
+          ${item?'':'<div class="entry-row-actions"><button type="button" class="btn ghost" data-add-item-row>+ Tambah Item</button><button type="button" class="btn ghost" data-remove-item disabled>Hapus Item</button></div>'}
           <button type="button" class="btn ghost" onclick="closeModal()">Batal</button>
-          <button type="submit" class="btn primary">Simpan Item</button>
+          <button type="submit" class="btn primary">Simpan</button>
         </div>
       </form>`);
     const form=document.getElementById('item-entry');
     const body=form.querySelector('tbody');
     const submit=form.querySelector('[type=submit]');
+    const remove=form.querySelector('[data-remove-item]');
     const existingWeight=items.reduce((sum,x)=>sum+(x===item?0:Number(x.weight||0)),0);
     const refresh=()=>{
+      if(remove)remove.disabled=!body.querySelector('[name=selected_item]:checked');
       const draftWeight=[...body.querySelectorAll('[name=weight]')].reduce((sum,input)=>sum+Number(input.value||0)/100,0);
       form.querySelector('#wiTotalPreview').textContent=pct((existingWeight+draftWeight)*100);
     };
@@ -140,10 +142,9 @@
       body.lastElementChild.querySelector('[name=work_name]').focus();
       refresh();
     });
-    body.addEventListener('click',event=>{
-      const remove=event.target.closest('[data-remove-item]');
-      if(!remove||submit.disabled)return;
-      remove.closest('tr').remove();
+    remove?.addEventListener('click',()=>{
+      if(submit.disabled)return;
+      body.querySelectorAll('[name=selected_item]:checked').forEach(input=>input.closest('tr').remove());
       refresh();
     });
     form.addEventListener('submit',async event=>{
