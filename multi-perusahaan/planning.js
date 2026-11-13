@@ -176,7 +176,7 @@
             : client.rpc("project_progress_item_choices", { selected_project: project.id })),
           access.progress ? readPages(() => scoped("company_progress_records", "id,work_item_id,progress_date,progress_percentage,notes")) : [],
           access.projects ? client.from("company_projects").select("status,contract_value").eq("id", project.id).maybeSingle() : {},
-          access.finance ? readPages(() => scoped("company_transactions", "id,category_id,transaction_type,amount")).catch(() => null) : [],
+          access.finance ? readPages(() => scoped("company_transactions", "id,category_id,category,transaction_type,amount")).catch(() => null) : [],
           access.costChart ? readPages(() => client.from("company_master_data").select("id,name").eq("kind", "transaction_category")).catch(() => null) : [],
         ]);
         if (current !== generation) return;
@@ -208,7 +208,7 @@
             end_date: project.ends_on, ...projectData.data },
           rap: budget.data, items: workItems, progress: records,
           financeReadError: !transactions || !categories,
-          fin: (transactions || []).map(row => ({ ...row, category: categoryNames.get(row.category_id) })),
+          fin: (transactions || []).map(row => ({ ...row, category: row.category ?? categoryNames.get(row.category_id) })),
         };
         const curve = access.rap && access.progress;
         const total = access.rap ? budgetFields.reduce((sum, field) => sum + Number(budget.data?.[field.name] || 0), 0) : null;
