@@ -496,6 +496,8 @@
   --control-panel-border: #55e5ff;
   --control-panel-glow: inset 0 1px 2px #77ebff42, 0 0 9px #36dfff49, 0 6px 13px #020b2490;
   --control-section-gap: 12px;
+  --control-field-height: 40px;
+  --control-field-font: 14px;
   --control-workspace-ink: #edf7ff;
   --control-workspace-muted: #b2d2ef;
 }
@@ -531,12 +533,12 @@
 .sk-theme :is(.content, .main, .wrap) table {
   background-color: var(--control-table-surface);
 }
-.sk-theme :is(.content, .main, .wrap, dialog, #modal) :is(.btn.ghost, .control-button:not(.primary), .report-actions-v1 .btn) {
+.sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(.btn.ghost, .control-button:not(.primary), .report-actions-v1 .btn) {
   background: var(--control-secondary);
   border-color: var(--control-secondary-line);
   color: #122b48;
 }
-.sk-theme :is(.content, .main, .wrap, dialog, #modal) :is(.btn.ghost, .control-button:not(.primary), .report-actions-v1 .btn):not(:disabled):hover {
+.sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(.btn.ghost, .control-button:not(.primary), .report-actions-v1 .btn):not(:disabled):hover {
   background: var(--control-table-head);
 }
 .sk-theme :is(.content, .main, .wrap) table .control-link { color: #1459b8; }
@@ -588,7 +590,7 @@
   background-color: var(--control-field-surface) !important;
   color: var(--control-data-ink) !important;
 }
-.sk-theme :is(.content, .main, .wrap, dialog, #modal) select option {
+.sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) select option {
   background-color: var(--control-field-surface);
   color: var(--control-data-ink);
 }
@@ -641,12 +643,12 @@
 }
 
 /* Navigation and command buttons share the same selected and unselected colors. */
-.sk-theme :is(.shell, .wrap, dialog, #modal) :is(.btn, .control-button, .report-tabs button, .tabs button, .md-tabs button, .sidebar .nav button, .sidebar .nav a, .side .nav a):not(:is(.danger, .active, .selected, [aria-selected="true"], [aria-pressed="true"], [aria-current="page"])) {
+.sk-theme :is(.shell, .wrap, dialog, .modal, #modal) :is(.btn, .control-button, .report-tabs button, .tabs button, .md-tabs button, .sidebar .nav button, .sidebar .nav a, .side .nav a):not(:is(.danger, .active, .selected, [aria-selected="true"], [aria-pressed="true"], [aria-current="page"])) {
   background: #a7efff !important;
   color: #091f40 !important;
   border-color: #63dbf6;
 }
-.sk-theme :is(.shell, .wrap, dialog, #modal) :is(.btn, .control-button, .report-tabs button, .tabs button, .md-tabs button, .sidebar .nav button, .sidebar .nav a, .side .nav a):is(.active, .selected, [aria-selected="true"], [aria-pressed="true"], [aria-current="page"]) {
+.sk-theme :is(.shell, .wrap, dialog, .modal, #modal) :is(.btn, .control-button, .report-tabs button, .tabs button, .md-tabs button, .sidebar .nav button, .sidebar .nav a, .side .nav a):is(.active, .selected, [aria-selected="true"], [aria-pressed="true"], [aria-current="page"]) {
   background: #0d3054 !important;
   color: #fff !important;
   border-color: #21567f;
@@ -657,7 +659,7 @@
 /* Legacy modules inject unlayered important styles after page load. */
 @layer neon-surfaces {
   @media screen {
-    .sk-theme :is(.content, .main, .wrap, dialog, #modal) :is(.filters, .finance-toolbar, .progress-project-toolbar, .rap-biaya-filter, .rap-period-toolbar, .kinerja-toolbar, .kv2-toolbar, .extra-period-grid, .cashflow-v4-filters, .um-toolbar, .dashboard-period, .modalbox, .sk-compact-editor, .p6-body > .formactions, .ui-total) {
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(.filters, .finance-toolbar, .progress-project-toolbar, .rap-biaya-filter, .rap-period-toolbar, .kinerja-toolbar, .kv2-toolbar, .extra-period-grid, .cashflow-v4-filters, .um-toolbar, .dashboard-period, .modalbox, .sk-compact-editor, .p6-body > .formactions, .ui-total, .ui-final-grid, .ui-final-help, .ui-final-summary, .um-add-section, .form-section) {
       background: var(--control-panel-gradient) !important;
       border: 1px solid var(--control-panel-border) !important;
       border-radius: var(--control-control-radius);
@@ -670,16 +672,49 @@
       padding: 0 !important;
       box-shadow: none !important;
     }
-    .sk-theme :is(.content, .main, .wrap, dialog, #modal) :is(input:not([type=checkbox],[type=radio],[type=range],[type=color],[type=hidden],[type=submit],[type=button],[type=reset],[type=image]), select, textarea, select option) {
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(input:not([type=checkbox],[type=radio],[type=range],[type=color],[type=hidden],[type=submit],[type=button],[type=reset],[type=image]), select, textarea, select option) {
       background-color: var(--control-field-surface) !important;
       color: var(--control-data-ink) !important;
       font-weight: 400 !important;
     }
-    .sk-theme :is(.content, .main, .wrap, dialog, #modal) :is(.field label, .control-period label, .control-form label, .sk-editor-field, td > strong, td .control-link, .timeline-v4-stat .label, .rap-item .label, .cost-item .note) {
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(input:not([type=checkbox],[type=radio],[type=range],[type=color],[type=hidden],[type=submit],[type=button],[type=reset],[type=image],[type=file]), select) {
+      box-sizing: border-box !important;
+      block-size: var(--control-field-height) !important;
+      min-block-size: var(--control-field-height) !important;
+      font-family: var(--control-font) !important;
+      font-size: var(--control-field-font) !important;
+      border-radius: var(--control-control-radius) !important;
+    }
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) textarea {
+      min-block-size: calc(2 * var(--control-field-height)) !important;
+      font-family: var(--control-font) !important;
+      font-size: var(--control-field-font) !important;
+    }
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) .ux-date-wrap {
+      height: var(--control-field-height) !important;
+      min-height: var(--control-field-height) !important;
+    }
+    .sk-theme #modal :is(.ui-final-close, .ui-final-step:not(.active)) {
+      background: #a7efff !important;
+      color: #091f40 !important;
+    }
+    .sk-theme #modal .ui-final-step.active {
+      background: #0d3054 !important;
+      color: #fff !important;
+      box-shadow: inset 0 -2px 0 var(--control-accent) !important;
+    }
+    .sk-theme :is(.modal, #modal, dialog) :is(.ui-final-grid, .formgrid, .sk-editor-fields) {
+      gap: 8px 12px !important;
+    }
+    .sk-theme :is(.modal, #modal, dialog) :is(.ui-final-summary, .ui-final-help) {
+      height: auto !important;
+      min-height: 32px;
+    }
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(.field label, .ui-final-field label, .control-period label, .control-form label, .sk-editor-field, td > strong, td .control-link, .timeline-v4-stat .label, .rap-item .label, .cost-item .note) {
       font-weight: 400 !important;
       font-family: var(--control-font) !important;
     }
-    .sk-theme :is(.content, .main, .wrap, dialog, #modal) :is(.field label, .control-period label, .control-form label, .sk-editor-field) {
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(.field label, .ui-final-field label, .control-period label, .control-form label, .sk-editor-field) {
       color: var(--control-workspace-muted) !important;
     }
     .sk-theme :is(.content, .main, .wrap) table :is(th, td) {
@@ -698,5 +733,5 @@
 .sk-theme .content :is(.summary-panels, .project-overview-charts, .control-kpis, .control-columns, .control-stack) { gap: var(--control-section-gap); }
 .sk-theme .content :is(.summary-panels, .timeline-v4) + :is(.timeline-v4, .project-overview-charts) { margin-block-start: var(--control-section-gap); }
 @media (max-width: 780px) {
-  .sk-theme { --control-section-gap: 10px; }
+  .sk-theme { --control-section-gap: 10px; --control-field-height: 44px; --control-field-font: 16px; }
 }
