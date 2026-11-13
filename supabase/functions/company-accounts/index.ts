@@ -42,27 +42,35 @@ Deno.serve(async (request) => {
     const email = typeof body?.email === "string" ? body.email.trim() : "";
     const password = body?.password;
     const action = body?.action ?? "create";
+    const platform = caller.access_role === "platform_admin";
+    if (!platform && body?.account_type === "platform_admin") return reply(403, { error: "Akses ditolak." });
+    const platformTarget = platform && body?.account_type === "platform_admin";
     if (action !== "create") {
       const targetId = body?.id;
-      if (!["update", "delete", "reset_password"].includes(action) || typeof targetId !== "string" || targetId === user.id) {
+      if (!["update", "delete", "reset_password"].includes(action) || typeof targetId !== "string" || (targetId === user.id && action === "delete")) {
         return reply(400, { error: "Aksi akun tidak valid." });
       }
-      const { data: target, error: targetError } = await client.from("company_accounts")
+      const { data: target, error: targetError } = await admin.from("company_accounts")
         .select("user_id,company_id,access_role").eq("user_id", targetId).maybeSingle();
       const allowed = target && (caller.access_role === "platform_admin"
-        ? target.access_role === "company_admin"
+        ? target.access_role === (platformTarget ? "platform_admin" : "company_admin")
         : target.access_role === "staff" && target.company_id === caller.company_id);
       if (targetError || !allowed) return reply(403, { error: "Akses pengelolaan akun ditolak." });
-      const { data: company, error: companyError } = await client.from("companies")
-        .select("is_active").eq("id", target.company_id).maybeSingle();
-      if (companyError || !company?.is_active) return reply(403, { error: "Perusahaan tidak aktif." });
+      if (target.company_id) {
+        const { data: company, error: companyError } = await client.from("companies")
+          .select("is_active").eq("id", target.company_id).maybeSingle();
+        if (companyError || !company?.is_active) return reply(403, { error: "Perusahaan tidak aktif." });
+      }
       if (action === "update") {
-        if (!name || name.length > 160 || typeof body?.is_active !== "boolean") {
+        if (!name || name.length > 160 || typeof body?.is_active !== "boolean" || (targetId === user.id && !body.is_active)) {
           return reply(400, { error: "Periksa nama dan status akun." });
         }
-        const { data, error } = await admin.from("company_accounts")
+        const update = admin.from("company_accounts")
           .update({ full_name: name, is_active: body.is_active }).eq("user_id", targetId)
-          .eq("access_role", target.access_role).eq("company_id", target.company_id).select("user_id").maybeSingle();
+          .eq("access_role", target.access_role);
+        const { data, error } = await (target.company_id ? update.eq("company_id", target.company_id)
+          : update.is("company_id", null)).select("user_id").maybeSingle();
+        if (error?.code === "23514") return reply(409, { error: "Admin Platform aktif terakhir harus dipertahankan." });
         return error || !data ? reply(409, { error: "Akun belum dapat diperbarui." }) : reply(200, { id: targetId });
       }
       if (action === "reset_password") {
@@ -76,28 +84,29 @@ Deno.serve(async (request) => {
       return error ? reply(409, { error: "Akun belum dapat dihapus." }) : reply(200, { id: targetId });
     }
 
-    const platform = caller.access_role === "platform_admin";
-    const companyId = platform ? body?.company_id : caller.company_id;
+    const companyId = platformTarget ? null : platform ? body?.company_id : caller.company_id;
     if (!name || name.length > 160 || !email || typeof password !== "string" || password.length < 8 ||
-      typeof companyId !== "string" || !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(companyId)) {
+      (!platformTarget && (typeof companyId !== "string" || !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(companyId)))) {
       return reply(400, { error: "Periksa nama, email, perusahaan, dan password minimal 8 karakter." });
     }
 
-    const { data: company, error: companyError } = await client.from("companies")
-      .select("id,is_active").eq("id", companyId).maybeSingle();
-    if (companyError) return reply(503, { error: "Perusahaan belum dapat diperiksa." });
-    if (!company?.is_active) return reply(403, { error: "Perusahaan tidak aktif atau tidak ditemukan." });
+    if (!platformTarget) {
+      const { data: company, error: companyError } = await client.from("companies")
+        .select("id,is_active").eq("id", companyId).maybeSingle();
+      if (companyError) return reply(503, { error: "Perusahaan belum dapat diperiksa." });
+      if (!company?.is_active) return reply(403, { error: "Perusahaan tidak aktif atau tidak ditemukan." });
+    }
 
     const { data: created, error: createError } = await admin.auth.admin.createUser({
       email, password, email_confirm: true,
     });
     if (createError || !created.user) return reply(400, { error: "Akun tidak dapat dibuat. Periksa email dan password." });
 
-    const role = platform ? "company_admin" : "staff";
+    const role = platformTarget ? "platform_admin" : platform ? "company_admin" : "staff";
     const { error: attachError } = await admin.rpc("attach_new_company_account", {
       caller_id: user.id,
       new_user_id: created.user.id,
-      target_company_id: company.id,
+      target_company_id: companyId,
       target_role: role,
       target_name: name,
     });
@@ -105,8 +114,8 @@ Deno.serve(async (request) => {
       // A failed HTTP response can be ambiguous. Confirm absence before compensating.
       const { data: attached, error: checkError } = await admin.from("company_accounts")
         .select("company_id,access_role").eq("user_id", created.user.id).maybeSingle();
-      if (attached?.company_id === company.id && attached.access_role === role) {
-        return reply(201, { id: created.user.id, company_id: company.id, access_role: role });
+      if (attached?.company_id === companyId && attached.access_role === role) {
+        return reply(201, { id: created.user.id, company_id: companyId, access_role: role });
       }
       if (!checkError && !attached) {
         const { error: cleanupError } = await admin.auth.admin.deleteUser(created.user.id);
@@ -116,7 +125,7 @@ Deno.serve(async (request) => {
       }
       return reply(409, { error: "Akun belum dapat dihubungkan ke perusahaan." });
     }
-    return reply(201, { id: created.user.id, company_id: company.id, access_role: role });
+    return reply(201, { id: created.user.id, company_id: companyId, access_role: role });
   } catch {
     return reply(503, { error: "Layanan pembuatan akun sedang tidak tersedia." });
   }

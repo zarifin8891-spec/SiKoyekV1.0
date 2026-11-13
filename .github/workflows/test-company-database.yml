@@ -48,7 +48,7 @@ jobs:
           SQL
       - name: Apply company migrations in order
         run: |
-          for migration in supabase/migrations/*_company_*.sql supabase/migrations/*_staff_access_settings.sql; do
+          for migration in supabase/migrations/*_company_*.sql supabase/migrations/*_staff_access_settings.sql supabase/migrations/*_platform_account_maintenance.sql; do
             printf '%s\n' "$migration"
           done | sort | while IFS= read -r migration; do
             printf 'Applying %s\n' "$migration"
