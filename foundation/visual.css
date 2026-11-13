@@ -995,16 +995,52 @@
     .sk-theme #modal .modalbox:has(#item-entry) > .modalhead h3 {
       color: var(--control-workspace-ink) !important;
     }
+    .sk-theme #modal #item-entry {
+      box-sizing: border-box;
+      min-width: 0;
+      padding: 12px clamp(12px, 2vw, 20px) 16px;
+    }
     .sk-theme #modal #item-entry .entry-table {
       table-layout: fixed;
-      min-width: 760px;
+      width: 100% !important;
+      min-width: 0 !important;
+      margin: 0 !important;
+    }
+    .sk-theme #modal #item-entry .entry-table :is(th, td) {
+      padding-inline: 4px !important;
+      white-space: normal !important;
+      overflow-wrap: anywhere;
+    }
+    .sk-theme #modal #item-entry .formactions {
+      width: 100% !important;
+      margin: 8px 0 0 !important;
+      padding: 8px 0 0 !important;
+      box-sizing: border-box;
     }
     .sk-theme #item-entry .entry-order { width: 72px; }
     .sk-theme #item-entry .entry-weight { width: 88px; }
     .sk-theme #item-entry .entry-duration { width: 96px; }
     .sk-theme #item-entry .entry-date { width: 145px; }
     .sk-theme #item-entry .entry-select { width: 58px; }
-    .sk-theme #modal #item-entry .entry-table input { min-width: 0; }
+    .sk-theme #modal #item-entry .entry-table input {
+      box-sizing: border-box !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+    }
+    @media (max-width: 740px) {
+      .sk-theme #modal #item-entry .entry-table :is(colgroup, thead) { display: none; }
+      .sk-theme #modal #item-entry .entry-table :is(table, tbody, tr, td),
+      .sk-theme #modal #item-entry .entry-table { display: block; }
+      .sk-theme #modal #item-entry .entry-table td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 4px;
+      }
+      .sk-theme #modal #item-entry .entry-table tr + tr {
+        margin-top: 12px;
+        border-top: 1px solid var(--control-panel-border);
+      }
+    }
     .sk-theme #modal #item-entry .entry-table input[type=checkbox] { width: auto; }
     .sk-theme #item-entry .entry-row-actions {
       display: flex;

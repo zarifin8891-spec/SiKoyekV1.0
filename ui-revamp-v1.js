@@ -103,13 +103,13 @@
     if(editId&&!item)return;
     let nextOrder=items.reduce((max,x)=>Math.max(max,Number(x.sort_order)||0),0)+1;
     const rowMarkup=()=>`<tr>
-      <td><input aria-label="Urutan" name="sort_order" type="number" min="0" max="2147483647" required value="${item?.sort_order??nextOrder++}"></td>
-      <td><input aria-label="Nama Pekerjaan" name="work_name" required value="${esc(item?.work_name||'')}"></td>
-      <td><input aria-label="Bobot (%)" name="weight" type="number" min="0" max="100" step="0.01" required value="${item?Number(item.weight||0)*100:0}"></td>
-      <td><input aria-label="Durasi (hari)" name="duration_days" type="number" min="1" max="36500" value="${esc(item?.duration_days??'')}"></td>
-      <td><input aria-label="Rencana Mulai" name="planned_start_date" type="date" value="${esc(item?.planned_start_date??'')}"></td>
-      <td><input aria-label="Keterangan" name="notes" value="${esc(item?.notes||'')}"></td>
-      ${item?'':'<td><input type="checkbox" name="selected_item" aria-label="Pilih baris untuk dihapus"></td>'}
+      <td data-label="Urutan"><input aria-label="Urutan" name="sort_order" type="number" min="0" max="2147483647" required value="${item?.sort_order??nextOrder++}"></td>
+      <td data-label="Nama Pekerjaan"><input aria-label="Nama Pekerjaan" name="work_name" required value="${esc(item?.work_name||'')}"></td>
+      <td data-label="Bobot (%)"><input aria-label="Bobot (%)" name="weight" type="number" min="0" max="100" step="0.01" required value="${item?Number(item.weight||0)*100:0}"></td>
+      <td data-label="Durasi (hari)"><input aria-label="Durasi (hari)" name="duration_days" type="number" min="1" max="36500" value="${esc(item?.duration_days??'')}"></td>
+      <td data-label="Rencana Mulai"><input aria-label="Rencana Mulai" name="planned_start_date" type="date" value="${esc(item?.planned_start_date??'')}"></td>
+      <td data-label="Keterangan"><input aria-label="Keterangan" name="notes" value="${esc(item?.notes||'')}"></td>
+      ${item?'':'<td data-label="Pilih"><input type="checkbox" name="selected_item" aria-label="Pilih baris untuk dihapus"></td>'}
     </tr>`;
     modal(item?'Edit Item Pekerjaan':'Tambah Item Pekerjaan',`
       <form id="item-entry">
