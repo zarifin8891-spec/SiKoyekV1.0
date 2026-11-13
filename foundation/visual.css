@@ -407,3 +407,25 @@
 }
 .sk-password-toggle svg { width: 18px; height: 18px; }
 .sk-password-toggle[aria-pressed="false"] .sk-password-slash { display: none; }
+
+.sk-theme .report-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.sk-theme .report-toolbar .report-actions-v1 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-inline-start: auto;
+}
+.sk-theme .report-toolbar .report-actions-v1 .btn {
+  min-height: 44px;
+  background: #fff;
+  color: var(--control-ink);
+}
+@media print {
+  .sk-theme .report-toolbar { display: none; }
+}
