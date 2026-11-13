@@ -12,7 +12,7 @@
 
   async function identify(client, user) {
     const { data: account, error } = await client.from('company_accounts')
-      .select('user_id,company_id,access_role,full_name,is_active').eq('user_id', user.id).maybeSingle();
+      .select('user_id,company_id,access_role,full_name,is_active,template_role').eq('user_id', user.id).maybeSingle();
     if (error || !account?.is_active) throw new Error('Akun SiKoyek belum aktif.');
     if (account.access_role === 'platform_admin') return { account };
     const { data: company, error: companyError } = await client.from('companies')
@@ -21,7 +21,15 @@
 
     const admin = account.access_role === 'company_admin';
     const permissions = { role: admin ? 'admin' : 'staff', views: {}, actions: {} };
-    if (!admin) {
+    if (!admin && account.template_role) {
+      const {data: template,error: templateError}=await client.from('company_role_templates')
+        .select('grants').eq('name',account.template_role).single();
+      if(templateError) throw templateError;
+      for(const [module,action] of template.grants){
+        if(action==='VIEW')permissions.views[module]=true;
+        else (permissions.actions[module]??={})[action]=true;
+      }
+    } else if (!admin) {
       const { data: grants, error: grantError } = await client.from('company_staff_permissions')
         .select('module,can_write').eq('user_id', user.id);
       if (grantError) throw grantError;

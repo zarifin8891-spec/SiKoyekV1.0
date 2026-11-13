@@ -45,6 +45,12 @@ Deno.serve(async (request) => {
     const platform = caller.access_role === "platform_admin";
     if (!platform && body?.account_type === "platform_admin") return reply(403, { error: "Akses ditolak." });
     const platformTarget = platform && body?.account_type === "platform_admin";
+    const templates = ["DIREKTUR", "KEUANGAN", "MARKETING", "PELAKSANA"];
+    const roleSelection = body?.role_id;
+    if (!platform && roleSelection != null && roleSelection !== "staff" && !templates.includes(roleSelection)) {
+      return reply(400, { error: "Role perusahaan tidak valid." });
+    }
+    const template = templates.includes(roleSelection) ? roleSelection : null;
     if (action !== "create") {
       const targetId = body?.id;
       if (!["update", "delete", "reset_password"].includes(action) || typeof targetId !== "string" || (targetId === user.id && action === "delete")) {
@@ -66,7 +72,8 @@ Deno.serve(async (request) => {
           return reply(400, { error: "Periksa nama dan status akun." });
         }
         const update = admin.from("company_accounts")
-          .update({ full_name: name, is_active: body.is_active }).eq("user_id", targetId)
+          .update({ full_name: name, is_active: body.is_active,
+            ...(!platform && roleSelection != null ? { template_role: template } : {}) }).eq("user_id", targetId)
           .eq("access_role", target.access_role);
         const { data, error } = await (target.company_id ? update.eq("company_id", target.company_id)
           : update.is("company_id", null)).select("user_id").maybeSingle();
@@ -103,12 +110,13 @@ Deno.serve(async (request) => {
     if (createError || !created.user) return reply(400, { error: "Akun tidak dapat dibuat. Periksa email dan password." });
 
     const role = platformTarget ? "platform_admin" : platform ? "company_admin" : "staff";
-    const { error: attachError } = await admin.rpc("attach_new_company_account", {
+    const { error: attachError } = await admin.rpc("attach_company_account_with_template", {
       caller_id: user.id,
       new_user_id: created.user.id,
       target_company_id: companyId,
       target_role: role,
       target_name: name,
+      selected_template: platform ? null : template,
     });
     if (attachError) {
       // A failed HTTP response can be ambiguous. Confirm absence before compensating.
