@@ -17,9 +17,11 @@
     const contract=d.project.contract_value;
     const rap=s?.total_rap;
     const card=(label,value,attributes='')=>`<div class="card detail-kpi-v2"><div class="label">${label}</div><div class="value" ${attributes}>${value}</div></div>`;
+    const actualCost=s?.total_realization ?? s?.cash_out ?? d.fin.filter(row=>row.transaction_type==='KELUAR').reduce((total,row)=>total+Number(row.amount||0),0);
     const finance=(access?.finance ?? SiKoyekControl.canFinance())
-      ? card('REALISASI BIAYA',money(s?.total_realization ?? s?.cash_out ?? d.fin.filter(row=>row.transaction_type==='KELUAR').reduce((total,row)=>total+Number(row.amount||0),0)))
+      ? card('REALISASI BIAYA',money(actualCost))
         +(!access || access.rap && contract != null ? card('ESTIMASI LABA',money(s?.estimated_profit ?? (Number(contract||0)-Number(rap||0)))) : '')
+        +(contract != null ? card('LABA REAL',d.financeReadError ? '—' : money(Number(contract)-actualCost),'title="Nilai kontrak dikurangi realisasi biaya"') : '')
       : '';
     const workers=!access && SiKoyekControl.canProgress() ? card('TENAGA KERJA','—','data-project-worker-count aria-live="polite"') : '';
     return `<div class="project-summary-v2"><div class="detail-kpis-v2">
