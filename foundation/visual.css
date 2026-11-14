@@ -1047,9 +1047,11 @@
       box-sizing: border-box;
     }
     .sk-theme #progress-entry .progress-order { width: 50px; }
-    .sk-theme #progress-entry .progress-name { width: 300px; }
+    .sk-theme #progress-entry .progress-name { width: auto; }
     .sk-theme #progress-entry .progress-weight { width: 60px; }
-    .sk-theme #progress-entry .progress-addition { width: 150px; }
+    .sk-theme #progress-entry .progress-addition { width: 130px; }
+    .sk-theme #progress-entry .progress-notes { width: 300px; }
+    .sk-theme #modal #progress-entry .entry-table tbody tr:last-child > th[scope=row] { border-bottom: 0 !important; }
     .sk-theme #modal #progress-entry .entry-table tbody :is(td, th) {
       padding-block: 1px !important;
       line-height: 1.2;

@@ -188,18 +188,28 @@
   };
 
   window.openProgressForm=function(){
-    const items=state.detail.items||[];
-    if(!items.length){toast('Tambahkan Item Pekerjaan terlebih dahulu sebelum menginput progress');return;}
+    const allItems=state.detail.items||[];
+    if(!allItems.length){toast('Tambahkan Item Pekerjaan terlebih dahulu sebelum menginput progress');return;}
+    const totals=new Map();
+    for(const record of state.detail.progress||[]){
+      const id=String(record.work_item_id);
+      totals.set(id,(totals.get(id)||0)+Number(record.progress_percentage||0));
+    }
+    const items=allItems.map((item,index)=>({
+      ...item, order:item.sort_order??index+1,
+      remaining:Math.round((1-(totals.get(String(item.id))||0))*100000000)/1000000,
+    })).filter(item=>item.remaining>0);
+    if(!items.length){toast('Semua item pekerjaan sudah mencapai 100%');return;}
     modal('Input Progress Proyek',`
       <form id="progress-entry">
         <div class="field"><label for="pr_date">Tanggal Progress *</label><input id="pr_date" type="date" value="${today()}" required></div>
         <div class="scroll entry-table-wrap"><table class="table entry-table">
-          <colgroup><col class="progress-order"><col class="progress-name"><col class="progress-weight"><col class="progress-addition"><col></colgroup>
+          <colgroup><col class="progress-order"><col class="progress-name"><col class="progress-weight"><col class="progress-addition"><col class="progress-notes"></colgroup>
           <thead><tr><th scope="col">Urutan</th><th scope="col">Nama Pekerjaan</th><th scope="col">Bobot (%)</th><th scope="col">Tambahan Progress (%)</th><th scope="col">Keterangan</th></tr></thead>
-          <tbody>${items.map((item,index)=>`<tr data-progress-item="${esc(item.id)}">
-            <td data-label="Urutan">${esc(item.sort_order??index+1)}</td><th scope="row">${esc(item.work_name)}</th>
+          <tbody>${items.map(item=>`<tr data-progress-item="${esc(item.id)}">
+            <td data-label="Urutan">${esc(item.order)}</td><th scope="row">${esc(item.work_name)}</th>
             <td data-label="Bobot (%)">${pct(Number(item.weight||0)*100)}</td>
-            <td data-label="Tambahan Progress (%)"><input name="progress" aria-label="Progress ${esc(item.work_name)}" type="number" min="0" max="100" step="0.01"></td>
+            <td data-label="Tambahan Progress (%)"><input name="progress" aria-label="Progress ${esc(item.work_name)}" type="number" min="0" max="${item.remaining}" step="any"></td>
             <td data-label="Keterangan"><input name="notes" aria-label="Keterangan ${esc(item.work_name)}"></td>
           </tr>`).join('')}</tbody>
         </table></div>
