@@ -1093,3 +1093,17 @@
     }
   }
 }
+
+@layer neon-surfaces {
+  @media screen {
+    .sk-theme .control-form:has(> label > :is(select[name="employee_id"], select[name="equipment_id"])) > label > :is(input, select) {
+      box-sizing: border-box;
+      width: 100%;
+      min-width: 0 !important;
+      max-width: 100%;
+    }
+    .sk-theme .control-card:has(.control-form :is(select[name="employee_id"], select[name="equipment_id"])) .control-table thead th {
+      font-weight: 400 !important;
+    }
+  }
+}
