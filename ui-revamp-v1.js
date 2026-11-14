@@ -196,10 +196,10 @@
         <div class="scroll entry-table-wrap"><table class="table entry-table">
           <thead><tr><th scope="col">Urutan</th><th scope="col">Nama Pekerjaan</th><th scope="col">Bobot (%)</th><th scope="col">Tambahan Progress (%)</th><th scope="col">Keterangan</th></tr></thead>
           <tbody>${items.map((item,index)=>`<tr data-progress-item="${esc(item.id)}">
-            <td>${esc(item.sort_order??index+1)}</td><th scope="row">${esc(item.work_name)}</th>
-            <td>${pct(Number(item.weight||0)*100)}</td>
-            <td><input name="progress" aria-label="Progress ${esc(item.work_name)}" type="number" min="0" max="100" step="0.01"></td>
-            <td><input name="notes" aria-label="Keterangan ${esc(item.work_name)}"></td>
+            <td data-label="Urutan">${esc(item.sort_order??index+1)}</td><th scope="row">${esc(item.work_name)}</th>
+            <td data-label="Bobot (%)">${pct(Number(item.weight||0)*100)}</td>
+            <td data-label="Tambahan Progress (%)"><input name="progress" aria-label="Progress ${esc(item.work_name)}" type="number" min="0" max="100" step="0.01"></td>
+            <td data-label="Keterangan"><input name="notes" aria-label="Keterangan ${esc(item.work_name)}"></td>
           </tr>`).join('')}</tbody>
         </table></div>
         <div class="formactions"><button type="button" class="btn ghost" onclick="closeModal()">Batal</button><button type="submit" class="btn primary">Simpan Progress</button></div>

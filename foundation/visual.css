@@ -958,36 +958,64 @@
   .sk-theme { --control-section-gap: 10px; --control-field-height: 44px; --control-field-font: 16px; }
 }
 
-@media screen {
-  .sk-theme #modal .modalbox:has(.entry-table) {
-    width: min(960px, calc(100vw - 28px));
-    max-width: calc(100vw - 28px);
-    overflow: auto;
-  }
-  .sk-theme #modal .entry-table-wrap { overflow-x: auto; max-width: 100%; }
-  .sk-theme #modal .entry-table { min-width: 680px; }
-  .sk-theme #modal .entry-table input { width: 100%; min-width: 64px; }
-  .sk-theme #modal .entry-table input:is(#wi_name, [name=notes]) { min-width: 145px; }
-  .sk-theme #modal .entry-table th[scope=row] { text-align: left; font-weight: 400; }
-}
-
 @layer neon-surfaces {
   @media screen {
     .sk-theme #modal :is(.ui-final-summary strong, #wiTotalPreview) {
       color: var(--control-data-ink) !important;
     }
-    .sk-theme #modal #item-entry .ui-total { color: var(--control-workspace-ink) !important; }
-    .sk-theme #modal #item-entry .entry-table thead th {
+    .sk-theme #modal .modalbox:has(> :is(#item-entry, #progress-entry)) {
+      display: flex !important;
+      flex-direction: column;
+      width: min(960px, calc(100vw - 28px)) !important;
+      max-width: calc(100vw - 28px) !important;
+      max-height: calc(100dvh - 28px) !important;
+      overflow: clip !important;
+    }
+    .sk-theme #modal .modalbox:has(.entry-table) > .modalhead { flex: none; }
+    .sk-theme #modal :is(#item-entry, #progress-entry) {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      gap: 8px;
+    }
+    .sk-theme #modal .entry-table-wrap {
+      min-height: 0;
+      overflow: hidden auto;
+    }
+    .sk-theme #modal :is(#item-entry, #progress-entry) > :not(.entry-table-wrap) {
+      flex: none;
+    }
+    .sk-theme #modal #progress-entry > .field {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0;
+    }
+    .sk-theme #modal #progress-entry > .field label { margin: 0 !important; }
+    .sk-theme #modal #pr_date { width: min(48%, 180px) !important; }
+    .sk-theme #modal .entry-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
       font-weight: 400 !important;
       text-transform: none !important;
       letter-spacing: normal !important;
     }
-    .sk-theme #modal #item-entry .entry-table input {
-      border: 1px solid var(--control-secondary-line) !important;
-      padding-inline: 8px !important;
+    .sk-theme #modal .entry-table input:not([type=checkbox]) {
+      width: 100%;
+      border: 0 !important;
+      border-radius: 4px !important;
+      block-size: 30px !important;
+      min-block-size: 30px !important;
+      padding: 2px 5px !important;
       box-shadow: none !important;
     }
-    .sk-theme #modal #item-entry .entry-table input[type=number] { text-align: left !important; }
+    .sk-theme #modal .entry-table input:focus-visible {
+      outline: 2px solid var(--control-accent) !important;
+      outline-offset: -2px;
+    }
+    .sk-theme #modal .entry-table th[scope=row] { text-align: left; font-weight: 400 !important; }
+    .sk-theme #modal #item-entry .ui-total { color: var(--control-workspace-ink) !important; }
     .sk-theme #modal .modalbox:has(#item-entry) > .modalhead {
       background: linear-gradient(135deg, #102a4a, #173b67 55%, #1f6274) !important;
       color: var(--control-workspace-ink) !important;
@@ -995,53 +1023,53 @@
     .sk-theme #modal .modalbox:has(#item-entry) > .modalhead h3 {
       color: var(--control-workspace-ink) !important;
     }
-    .sk-theme #modal #item-entry {
+    .sk-theme #modal :is(#item-entry, #progress-entry) {
       box-sizing: border-box;
       min-width: 0;
       padding: 12px clamp(12px, 2vw, 20px) 16px;
     }
-    .sk-theme #modal #item-entry .entry-table {
+    .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table {
       table-layout: fixed;
       width: 100% !important;
       min-width: 0 !important;
       margin: 0 !important;
     }
-    .sk-theme #modal #item-entry .entry-table :is(th, td) {
-      padding-inline: 4px !important;
+    .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table :is(th, td) {
+      padding: 2px 4px !important;
       white-space: normal !important;
       overflow-wrap: anywhere;
     }
-    .sk-theme #modal #item-entry .formactions {
+    .sk-theme #modal :is(#item-entry, #progress-entry) .formactions {
       width: 100% !important;
       margin: 8px 0 0 !important;
       padding: 8px 0 0 !important;
       box-sizing: border-box;
     }
     .sk-theme #item-entry .entry-order { width: 72px; }
-    .sk-theme #item-entry .entry-weight { width: 88px; }
-    .sk-theme #item-entry .entry-duration { width: 96px; }
+    .sk-theme #item-entry .entry-weight { width: 66px; }
+    .sk-theme #item-entry .entry-duration { width: 72px; }
     .sk-theme #item-entry .entry-date { width: 145px; }
     .sk-theme #item-entry .entry-select { width: 58px; }
-    .sk-theme #modal #item-entry .entry-table input {
+    .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table input {
       box-sizing: border-box !important;
       min-width: 0 !important;
       max-width: 100% !important;
     }
     @media (max-width: 740px) {
-      .sk-theme #modal #item-entry .entry-table :is(colgroup, thead) { display: none; }
-      .sk-theme #modal #item-entry .entry-table :is(table, tbody, tr, td),
-      .sk-theme #modal #item-entry .entry-table { display: block; }
-      .sk-theme #modal #item-entry .entry-table td::before {
+      .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table :is(colgroup, thead) { display: none; }
+      .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table :is(tbody, tr, td, th[scope=row]),
+      .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table { display: block; }
+      .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table td::before {
         content: attr(data-label);
         display: block;
         margin-bottom: 4px;
       }
-      .sk-theme #modal #item-entry .entry-table tr + tr {
+      .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table tr + tr {
         margin-top: 12px;
         border-top: 1px solid var(--control-panel-border);
       }
     }
-    .sk-theme #modal #item-entry .entry-table input[type=checkbox] { width: auto; }
+    .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table input[type=checkbox] { width: auto; }
     .sk-theme #item-entry .entry-row-actions {
       display: flex;
       flex-wrap: wrap;
