@@ -1001,18 +1001,19 @@
       text-transform: none !important;
       letter-spacing: normal !important;
     }
-    .sk-theme #modal .entry-table input:not([type=checkbox]) {
+    .sk-theme .entry-table input:not([type=checkbox], [type=radio]) {
       width: 100%;
       border: 0 !important;
+      background: transparent !important;
       border-radius: 4px !important;
       block-size: 30px !important;
       min-block-size: 30px !important;
       padding: 2px 5px !important;
       box-shadow: none !important;
     }
-    .sk-theme #modal .entry-table input:focus-visible {
-      outline: 2px solid var(--control-accent) !important;
-      outline-offset: -2px;
+    .sk-theme .entry-table input:not([type=checkbox], [type=radio]):focus {
+      background: var(--control-table-head) !important;
+      outline: none !important;
     }
     .sk-theme #modal .entry-table th[scope=row] { text-align: left; font-weight: 400 !important; }
     .sk-theme #modal #item-entry .ui-total { color: var(--control-workspace-ink) !important; }
