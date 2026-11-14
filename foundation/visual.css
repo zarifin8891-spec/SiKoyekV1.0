@@ -1107,3 +1107,11 @@
     }
   }
 }
+
+.sk-theme .report-item-progress {
+  width: 100%;
+  min-width: 48px;
+  height: 8px;
+  vertical-align: middle;
+  accent-color: var(--control-accent);
+}

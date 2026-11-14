@@ -21,7 +21,7 @@
 <link rel="stylesheet" href="./foundation/tokens.css">
 <link rel="stylesheet" href="./foundation/dashboard.css">
 <link rel="stylesheet" href="./foundation/project-control.css">
-<link rel="stylesheet" href="./foundation/visual.css?v=28">
+<link rel="stylesheet" href="./foundation/visual.css?v=29">
 <script src="./environment.js"></script>
 <script src="./foundation/config.js"></script>
 <script src="./foundation/company-session.js"></script>
@@ -95,7 +95,7 @@ function openTxForm(){modal('Tambah Transaksi Keuangan',`<div class="formgrid"><
 async function saveTx(){const row={project_id:state.selected,transaction_date:document.getElementById('tx_date').value,transaction_type:document.getElementById('tx_type').value,category:document.getElementById('tx_cat').value.trim()||null,description:document.getElementById('tx_desc').value.trim(),amount:Number(document.getElementById('tx_amount').value||0),payment_method:document.getElementById('tx_method').value.trim()||null};if(!row.description||row.amount<=0){toast('Deskripsi dan jumlah wajib diisi');return}const {error}=await sb.from('financial_transactions').insert(row);if(error){toast(error.message);return}closeModal();await loadSummary();await openProject(state.selected);toast('Transaksi berhasil disimpan')}
 const appReady=boot();
 </script>
-<script src="./core-unified-shell-v2.js?v=4"></script>
+<script src="./core-unified-shell-v2.js?v=5"></script>
 <script src="./dashboard-graphs.js?v=6"></script>
 <script src="./detail-finance-kpi.js?v=1"></script>
 <script src="./cost-control-audit.js?v=7"></script>
