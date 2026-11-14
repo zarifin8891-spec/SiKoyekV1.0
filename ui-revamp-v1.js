@@ -194,6 +194,7 @@
       <form id="progress-entry">
         <div class="field"><label for="pr_date">Tanggal Progress *</label><input id="pr_date" type="date" value="${today()}" required></div>
         <div class="scroll entry-table-wrap"><table class="table entry-table">
+          <colgroup><col class="progress-order"><col class="progress-name"><col class="progress-weight"><col class="progress-addition"><col></colgroup>
           <thead><tr><th scope="col">Urutan</th><th scope="col">Nama Pekerjaan</th><th scope="col">Bobot (%)</th><th scope="col">Tambahan Progress (%)</th><th scope="col">Keterangan</th></tr></thead>
           <tbody>${items.map((item,index)=>`<tr data-progress-item="${esc(item.id)}">
             <td data-label="Urutan">${esc(item.sort_order??index+1)}</td><th scope="row">${esc(item.work_name)}</th>

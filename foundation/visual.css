@@ -1046,6 +1046,18 @@
       padding: 8px 0 0 !important;
       box-sizing: border-box;
     }
+    .sk-theme #progress-entry .progress-order { width: 50px; }
+    .sk-theme #progress-entry .progress-name { width: 300px; }
+    .sk-theme #progress-entry .progress-weight { width: 60px; }
+    .sk-theme #progress-entry .progress-addition { width: 150px; }
+    .sk-theme #modal #progress-entry .entry-table tbody :is(td, th) {
+      padding-block: 1px !important;
+      line-height: 1.2;
+    }
+    .sk-theme #modal #progress-entry .entry-table input {
+      block-size: 24px !important;
+      min-block-size: 24px !important;
+    }
     .sk-theme #item-entry .entry-order { width: 72px; }
     .sk-theme #item-entry .entry-weight { width: 66px; }
     .sk-theme #item-entry .entry-duration { width: 72px; }
