@@ -744,6 +744,33 @@
     .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(.field label, .ui-final-field label, .control-period label, .control-form label, .sk-editor-field) {
       color: var(--control-workspace-muted) !important;
     }
+    .sk-theme {
+      --control-table-heading-size: 13px;
+      --control-table-body-size: 14px;
+    }
+    .sk-theme :is(.entry-table, .md-kavio-table, .kinerja-table, .kinerja-v2, .period-performance-section) {
+      --control-table-heading-size: 12px;
+      --control-table-body-size: 13px;
+    }
+    .sk-theme :is(table thead th, .pp-header-v4 > .pp-cell-v4, .category-master-table .cm-head) {
+      font-size: var(--control-table-heading-size) !important;
+      font-weight: 400 !important;
+      line-height: 1.25 !important;
+      letter-spacing: normal !important;
+    }
+    .sk-theme :is(table tbody :is(td, th), .pp-data-v4 > .pp-cell-v4, .category-master-table .cm-row) {
+      font-size: var(--control-table-body-size) !important;
+      line-height: 1.3 !important;
+    }
+    .sk-theme table tbody :is(button, a, strong, small, .pill, .control-badge) {
+      font-size: inherit !important;
+    }
+    .sk-theme .entry-table input:not([type=checkbox], [type=radio]) {
+      font-size: var(--control-table-body-size) !important;
+    }
+    @media (max-width: 780px) {
+      .sk-theme { --control-table-heading-size: 12px; --control-table-body-size: 13px; }
+    }
     .sk-theme table :is(th, td) {
       background: var(--control-table-surface) !important;
       color: var(--control-data-ink) !important;
