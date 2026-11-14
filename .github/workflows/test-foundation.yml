@@ -2,7 +2,7 @@ name: Test isolated Cloud Foundation
 
 on:
   push:
-    branches: [refactor/cloud-foundation-2026-10-07]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -25,7 +25,7 @@ jobs:
           test ! -e .github/workflows/unified-pages.yml
       - name: Check Foundation syntax
         run: |
-          for source_file in foundation/*.js; do node --check "$source_file" || exit 1; done
+          for source_file in foundation/*.js multi-perusahaan/*.js; do node --check "$source_file" || exit 1; done
       - name: Run backend and repository contracts
         run: node --test tests/foundation/*.test.cjs
       - name: Run Closed engine and UI suites

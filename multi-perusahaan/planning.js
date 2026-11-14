@@ -106,18 +106,7 @@
     }
 
     function renderRows(id, data, cells, action) {
-      const table = get(id);
-      table.replaceChildren();
-      for (const entry of data) {
-        const row = table.insertRow();
-        for (const value of cells(entry)) row.insertCell().textContent = value;
-        if (action) action(row.insertCell(), entry);
-      }
-      if (!data.length) {
-        const cell = table.insertRow().insertCell();
-        cell.colSpan = table.closest("table").tHead.rows[0].cells.length;
-        cell.textContent = "Belum ada data.";
-      }
+      format.renderTableRows(get(id), data, cells, action);
     }
 
     function renderEdit(cell, item) {

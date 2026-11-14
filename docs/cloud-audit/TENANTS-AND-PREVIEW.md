@@ -22,7 +22,7 @@ Tidak ada Supabase SDK, URL project atau key produksi dalam paket preview. CSP `
 
 | Pemeriksaan | Hasil | Bukti |
 |---|---|---|
-| Teks, kontrol, style dan geometri terpilih terhadap artifact Closed | 55/55 cocok | `tenant-ui-equivalence.json` |
+| Teks, kontrol, style dan geometri terpilih terhadap artifact Closed | 55/55 cocok | `ui-equivalence.json` |
 | Unit runtime backend, config, repository, release dan preview | 22/22 lulus | `tests/foundation/*.test.cjs` |
 | Engine/integrasi/UI legacy | 15/15 suite lulus | `tenant-legacy-tests.json` |
 | 24 handler CRUD/auth aktif | Tetap identik dengan Closed | `business-handlers.json` |

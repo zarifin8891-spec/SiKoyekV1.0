@@ -1,5 +1,6 @@
 (function () {
   "use strict";
+  const { appendTableRow } = window.SiKoyekFoundation;
   const byId = id => document.getElementById(id);
   const login = byId("login");
   const signedIn = byId("signed-in");
@@ -180,12 +181,6 @@
     notice.dataset.error = String(error);
   }
 
-  function appendRow(table, values) {
-    const row = table.insertRow();
-    for (const value of values) row.insertCell().textContent = value;
-    return row;
-  }
-
   function setSignedOut() {
     platformEdit = null;
     callerId = "";
@@ -272,7 +267,7 @@
     for (const user of users) {
       if (platform && user.access_role !== "company_admin") continue;
       const company = names.get(user.company_id) || "—";
-      const row = appendRow(list, [user.full_name, user.email || "—", company,
+      const row = appendTableRow(list, [user.full_name, user.email || "—", company,
         user.access_role === "company_admin" ? "Admin Perusahaan" : "Staf", ""]);
       const status = document.createElement("span");
       status.className = "pill " + (user.is_active ? "green" : "amber");
@@ -311,7 +306,7 @@
     const list = byId("platform-admins");
     list.replaceChildren();
     for (const user of users) {
-      const row = appendRow(list, [user.full_name, user.email || "—", user.is_active ? "Aktif" : "Nonaktif"]);
+      const row = appendTableRow(list, [user.full_name, user.email || "—", user.is_active ? "Aktif" : "Nonaktif"]);
       const actions = row.insertCell();
       actions.className = "control-row-actions";
       for (const [label, mode] of [["Edit", "update"], ["Reset Password", "reset_password"], ["Hapus", "delete"]]) {
@@ -353,7 +348,7 @@
     if (!platform) return;
 
     for (const company of companies) {
-      const actions = appendRow(list, [company.name, company.is_active ? "Aktif" : "Nonaktif", ""]).lastElementChild;
+      const actions = appendTableRow(list, [company.name, company.is_active ? "Aktif" : "Nonaktif", ""]).lastElementChild;
       const edit = document.createElement("button");
       edit.type = "button";
       edit.textContent = "Ubah Nama";
@@ -372,7 +367,7 @@
       };
       actions.append(edit, toggle);
     }
-    if (!list.rows.length) appendRow(list, ["Belum ada perusahaan.", "—", "—"]);
+    if (!list.rows.length) appendTableRow(list, ["Belum ada perusahaan.", "—", "—"]);
   }
 
   async function run(button, task) {

@@ -92,8 +92,25 @@
     const parts = Object.fromEntries(dateTimeFormat.formatToParts(date).map(({type,value}) => [type,value]));
     return `${parts.day} ${dateMonths[Number(parts.month)-1]} ${parts.year}${withTime ? ' · '+parts.hour+':'+parts.minute : ''}`;
   }
+  function appendTableRow(body, values) {
+    const row = body.insertRow();
+    for (const value of values) row.insertCell().textContent = value;
+    return row;
+  }
+  function renderTableRows(body, entries, valuesFor = entry => entry, renderAction) {
+    body.replaceChildren();
+    if (!entries.length) {
+      const cell = appendTableRow(body, ['Belum ada data.']).cells[0];
+      cell.colSpan = body.closest('table').tHead.rows[0].cells.length;
+      return;
+    }
+    for (const entry of entries) {
+      const row = appendTableRow(body, valuesFor(entry));
+      if (renderAction) renderAction(row.insertCell(), entry);
+    }
+  }
   global.SiKoyekFoundation = {
-    Observer, metrics, singleFlight, setStyle, formatDate,
+    Observer, metrics, singleFlight, setStyle, formatDate, appendTableRow, renderTableRows,
     ownsModal:box=>Boolean(box?.dataset.foundationLayout),
     money:n=>moneyFormat.format(Number(n||0)),
     moneyPlain:n=>plainFormat.format(Number(n||0)),

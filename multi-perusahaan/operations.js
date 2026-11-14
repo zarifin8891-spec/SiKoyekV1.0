@@ -120,17 +120,7 @@
     }
 
     function rows(id, values) {
-      const table = get(id);
-      table.replaceChildren();
-      for (const valuesForRow of values) {
-        const row = table.insertRow();
-        for (const value of valuesForRow) row.insertCell().textContent = value;
-      }
-      if (!values.length) {
-        const cell = table.insertRow().insertCell();
-        cell.colSpan = table.closest("table").tHead.rows[0].cells.length;
-        cell.textContent = "Belum ada data.";
-      }
+      format.renderTableRows(get(id), values);
     }
 
     async function load(nextAccount, preservePlanning = false) {

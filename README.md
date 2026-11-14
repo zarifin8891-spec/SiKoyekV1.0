@@ -1,33 +1,17 @@
-# SiKoyek V1.0
+# SiKoyek
 
-Project Control System berbasis Supabase.
+Aplikasi kontrol proyek berbasis Supabase. Pengembangan SiKoyek Multi berlangsung di branch `main` repository ini.
 
-## Modul V1.0
+## Menjalankan SiKoyek Multi secara lokal
 
-- Dashboard / Project Health
-- Projects
-- Item Pekerjaan
-- Progress Engine
-- RAP per Proyek
-- Keuangan Proyek
-- Cost Control
-- RAP Consumption
-- Cost Ratio
-- Dashboard Kinerja Periode
+1. Salin `multi-perusahaan/environment.example.js` ke `multi-perusahaan/environment.js`. Isi URL dan publishable key dari project Supabase pengembangan.
+2. Jalankan server statis dari akar repository, misalnya `python -m http.server 8000`.
+3. Buka `http://localhost:8000/multi-perusahaan/`.
 
-## Backend
+## Verifikasi
 
-Supabase project: `mmkusplegmittrlxqxby`
+Jalankan `node --test tests/foundation/*.test.cjs` dan tes JavaScript dalam `tests/`. Workflow `test-company-database.yml` menguji skenario perusahaan pada PostgreSQL terisolasi.
 
-## Repository
+## Distribusi
 
-`zarifin8891-spec/SiKoyekV1.0`
-
-## Deployment
-
-Repository sudah disiapkan untuk GitHub Pages melalui workflow:
-`.github/workflows/pages.yml`
-
-GitHub Pages harus menggunakan source **GitHub Actions** pada repository settings.
-
-<!-- unified-pages deployment trigger -->
+Repository distribusi adalah [KavioSistem/SiKoyek](https://github.com/KavioSistem/SiKoyek). File paket MASTER/KONSTRUVA di `deployment/` dan `deployment-package-v1.0/` masih dirujuk oleh tes atau prosedur pemulihan. Workflow publikasi GitHub Pages lama sudah dipensiunkan.
