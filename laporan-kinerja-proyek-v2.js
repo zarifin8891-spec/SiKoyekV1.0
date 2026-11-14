@@ -57,10 +57,22 @@
     return data.projects.map(p=>{const pid=String(p.id),c=costs.get(pid)||{Material:0,Upah:0,Peralatan:0,Operasional:0,Subkon:0,'Lain-lain':0};const total=Object.values(c).reduce((a,v)=>a+v,0);const contract=Number(p.contract_value||0);const progress=Math.min(100,Number(pm.projectProgress.get(pid)||0));return{...p,contract,c,total,laba:contract-total,progress,status:progress>=99.999?'SELESAI':'BERJALAN'}});
   }
 
-  function chartFrom(rows){
-    const now=new Date(),from=new Date(now.getFullYear(),now.getMonth()-5,1),to=new Date(now.getFullYear(),now.getMonth()+1,0);
-    const keys=[];for(let d=new Date(from);d<=to;d.setMonth(d.getMonth()+1))keys.push(monthKey(d));
-    return keys.map(k=>{let value=0,cost=0;const pm=progressModel();for(const p of data.projects)value+=(Number(pm.monthly.get(String(p.id)+'|'+k)||0)/100)*Number(p.contract_value||0);for(const t of data.tx){if(txType(t)==='KELUAR'&&txDate(t).slice(0,7)===k)cost+=amount(t)}return{key:k,value,cost,profit:value-cost}});
+  function chartFrom(months) {
+    const now = new Date();
+    const {monthly} = progressModel();
+    const costs = new Map();
+    for (const transaction of data.tx) {
+      if (txType(transaction) !== 'KELUAR') continue;
+      const key = txDate(transaction).slice(0, 7);
+      costs.set(key, (costs.get(key) || 0) + amount(transaction));
+    }
+    return Array.from({length: months}, (_, index) => {
+      const key = monthKey(new Date(now.getFullYear(), now.getMonth() - months + 1 + index, 1));
+      const value = data.projects.reduce((total, project) =>
+        total + (monthly.get(String(project.id) + '|' + key) || 0) / 100 * Number(project.contract_value || 0), 0);
+      const cost = costs.get(key) || 0;
+      return {key, value, cost, profit: value - cost};
+    });
   }
 
   function render(){
@@ -73,11 +85,30 @@
       </style>
       <div class="kv2-toolbar"><div class="kv2-filter"><label>Status Proyek</label><select id="kv2Status"><option value="all">Semua Status</option><option value="SELESAI">Selesai</option><option value="BERJALAN">Berjalan</option></select></div><div class="kv2-kpi"><small>TOTAL PROYEK</small><strong id="kv2Total">${rws.length}</strong></div><div class="kv2-kpi"><small>SELESAI</small><strong id="kv2Done">${rws.filter(r=>r.status==='SELESAI').length}</strong></div><div class="kv2-kpi"><small>BERJALAN</small><strong id="kv2Run">${rws.filter(r=>r.status==='BERJALAN').length}</strong></div><div class="kv2-kpi"><small>NILAI PROYEK</small><strong id="kv2Value">${money(totalValue)}</strong></div><div class="kv2-kpi"><small>LABA</small><strong id="kv2Profit">${money(totalProfit)}</strong></div></div>
       <div class="kv2-sec"><div class="kv2-title">Kinerja Proyek</div><div class="kv2-scroll"><table><thead><tr><th>Kode</th><th>Nama Proyek</th><th class="num">Nilai Proyek</th><th class="num">Material</th><th class="num">Upah</th><th class="num">Peralatan</th><th class="num">Operasional</th><th class="num">Subkon</th><th class="num">Lain-lain</th><th class="num">Total Realisasi</th><th class="num">Laba</th><th>Status</th></tr></thead><tbody id="kv2Body"></tbody></table></div></div>
-      <div class="kv2-sec"><div class="kv2-trend"><strong>Trend Nilai Proyek / Biaya / Laba per Bulan</strong><select id="kv2Range"><option value="6">6 Bulan</option><option value="12">1 Tahun</option></select></div><div class="kv2-meta" id="kv2Meta"></div><div class="kv2-scroll"><svg id="kv2Svg" class="kv2-chart" viewBox="0 0 960 260" preserveAspectRatio="none"></svg></div><div class="legend"><span>Nilai Proyek</span><span>Realisasi Biaya</span><span>Laba</span></div></div></div>`;
+      <div class="kv2-sec"><div class="kv2-trend"><strong>Trend Nilai Proyek / Biaya / Laba per Bulan</strong><select id="kv2Range"><option value="3">3 Bulan</option><option value="6" selected>6 Bulan</option><option value="12">1 Tahun</option></select></div><div class="kv2-meta" id="kv2Meta"></div><div class="kv2-scroll"><svg id="kv2Svg" class="kv2-chart" viewBox="0 0 960 260" preserveAspectRatio="none"></svg></div><div class="legend"><span>Nilai Proyek</span><span>Realisasi Biaya</span><span>Laba</span></div></div></div>`;
 
     const body=document.getElementById('kv2Body');
     const paint=()=>{const s=document.getElementById('kv2Status').value;const f=rws.filter(r=>s==='all'||r.status===s);document.getElementById('kv2Total').textContent=f.length;document.getElementById('kv2Done').textContent=f.filter(r=>r.status==='SELESAI').length;document.getElementById('kv2Run').textContent=f.filter(r=>r.status==='BERJALAN').length;document.getElementById('kv2Value').textContent=money(f.reduce((a,r)=>a+r.contract,0));document.getElementById('kv2Profit').textContent=money(f.reduce((a,r)=>a+r.laba,0));body.innerHTML=f.map(r=>`<tr><td><strong>${esc(r.project_code||'-')}</strong></td><td>${esc(r.project_name||'-')}</td><td class="num">${money(r.contract)}</td><td class="num">${money(r.c.Material)}</td><td class="num">${money(r.c.Upah)}</td><td class="num">${money(r.c.Peralatan)}</td><td class="num">${money(r.c.Operasional)}</td><td class="num">${money(r.c.Subkon)}</td><td class="num">${money(r.c['Lain-lain'])}</td><td class="num">${money(r.total)}</td><td class="num">${money(r.laba)}</td><td><span class="pill">${r.status}</span></td></tr>`).join('')};
-    const draw=()=>{const range=document.getElementById('kv2Range').value;const dataRows=chartFrom(rws);const rows2=range==='12'?(()=>{const now=new Date(),from=new Date(now.getFullYear(),now.getMonth()-11,1),to=new Date(now.getFullYear(),now.getMonth()+1,0),keys=[];for(let d=new Date(from);d<=to;d.setMonth(d.getMonth()+1))keys.push(monthKey(d));const pm=progressModel();return keys.map(k=>{let v=0,c=0;for(const p of data.projects)v+=(Number(pm.monthly.get(String(p.id)+'|'+k)||0)/100)*Number(p.contract_value||0);for(const t of data.tx)if(txType(t)==='KELUAR'&&txDate(t).slice(0,7)===k)c+=amount(t);return{key:k,value:v,cost:c,profit:v-c}})})():dataRows;const svg=document.getElementById('kv2Svg'),W=960,H=260,L=55,R=15,T=15,B=32,iw=W-L-R,ih=H-T-B,max=Math.max(1,...rows2.flatMap(x=>[x.value,x.cost,x.profit]));const x=i=>L+(rows2.length===1?0:i*iw/(rows2.length-1)),y=v=>T+ih-(Math.max(0,v)/max)*ih,path=k=>rows2.map((z,i)=>`${i?'L':'M'} ${x(i).toFixed(1)} ${y(z[k]).toFixed(1)}`).join(' ');svg.innerHTML=`<g stroke="#e5e7eb"><line x1="${L}" y1="${T+ih}" x2="${W-R}" y2="${T+ih}"/></g><g fill="none" stroke-width="2"><path d="${path('value')}" style="stroke:#2563eb"/><path d="${path('cost')}" style="stroke:#dc2626"/><path d="${path('profit')}" style="stroke:#059669"/></g><g fill="#64748b" font-size="9">${rows2.map((z,i)=>`<text x="${x(i)}" y="${H-8}" text-anchor="middle">${esc(monthLabel(z.key))}</text>`).join('')}</g>`;document.getElementById('kv2Meta').textContent=`${monthLabel(rows2[0]?.key||'2026-01')} — ${monthLabel(rows2[rows2.length-1]?.key||'2026-01')}`};
+    const draw = () => {
+      const months = Number(document.getElementById('kv2Range').value);
+      const points = chartFrom(months);
+      const svg = document.getElementById('kv2Svg');
+      const values = points.flatMap(point => [point.value, point.cost, point.profit]);
+      const min = Math.min(0, ...values), max = Math.max(1, ...values);
+      const x = index => 55 + index * 890 / (points.length - 1);
+      const y = value => 228 - (value - min) * 213 / (max - min);
+      const zero = y(0);
+      const series = [['value', '#53e2ff'], ['cost', '#ff7a86'], ['profit', '#66e3a6']];
+      const areas = series.map(([key, color]) => {
+        const line = points.map((point, index) => `${index ? 'L' : 'M'} ${x(index)} ${y(point[key])}`).join(' ');
+        return `<path d="${line} L ${x(points.length - 1)} ${zero} L ${x(0)} ${zero} Z" fill="${color}" fill-opacity=".18"/>
+          <path d="${line}" fill="none" stroke="${color}" stroke-width="2"/>`;
+      });
+      svg.innerHTML = `<line x1="55" y1="${zero}" x2="945" y2="${zero}" stroke="currentColor" opacity=".35"/>
+        ${areas.join('')}<g fill="currentColor" font-size="12">${points.map((point, index) =>
+          `<text x="${x(index)}" y="252" text-anchor="middle">${esc(monthLabel(point.key))}</text>`).join('')}</g>`;
+      document.getElementById('kv2Meta').textContent = `${monthLabel(points[0].key)} — ${monthLabel(points.at(-1).key)}`;
+    };
     document.getElementById('kv2Status').addEventListener('change',paint);document.getElementById('kv2Range').addEventListener('change',draw);paint();draw();
   }
 
