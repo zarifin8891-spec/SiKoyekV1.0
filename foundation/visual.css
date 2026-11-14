@@ -498,7 +498,7 @@
   border: 2px solid var(--control-accent) !important;
   box-shadow: 0 0 0 1px #53e2ff40, 0 0 18px #53e2ff65, 0 18px 42px #061b3c44 !important;
 }
-.sk-theme .login-v1 .login-brand-panel { background: var(--control-raised); }
+.sk-theme .login-v1 .login-brand-panel { background: linear-gradient(105deg, var(--control-deep), #17365d); }
 .sk-theme .login-v1 .login-form-panel { background: linear-gradient(155deg, #102d52, var(--control-deep)); }
 .sk-theme .login-v1 .login-submit {
   color: var(--control-deep) !important;
