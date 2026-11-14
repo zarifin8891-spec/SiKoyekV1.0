@@ -486,6 +486,14 @@
   font-variant-numeric: tabular-nums;
 }
 .sk-theme :is(.control-table, .table, .table-scroll > table) tbody tr:hover { background-color: var(--control-table-hover); }
+.sk-theme .um-card > .um-toolbar {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.sk-theme .um-card > .um-perm-wrap + .um-note { padding-top: 10px; }
+.sk-theme .um-role-item.active {
+  --control-panel-gradient: linear-gradient(155deg, #145582, var(--control-deep));
+}
 .sk-theme .login-v1 .loginbox-v1 {
   border: 2px solid var(--control-accent) !important;
   box-shadow: 0 0 0 1px #53e2ff40, 0 0 18px #53e2ff65, 0 18px 42px #061b3c44 !important;
@@ -667,7 +675,7 @@
       .filters, .finance-toolbar, .progress-project-toolbar, .progress-project-filter,
       .rap-biaya-filter, .kinerja-toolbar,
       .kinerja-filter, .kinerja-trend-filter, .kv2-filter, .kv2-trend,
-      .extra-period-grid, .cashflow-v4-filters, .cashflow-v4-filter, .um-toolbar,
+      .extra-period-grid, .cashflow-v4-filters, .cashflow-v4-filter,
       .dashboard-period, .modalbox, .sk-compact-editor, .ui-total,
       .ui-final-help, .ui-final-summary, .ui-help,
       .ui-progress-callout, .um-add-section, .form-section, .category-master-table,
