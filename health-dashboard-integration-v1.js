@@ -3,7 +3,7 @@
   let healthClient=null,lastSignature='',busy=false;
 
   function esc(s){return String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
-  function dashboardEl(){return [...document.querySelectorAll('.content')].find(x=>x.querySelector('.top h1')?.textContent.trim().toLowerCase()==='dashboard')}
+  function dashboardEl(){return document.querySelector('.control-legacy') || [...document.querySelectorAll('.content')].find(x=>x.querySelector('.top h1')?.textContent.trim().toLowerCase()==='dashboard')}
 
   function syncDashboardRows(){
     const dashboard=dashboardEl();
@@ -106,6 +106,7 @@
   }
 
   function boot(){
+    if(window.SiKoyekControl)return; // Dashboard renders directly from the shared summary and Health engine.
     installPeriodPresetFix();
     const s=document.createElement('script');s.src=ENGINE_URL;s.onload=load;document.body.appendChild(s);
     const obs=new window.SiKoyekFoundation.Observer(()=>{window.clearTimeout(window.__heTimer);window.__heTimer=setTimeout(()=>{installPeriodPresetFix();load()},250)});

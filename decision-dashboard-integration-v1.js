@@ -1,7 +1,7 @@
 (function(){
   let client=null,lastSignature='',busy=false;
   const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
-  function dashboardEl(){return [...document.querySelectorAll('.content')].find(x=>x.querySelector('.top h1')?.textContent.trim()==='Dashboard')}
+  function dashboardEl(){return document.querySelector('.control-legacy') || [...document.querySelectorAll('.content')].find(x=>x.querySelector('.top h1')?.textContent.trim()==='Dashboard')}
   async function load(){
     if(busy||document.querySelector('#page .md-page')||!window.SiKoyekHealthEngine||!window.SiKoyekDecisionEngine||!window.supabase)return;
     const app=document.getElementById('app');const dashboard=app&&dashboardEl();if(!dashboard)return;

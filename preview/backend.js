@@ -10,7 +10,9 @@
     if(config?.backend!=='preview'||!config.url.endsWith('.invalid'))throw new Error('Adapter preview hanya boleh memakai lingkungan uji');
     storeKey='sikoyek-preview-data-v1-'+config.id;sessionKey=config.storageKey;
     try{state=JSON.parse(localStorage.getItem(storeKey)||'null')}catch(_){ }
-    if(!state?.tables){state={tables:global.SiKoyekPreviewSeed(),passwords:{}};save()}
+    const seed=global.SiKoyekPreviewSeed();
+    if(!state?.tables){state={tables:seed,passwords:{}};save()}
+    else for(const [name,rows] of Object.entries(seed))if(!Object.hasOwn(state.tables,name))state.tables[name]=rows;
     if(!sessionStorage.getItem(sessionKey)&&sessionStorage.getItem('sikoyek-preview-role-'+config.id)&&!sessionStorage.getItem(sessionKey+'-out')){
       const role=sessionStorage.getItem('sikoyek-preview-role-'+config.id),profile=state.tables.profiles.find(p=>p.role_id===role&&p.is_active);
       if(profile)setSession(profile);
@@ -26,8 +28,13 @@
   function profile(){const current=session();return state.tables.profiles.find(p=>p.id===current?.user.id&&p.is_active)}
   function can(table,action){
     const who=profile();if(!who)return false;if(who.role_id==='admin')return true;
-    const module=({projects:'PROJECTS',project_work_items:'PROJECTS',progress_records:'PROGRESS',project_rap:'RAP',financial_transactions:'KEUANGAN',project_categories:'MASTER_DATA',project_managers:'MASTER_DATA',transaction_categories:'MASTER_DATA',payment_methods:'MASTER_DATA'})[table];
+    if (['employee_master','equipment_master','goods_master'].includes(table)) {
+      return can('project_categories', action) || action === 'VIEW' && can('project_worker_assignments', 'VIEW');
+    }
+    const fieldTables=['project_progress_targets','project_milestones','project_material_stocks','project_worker_assignments','project_equipment_assignments','project_field_logs','project_weather_observations'];
+    const module=fieldTables.includes(table)?'PROGRESS':({project_document_links:'LAPORAN',projects:'PROJECTS',project_work_items:'PROJECTS',progress_records:'PROGRESS',project_rap:'RAP',financial_transactions:'KEUANGAN',project_categories:'MASTER_DATA',project_managers:'MASTER_DATA',transaction_categories:'MASTER_DATA',payment_methods:'MASTER_DATA'})[table];
     if(!module)return action==='VIEW';
+    if(table==='project_document_links'&&action!=='VIEW')return false;
     const p=state.tables.permissions.find(p=>p.module===module&&p.action===action);
     return state.tables.role_permissions.some(r=>r.role_id===who.role_id&&r.permission_id===p?.id);
   }
@@ -104,6 +111,11 @@
       const id=crypto.randomUUID();tables.profiles.push({id,email:body.email,full_name:body.full_name,role_id:body.role_id,is_active:true,created_at:new Date().toISOString()});state.passwords[id]=body.password;
     }else if(body.action==='update'){
       const p=tables.profiles.find(p=>p.id===body.id);if(!p)return error('User tidak ditemukan');Object.assign(p,{full_name:body.full_name,role_id:body.role_id,is_active:body.is_active});
+    }else if(body.action==='reset_password'){
+      if(!tables.profiles.some(p=>p.id===body.id))return error('User tidak ditemukan');
+      if(typeof body.password!=='string'||body.password.length<8)return error('Password minimal 8 karakter');
+      if(body.password!==body.password_confirm)return error('Konfirmasi password tidak sama');
+      state.passwords[body.id]=body.password;
     }else if(body.action==='delete'){
       if(body.id===session()?.user.id)return error('Akun preview yang sedang dipakai tidak boleh dihapus');tables.profiles=tables.profiles.filter(p=>p.id!==body.id);delete state.passwords[body.id];
     }else return error('Aksi belum tersedia di preview');

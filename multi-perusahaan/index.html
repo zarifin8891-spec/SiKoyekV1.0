@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="id" data-shared-login>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SiKoyek Multi-Perusahaan</title>
+  <link rel="stylesheet" href="../foundation/tokens.css">
+  <link rel="stylesheet" href="../foundation/dashboard.css">
+  <link rel="stylesheet" href="../foundation/project-control.css">
+  <link rel="stylesheet" href="../foundation/visual.css?v=30">
+  <link rel="stylesheet" href="../login-ui-v1.css">
+  <link rel="stylesheet" href="./workspace.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="./environment.js"></script>
+  <script defer src="../foundation/config.js"></script>
+  <script defer src="../foundation/backend.js"></script>
+  <script defer src="../foundation/runtime.js"></script>
+  <script defer src="../project-health-engine-v1.js"></script>
+  <script defer src="../project-decision-engine-v1.js"></script>
+  <script defer src="../foundation/project-control.js"></script>
+  <script defer src="../login-ui-v1.js"></script>
+  <script defer src="../project-summary-v2.js"></script>
+  <script defer src="./planning.js"></script>
+  <script defer src="./operations.js"></script>
+  <script defer src="./staff-access.js"></script>
+  <script defer src="./workspace.js"></script>
+</head>
+<body class="sk-theme">
+  <main id="workspace">
+    <p id="notice" role="status"></p>
+    <div id="login" hidden></div>
+    <template id="login-recovery-template">
+          <form id="login-recovery" aria-label="Ganti password" hidden>
+            <div class="field">
+              <label for="login-new-password">Password baru</label>
+              <input id="login-new-password" name="password" type="password" minlength="8" required autocomplete="new-password">
+            </div>
+            <button class="login-submit" type="submit">Simpan password</button>
+          </form>
+    </template>
+    <div id="signed-in" class="shell control-shell" hidden>
+      <div class="content">
+        <div class="workspace-account-bar">
+          <span id="workspace-title"></span>
+          <button type="button" id="logout" class="control-button" hidden>Keluar</button>
+        </div>
+        <p id="workspace-empty" hidden>Belum ada modul yang dapat diakses.</p>
+      <section id="company-panel" data-workspace-page hidden>
+        <header class="sk-page-banner"><h2>Master Data Perusahaan</h2></header>
+        <form id="company-form">
+          <label>Nama perusahaan<input name="name" maxlength="160" required></label>
+          <button type="submit">Tambah Perusahaan</button>
+        </form>
+        <div class="table-scroll">
+          <table><thead><tr><th>Perusahaan</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="companies"></tbody></table>
+        </div>
+      </section>
+      <section id="account-panel" data-workspace-page hidden>
+        <header class="sk-page-banner"><h2 id="account-heading"></h2></header>
+        <button type="button" class="btn primary" data-editor-open="account-form-dialog">Tambah Admin Perusahaan</button>
+        <dialog id="account-form-dialog" class="sk-compact-editor" aria-labelledby="account-form-heading">
+          <div class="modalhead"><h3 id="account-form-heading">Tambah Akun</h3></div>
+          <form class="control-form sk-editor-stacked" id="account-form">
+            <div class="sk-editor-fields">
+          <label class="sk-editor-field" id="company-field">Perusahaan<select name="company_id"></select></label>
+          <label class="sk-editor-field">Nama lengkap<input name="full_name" maxlength="160" required autocomplete="off"></label>
+          <label class="sk-editor-field">Email<input name="email" type="email" required autocomplete="off"></label>
+          <label class="sk-editor-field">Password awal<input name="password" type="password" required minlength="8" autocomplete="new-password"></label>
+            </div>
+            <p class="control-form-message" role="status"></p>
+            <div class="control-form-actions">
+              <button type="button" class="btn ghost" data-editor-cancel>Batal</button>
+              <button type="submit" id="account-submit"></button>
+            </div>
+          </form>
+        </dialog>
+        <div class="table-scroll">
+          <table><thead><tr><th>Nama</th><th>Email</th><th>Perusahaan</th><th>Peran</th><th>Status</th><th id="staff-access-column" hidden>Aksi</th></tr></thead><tbody id="accounts"></tbody></table>
+        </div>
+        <dialog id="staff-access-dialog" aria-labelledby="staff-access-heading">
+          <h2 id="staff-access-heading">Hak Akses Staf</h2>
+          <p id="staff-access-name"></p>
+          <p id="staff-access-notice" role="status"></p>
+          <form id="staff-access-form" hidden>
+            <label>Master Data<select name="master_data"></select></label>
+            <label>Proyek<select name="projects"></select></label>
+            <label>Transaksi<select name="transactions"></select></label>
+            <label>RAP<select name="rap"></select></label>
+            <label>Progress<select name="progress"></select></label>
+            <button type="submit">Simpan Hak Akses</button>
+          </form>
+          <form method="dialog"><button type="submit">Tutup</button></form>
+        </dialog>
+      </section>
+        <dialog id="platform-account-dialog" class="sk-compact-editor" aria-labelledby="platform-account-heading">
+          <div class="modalhead">
+            <h3 id="platform-account-heading"></h3>
+          </div>
+          <form id="platform-account-form" class="control-form sk-editor-stacked">
+            <p id="platform-account-target"></p>
+            <div id="platform-edit-fields" class="sk-editor-fields">
+              <label id="platform-edit-company" class="sk-editor-wide">Perusahaan<span id="platform-company-value" class="sk-editor-readonly"></span></label>
+              <label class="sk-editor-wide">Email<span id="platform-email-value" class="sk-editor-readonly"></span></label>
+              <label>Nama lengkap<input name="full_name" maxlength="160" required autofocus></label>
+              <label>Status<select name="is_active"><option value="true">Aktif</option><option value="false">Nonaktif</option></select></label>
+            </div>
+            <div id="platform-password-fields" class="sk-editor-fields" hidden>
+              <label>Password baru<input name="password" type="password" minlength="8" required autocomplete="new-password"></label>
+              <label>Konfirmasi password<input name="password_confirm" type="password" minlength="8" required autocomplete="new-password"></label>
+            </div>
+            <p class="control-form-message" role="status"></p>
+            <div class="control-form-actions">
+              <button type="button" class="btn ghost" id="platform-account-cancel">Batal</button>
+              <button type="submit" class="btn primary">Simpan</button>
+            </div>
+          </form>
+        </dialog>
+      <section id="platform-admin-panel" data-workspace-page hidden>
+        <header class="sk-page-banner"><h2>Admin Platform</h2></header>
+        <button type="button" class="btn primary" data-editor-open="platform-create-form-dialog">Tambah Admin Platform</button>
+        <dialog id="platform-create-form-dialog" class="sk-compact-editor" aria-labelledby="platform-create-form-heading">
+          <div class="modalhead"><h3 id="platform-create-form-heading">Tambah Admin Platform</h3></div>
+          <form class="control-form sk-editor-stacked" id="platform-create-form" autocomplete="off">
+            <div class="sk-editor-fields">
+          <label class="sk-editor-field">Nama lengkap<input name="full_name" maxlength="160" required></label>
+          <label class="sk-editor-field">Email<input name="email" type="email" required></label>
+          <label class="sk-editor-field">Password awal<input name="password" type="password" minlength="8" required autocomplete="new-password"></label>
+            </div>
+            <p class="control-form-message" role="status"></p>
+            <div class="control-form-actions">
+              <button type="button" class="btn ghost" data-editor-cancel>Batal</button>
+              <button type="submit" class="btn primary">Tambah Admin Platform</button>
+            </div>
+          </form>
+        </dialog>
+        <div class="table-scroll"><table><thead><tr><th>Nama</th><th>Email</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="platform-admins"></tbody></table></div>
+      </section>
+      <div id="operations" hidden>
+        <section id="master-data-panel" data-workspace-page hidden>
+          <header class="sk-page-banner"><h2>Master Data Perusahaan</h2></header>
+          <form id="master-entry">
+            <label>Jenis<select name="kind">
+              <option value="project_category">Kategori Proyek</option>
+              <option value="project_manager">Project Manager</option>
+              <option value="transaction_category">Kategori Transaksi</option>
+              <option value="payment_method">Metode Pembayaran</option>
+              <option value="employee">Karyawan</option>
+              <option value="equipment">Alat</option>
+              <option value="goods">Barang</option>
+            </select></label>
+            <label>Nama<input name="name" maxlength="160" required></label>
+            <label id="master-code" hidden>Kode<input name="code" maxlength="40" disabled></label>
+            <label id="master-unit" hidden>Satuan<input name="unit" maxlength="40" disabled></label>
+            <button type="submit">Tambah Master Data</button>
+          </form>
+          <div class="table-scroll"><table><thead><tr><th>Jenis</th><th>Nama</th><th>Status</th></tr></thead><tbody id="master-rows"></tbody></table></div>
+        </section>
+        <div id="dashboard-panel" data-workspace-page hidden></div>
+        <div id="project-panel" data-workspace-page hidden>
+          <div id="company-project-list"></div>
+          <form id="project-entry" hidden>
+            <label>Kode<input name="code" maxlength="40" required></label>
+            <label>Nama proyek<input name="name" maxlength="160" required></label>
+            <label>Nilai kontrak<input name="contract_value" type="number" min="0" step="0.01" value="0" required></label>
+            <label>Mulai<input name="starts_on" type="date"></label>
+            <label>Estimasi selesai<input name="ends_on" type="date"></label>
+            <button type="submit">Simpan Proyek</button>
+            <button id="project-cancel" type="button">Batal</button>
+          </form>
+        </div>
+        <section id="transaction-panel" data-workspace-page hidden>
+          <header class="sk-page-banner"><h2>Transaksi</h2></header>
+          <form id="transaction-entry">
+            <label>Proyek<select name="project_id" required></select></label>
+            <label>Kategori<select name="category_id"></select></label>
+            <label>Tanggal<input name="transaction_date" type="date" required></label>
+            <label>Jenis<select name="transaction_type"><option value="MASUK">Masuk</option><option value="KELUAR">Keluar</option></select></label>
+            <label>Jumlah<input name="amount" type="number" min="0.01" step="0.01" required></label>
+            <label>Keterangan<input name="description" maxlength="240"></label>
+            <button type="submit">Tambah Transaksi</button>
+          </form>
+          <div class="table-scroll"><table><thead><tr><th>Tanggal</th><th>Proyek</th><th>Jenis</th><th>Jumlah</th></tr></thead><tbody id="transaction-rows"></tbody></table></div>
+        </section>
+        <div id="planning-panel" data-workspace-page hidden>
+          <label>Proyek<select class="control-select" id="planning-project"></select></label>
+          <p id="planning-notice" role="status"></p>
+          <div id="planning-details" hidden>
+            <div id="planning-heading"></div>
+            <div id="planning-kpis"></div>
+            <div id="planning-tabs"></div>
+            <div id="planning-overview"></div>
+            <div id="planning-rap" class="project-summary-v2" hidden>
+              <div id="planning-budget-summary"></div>
+              <form id="planning-budget" hidden>
+                <label>Material<input name="material" type="number" min="0" step="0.01" required></label>
+                <label>Upah<input name="labor" type="number" min="0" step="0.01" required></label>
+                <label>Alat<input name="equipment" type="number" min="0" step="0.01" required></label>
+                <label>Operasional<input name="operational" type="number" min="0" step="0.01" required></label>
+                <label>SubKon<input name="subcontract" type="number" min="0" step="0.01" required></label>
+                <label>Lain-lain<input name="other" type="number" min="0" step="0.01" required></label>
+                <button type="submit" class="btn primary">Simpan RAP</button>
+                <button id="planning-budget-cancel" type="button" class="btn ghost">Batal</button>
+              </form>
+            </div>
+            <div id="planning-work" hidden>
+              <div class="sectiontitle"><h2>Item Pekerjaan</h2><button type="button" class="btn primary" data-add-item>+ Item Pekerjaan</button></div>
+              <form id="planning-item" hidden>
+                <label>Nama item<input name="work_name" maxlength="160" required></label>
+                <label>Bobot (%)<input name="weight" type="number" min="0" max="100" step="0.0001" required></label>
+                <label>Durasi (hari)<input name="duration_days" type="number" min="1" max="36500" required></label>
+                <label>Mulai rencana<input name="planned_start_date" type="date"></label>
+                <label>Urutan<input name="sort_order" type="number" min="0" max="2147483647" value="0" required></label>
+                <button type="submit">Tambah Item</button>
+                <button type="button" id="planning-item-cancel" hidden>Batal</button>
+              </form>
+              <div class="card tablecard"><div class="scroll"><table class="table"><thead><tr><th>Item</th><th>Bobot</th><th>Durasi</th><th>Mulai Rencana</th><th>Urutan</th><th>Aksi</th></tr></thead><tbody id="planning-items"></tbody></table></div></div>
+            </div>
+            <div id="planning-materials" hidden></div>
+            <div id="planning-resources" hidden></div>
+            <div id="planning-progress" hidden>
+              <div class="sectiontitle"><h2>Riwayat Progress</h2><button type="button" class="btn primary" data-add-record>+ Input Progress</button></div>
+              <form id="planning-record" hidden>
+                <label>Item pekerjaan<select name="work_item_id" required></select></label>
+                <label>Tanggal<input name="progress_date" type="date" required></label>
+                <label>Tambahan progress (%)<input name="progress_percentage" type="number" min="0" max="100" step="0.0001" required></label>
+                <label>Catatan<input name="notes" maxlength="500"></label>
+                <button type="submit">Tambah Progress</button>
+                <button type="button" id="planning-record-cancel" hidden>Batal</button>
+              </form>
+              <div class="card tablecard"><div class="scroll"><table class="table"><thead><tr><th>Tanggal</th><th>Item</th><th>Tambahan Progress</th><th>Catatan</th><th>Aksi</th></tr></thead><tbody id="planning-history"></tbody></table></div></div>
+            </div>
+          </div>
+        </div>
+        <section id="report-panel" data-workspace-page hidden>
+          <header class="sk-page-banner"><div><h1>Laporan</h1><p>Ringkasan Keuangan Proyek</p></div>
+            <button type="button" class="btn ghost" data-open-workspace-page="transaction">Buka Transaksi</button></header>
+          <div class="table-scroll"><table><thead><tr><th>Proyek</th><th>Kontrak</th><th>Kas Masuk</th><th>Kas Keluar</th></tr></thead><tbody id="report-rows"></tbody></table></div>
+        </section>
+      </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

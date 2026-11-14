@@ -25,5 +25,4 @@
     const win=iframe.contentWindow;let done=false;const go=()=>{if(done)return;done=true;win.focus();win.print();setTimeout(()=>iframe.remove(),1000)};iframe.onload=()=>setTimeout(go,150);setTimeout(go,700);return true;
   }
   window.__SIKOYEK_KINERJA_DIRECT_PRINT__=printDirect;
-  document.addEventListener('click',e=>{const btn=e.target?.closest?.('#laporanPrintV1');if(!btn)return;const active=document.querySelector('.laporan-v3 .report-tabs button.active');if(active?.dataset?.report!=='kinerja')return;e.preventDefault();e.stopImmediatePropagation();printDirect()},true);
 })();

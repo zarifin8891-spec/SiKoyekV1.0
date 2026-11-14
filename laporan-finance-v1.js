@@ -111,7 +111,7 @@
     if(!rows.length){body.innerHTML='<tr><td colspan="5" class="extra-empty">Tidak ada transaksi pada periode/filter ini.</td></tr>';return}
     body.innerHTML=rows.map(x=>{
       const k=kindOf(x),label=String(x.transaction_type||x.type||'-');
-      return `<tr><td>${esc(String(x.transaction_date||'').slice(0,10))}</td><td>${esc(projectName(x.project_id))}</td><td class="finance-type-${k}">${esc(label)}</td><td>${esc(x.description||x.notes||x.remark||'-')}</td><td class="num">${money(x.amount)}</td></tr>`;
+      return `<tr><td>${window.SiKoyekFoundation.formatDate(x.transaction_date)}</td><td>${esc(projectName(x.project_id))}</td><td class="finance-type-${k}">${esc(label)}</td><td>${esc(x.description||x.notes||x.remark||'-')}</td><td class="num">${money(x.amount)}</td></tr>`;
     }).join('');
   }
 

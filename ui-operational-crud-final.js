@@ -16,6 +16,11 @@
       .op-crud-box .modalhead{height:68px!important;margin:0!important;padding:12px 20px!important;background:linear-gradient(115deg,#12375f 0%,#0c4a70 52%,#1f7180 100%)!important;color:#fff!important;display:flex!important;align-items:center!important;justify-content:space-between!important;box-sizing:border-box}
       .op-crud-box .modalhead h3{margin:0!important;color:#fff!important;font-size:20px!important;font-weight:650!important}
       .op-crud-box .modalhead button{height:34px!important;min-width:78px!important;padding:0 14px!important;background:#fff!important;border:0!important;border-radius:8px!important;color:#172033!important;font-size:12px!important;font-weight:500!important}
+      #modal .modalbox.op-item-editor{overflow-y:auto!important}
+      #modal .op-item-editor > .modalhead{width:100%!important;max-width:none!important;min-height:60px!important;height:auto!important;border-radius:0!important}
+      #modal .op-item-editor > .modalhead::after{content:none!important}
+      #modal .op-item-editor .op-save-error{margin:0;padding:0 20px 10px;color:#9b2633;font-size:13px}
+      #modal .op-item-editor .op-save-error:empty{display:none}
       .op-crud-box .op-body{padding:14px 20px 6px!important}
       .op-crud-box .op-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:9px!important}
       .op-crud-box .field{margin:0!important;min-width:0!important}
@@ -57,20 +62,59 @@
       else if(heads.includes('tanggal')&&heads.includes('jenis')&&heads.includes('kategori')&&heads.includes('deskripsi')&&heads.includes('jumlah')&&heads.includes('metode'))decorateTable(t,'transaction',st.detail.fin||[]);
     }
   }
-  function markCrudModal(){const box=document.querySelector('#modal .modalbox');if(box){box.classList.add('op-crud-box');box.dataset.opCrudModal='1'}}
+  function markCrudModal(layout){
+    const box=document.querySelector('#modal .modalbox');
+    if(!box)return;
+    box.classList.add('op-crud-box');
+    box.dataset.opCrudModal='1';
+    if(layout){
+      box.classList.add(layout);
+      box.dataset.foundationLayout=layout;
+    }
+  }
   async function refresh(tab){const st=currentState();if(!st||!st.selected||typeof getDetail!=='function')return;st.detail=await getDetail(st.selected);st.detailTab=tab;renderApp()}
 
   window.sikoyekEditItemFinal=async function(id){
     const st=currentState(),x=(st?.detail?.items||[]).find(r=>String(r.id)===String(id));if(!x)return;
     const {count}=await sb.from('progress_records').select('id',{count:'exact',head:true}).eq('work_item_id',id);const hasProgress=Number(count||0)>0;
-    modal('Edit Item Pekerjaan',`<div class="op-body"><div class="op-grid"><div class="field full"><label>Nama Item Pekerjaan *</label><input id="op_wi_name" value="${esc(x.work_name)}"></div><div class="field"><label>Bobot (%) *</label><input id="op_wi_weight" type="number" min="0" max="100" step="0.01" value="${Number(x.weight||0)*100}" ${hasProgress?'disabled':''}></div><div class="field"><label>Urutan</label><input id="op_wi_sort" type="number" min="0" value="${Number(x.sort_order||0)}"></div><div class="field full"><label>Catatan</label><textarea id="op_wi_notes">${esc(x.notes||'')}</textarea></div></div></div><div class="op-actions-bar"><button type="button" onclick="closeModal()">Batal</button><button class="primary" type="button" onclick="sikoyekSaveItemEditFinal('${String(id)}')">Simpan Perubahan</button></div>`);markCrudModal();if(hasProgress)toast('Bobot dikunci karena item sudah memiliki progress.');
+    modal('Edit Item Pekerjaan',`<div class="op-body"><div class="op-grid"><div class="field full"><label>Nama Item Pekerjaan *</label><input id="op_wi_name" value="${esc(x.work_name)}"></div><div class="field"><label>Bobot (%) *</label><input id="op_wi_weight" type="number" min="0" max="100" step="0.01" value="${Number(x.weight||0)*100}" ${hasProgress?'disabled':''}></div><div class="field"><label>Urutan</label><input id="op_wi_sort" type="number" min="0" value="${Number(x.sort_order||0)}"></div>${SiKoyekControl.itemScheduleFields('op_wi',x)}<div class="field full"><label>Catatan</label><textarea id="op_wi_notes">${esc(x.notes||'')}</textarea></div></div></div><p id="op_wi_error" class="op-save-error" role="alert"></p><div class="op-actions-bar"><button type="button" onclick="closeModal()">Batal</button><button id="op_wi_save" class="primary" type="button" onclick="sikoyekSaveItemEditFinal('${String(id)}')">Simpan Perubahan</button></div>`);markCrudModal('op-item-editor');if(hasProgress)toast('Bobot dikunci karena item sudah memiliki progress.');
   };
   window.sikoyekSaveItemEditFinal=async function(id){
-    const st=currentState(),x=(st?.detail?.items||[]).find(r=>String(r.id)===String(id));if(!x)return;
-    const name=document.getElementById('op_wi_name')?.value.trim()||'',weight=Number(document.getElementById('op_wi_weight')?.value||0)/100,sort=Number(document.getElementById('op_wi_sort')?.value||0),notes=document.getElementById('op_wi_notes')?.value.trim()||null;if(!name){toast('Nama item wajib diisi');return}
-    const {count}=await sb.from('progress_records').select('id',{count:'exact',head:true}).eq('work_item_id',id);if(Number(count||0)>0&&Math.abs(weight-Number(x.weight||0))>0.000001){toast('Bobot tidak dapat diubah karena item sudah memiliki progress.');return}
-    const total=(st.detail.items||[]).filter(r=>String(r.id)!==String(id)).reduce((s,r)=>s+Number(r.weight||0),0)+weight;if(total>1.000001){toast('Total bobot proyek tidak boleh lebih dari 100%.');return}
-    const {error}=await sb.from('project_work_items').update({work_name:name,weight,sort_order:sort,notes}).eq('id',id);if(error){toast(error.message);return}closeModal();await refresh('pekerjaan');toast('Item pekerjaan diperbarui');
+    const st=currentState(),x=(st?.detail?.items||[]).find(r=>String(r.id)===String(id));
+    const button=document.getElementById('op_wi_save'), errorBox=document.getElementById('op_wi_error');
+    if(!x||!button||button.disabled)return;
+    const report=message=>{errorBox.textContent=message};
+    report('');
+    const name=document.getElementById('op_wi_name').value.trim();
+    const weightInput=document.getElementById('op_wi_weight');
+    const originalWeight=Number(x.weight||0);
+    const weight=weightInput.disabled?originalWeight:Number(weightInput.value)/100;
+    const sort=Number(document.getElementById('op_wi_sort').value||0);
+    const notes=document.getElementById('op_wi_notes').value.trim()||null;
+    if(!name){report('Nama item wajib diisi.');return}
+    if(!Number.isFinite(weight)||weight<0||weight>1){report('Bobot harus antara 0% dan 100%.');return}
+    const schedule=SiKoyekControl.readItemSchedule('op_wi',report);
+    if(!schedule)return;
+    button.disabled=true;
+    try{
+      const changes={work_name:name,sort_order:sort,notes,...schedule};
+      if(Math.abs(weight-originalWeight)>0.000001){
+        const {count,error}=await sb.from('progress_records').select('id',{count:'exact',head:true}).eq('work_item_id',id);
+        if(error)throw error;
+        if(count>0){report('Bobot dikunci karena item sudah memiliki progress.');return}
+        const total=st.detail.items.reduce((sum,item)=>sum+Number(item.weight||0),0)-originalWeight+weight;
+        if(total>1.000001){report('Total bobot proyek tidak boleh lebih dari 100%.');return}
+        changes.weight=weight;
+      }
+      const {data,error}=await sb.from('project_work_items').update(changes).eq('id',id).select('id').maybeSingle();
+      if(error||!data){report(error?.message||'Item tidak tersimpan. Periksa hak akses edit proyek.');return}
+      closeModal();
+      await refresh('pekerjaan');
+      toast('Item pekerjaan diperbarui');
+    }catch(error){
+      if(errorBox.isConnected)report(error.message||'Gagal menyimpan item.');
+      else toast('Item tersimpan, tetapi daftar gagal dimuat ulang.');
+    }finally{button.disabled=false}
   };
   window.sikoyekDeleteItemFinal=async function(id){
     const st=currentState(),x=(st?.detail?.items||[]).find(r=>String(r.id)===String(id));if(!x)return;

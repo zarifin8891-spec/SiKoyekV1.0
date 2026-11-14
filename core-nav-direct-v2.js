@@ -6,8 +6,8 @@
 
   const items=[
     ['Dashboard','./index.html','DASHBOARD'],
-    ['Daftar Proyek','./daftar-proyek.html','PROJECTS'],
-    ['Data Master','./master-data.html','MASTER_DATA'],
+    ['Daftar Proyek','./index.html#projects','PROJECTS'],
+    ['Master Data','./master-data.html','MASTER_DATA'],
     ['Daftar User','./user-management.html','USERS'],
     ['Laporan','./laporan.html','LAPORAN']
   ];

@@ -1,0 +1,1144 @@
+/* SiKoyek Dark Neon Tech · Navy–Electric Blue–Cyan */
+.sk-theme {
+  --control-font: "Arial Narrow", Arial, Helvetica, sans-serif;
+  --control-navy: #1459b8;
+  --control-accent: #53e2ff;
+  --control-accent-ink: #075d98;
+  --control-deep: #061b3c;
+  --control-control-radius: 8px;
+  --control-raised: linear-gradient(155deg, #1275de, var(--control-deep));
+  --control-button-shadow: 0 1px 3px #09224f26;
+  --control-orange: var(--control-accent-ink);
+  --control-canvas: #e8f3ff;
+  --control-ink: #122b48;
+  --control-muted: #425d79;
+  --control-line: #b9cde5;
+  --control-surface: #f2f8ff;
+  --control-radius: 14px;
+  --control-shadow: 0 2px 6px #09224f12;
+  --control-sidebar: linear-gradient(150deg, #0b356c, #081f46 52%, #061630);
+  --control-nav-active: #164b8c;
+  --control-size: 14px;
+  --control-cell-padding: 4px 8px;
+  --control-row-line: #dae6f4;
+  --control-table-surface: #09264e;
+  --control-field-surface: #09264e;
+  --control-data-ink: #75e8ff;
+  --control-table-head: #10477e;
+  --control-table-hover: #123b68;
+  --control-secondary: #d3f4fb;
+  --control-secondary-line: #91c7dc;
+  --control-panel-title: 16px;
+  --sk-ink: var(--control-ink);
+  --sk-muted: var(--control-muted);
+  --sk-line: var(--control-line);
+  --sk-canvas: var(--control-canvas);
+  --sk-blue: var(--control-navy);
+  --sk-navy: var(--control-deep);
+  --bg: var(--control-canvas);
+  --text: var(--control-ink);
+  --line: var(--control-line);
+  --muted: var(--control-muted);
+  --blue: var(--control-navy);
+  margin: 0;
+  color: var(--control-ink);
+  background: var(--control-canvas);
+  font: var(--control-size)/1.4 var(--control-font);
+}
+.sk-theme :is(button, input, textarea, select) { font-family: inherit; }
+.sk-theme :is(button, a, input, textarea, select, summary, .sk-table-region):focus-visible {
+  outline: 2px solid var(--control-accent-ink);
+  outline-offset: 2px;
+}
+.sk-theme .shell:not(.control-shell) { grid-template-columns: 234px minmax(0, 1fr); min-height: 100vh; }
+.sk-theme .shell > :is(.content, .main) { min-width: 0; background: var(--control-canvas); }
+.sk-theme .shell:not(.control-shell) > :is(.content, .main) { padding: 24px; }
+.sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 26px 14px 18px;
+  background: var(--control-sidebar);
+}
+.sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) :is(.brand, .sidebrand) {
+  padding: 0 8px 24px;
+  font-size: 28px;
+  line-height: 1.2;
+}
+.sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) :is(.brand, .sidebrand) b { color: var(--control-accent); }
+.sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) .nav { display: grid; gap: 5px; }
+.sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) :is(.nav a, .nav button, .sk-side-links button) {
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 9px 10px;
+  border-radius: 8px;
+  color: #e8eff7;
+  font-size: 16px;
+  font-weight: 600;
+}
+.sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) :is(.nav a, .nav button, .sk-side-links button):is(:hover, .active) {
+  background: var(--control-nav-active) !important; /* canonical Laporan nav supplies its own state rules */
+  color: #fff;
+}
+.sk-theme .sk-side-links { display: grid; gap: 5px; }
+.sk-theme .sk-side-toggle { display: none; }
+
+/* Shared page headers use the SiKoyek image with a shaded surface for the title. */
+.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner):has(> :is(h1, h2), > div > h1, > .detailtitle > h2) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  min-height: 84px;
+  gap: 12px 24px;
+  margin-bottom: 16px;
+  padding: clamp(12px, 1.7vw, 20px) !important;
+  border: 1px solid #2768aa;
+  border-radius: var(--control-radius);
+  color: #fff;
+  background: linear-gradient(105deg, #071e44 12%, #093875da 54%, #126eaf30 100%),
+    url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3NjAgMzAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9Im4iPjxzdG9wIHN0b3AtY29sb3I9IiMxNzZmZmYiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM2MGVkZmYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48ZyBmaWxsPSIjMTQ2NWFkIiBmaWxsLW9wYWNpdHk9Ii4xNyIgc3Ryb2tlPSJ1cmwoI24pIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0ibTExNSA0OCA4MiA0OHY5NmwtODIgNDgtODMtNDhWOTZ6Ii8+PHBhdGggZD0ibTI4NSAtNDUgODggNTB2MTAybC04OCA1MS04OC01MVY1eiIvPjxwYXRoIGQ9Im01NTAgLTQ0IDE0MyA4MnYxNjRsLTE0MyA4Mi0xNDItODJWMzh6Ii8+PHBhdGggZD0ibTczMiAxNzAgOTIgNTN2MTA2bC05MiA1My05Mi01M1YyMjN6Ii8+PHBhdGggZD0ibTM1MyAxNzggNzAgNDB2ODFsLTcwIDQxLTcwLTQxdi04MXoiLz48L2c+PC9zdmc+") right center / auto 245% no-repeat,
+    linear-gradient(120deg, #082959, #1078c2) !important;
+  box-shadow: inset 0 1px 0 #75eaffb0, 0 0 18px #137ed432;
+  overflow: visible;
+}
+.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner):has(> :is(h1, h2), > div > h1, > .detailtitle > h2)::after {
+  display: none;
+}
+.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner) :is(h1, h2) {
+  margin: 0;
+  color: #fff !important;
+  font-size: clamp(22px, 2.2vw, 30px) !important;
+  line-height: 1.12;
+  letter-spacing: -.02em;
+  overflow-wrap: anywhere;
+}
+.sk-theme :is(.content, .main, .wrap) :is(.control-head, .top, .md-top, .um-head, .sk-page-banner):has(> :is(h1, h2), > div > h1, > .detailtitle > h2) p {
+  margin: 6px 0 0;
+  color: #c3e4ff !important;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.sk-theme .control-head .control-button { color: var(--control-ink); }
+.sk-theme .control-head .control-button.primary { color: #fff; border-color: #86ada3; }
+.sk-theme :is(.control-head, .sk-project-header, .sk-page-banner) :is(.control-actions, .actions) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 100%;
+}
+.sk-theme :is(.sk-project-header, .sk-page-banner) .btn.ghost {
+  background: var(--control-secondary);
+  color: var(--control-ink);
+}
+.sk-theme :is(.content, .main) :is(.laporan-userinfo, .locked-userinfo) {
+  background: var(--control-surface);
+  border-color: var(--control-line);
+}
+.sk-theme :is(.content, .main) :is(.laporan-user-main, .laporan-user-role, .locked-user-main, .locked-user-role) { color: var(--control-ink); }
+.sk-theme .laporan-v3 { grid-template-columns: minmax(0, 1fr); }
+.sk-theme .laporan-v3 > *, .sk-theme #reportContent > * { min-width: 0; }
+.sk-theme #module .grid > .field { margin: 0; }
+.sk-theme #module .grid { margin-bottom: 12px; }
+.sk-theme #modal :is(#uiFinalProject .ui-final-head, .op-crud-box .modalhead) { background: var(--control-navy) !important; }
+.sk-theme #modal #uiFinalProject .ui-final-actions > button[hidden] { display: none !important; }
+.sk-theme .control-shell .control-sidebar .nav button.active {
+  background: var(--control-nav-active);
+  box-shadow: inset 3px 0 0 var(--control-accent);
+}
+.sk-theme :is(.sidebar, .side, .login-v1) :focus-visible { outline-color: var(--control-accent); }
+
+
+.sk-theme :is(.content, .main, .wrap, #modal) :is(.card, .um-card, .md-card, .modalbox, .control-card, .sk-compact-editor, section[data-workspace-page]) {
+  min-width: 0;
+  border-color: var(--control-line);
+  border-radius: var(--control-radius);
+  background-color: var(--control-surface);
+  background-image: var(--control-panel-gradient, linear-gradient(160deg, #fff, #eaf4ff));
+  box-shadow: var(--control-shadow);
+}
+.sk-theme :is(.content, .main, .wrap, #modal) :is(.btn, .field input:not([type=checkbox]):not([type=radio]), .field select, .field textarea) {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 36px;
+  border-radius: var(--control-control-radius);
+  font-family: inherit;
+}
+.sk-theme :is(.content, .main, .wrap, #modal) :is(.field input:not([type=checkbox]):not([type=radio]), .field select, .field textarea) {
+  border-color: var(--control-line);
+  color: var(--control-ink);
+}
+.sk-theme :is(.content, .main, .wrap, #modal) :is(.btn.primary, .btn:not(.ghost):not(.danger):not(.secondary):not(.outline)) {
+  background: var(--control-raised);
+  color: #fff;
+  box-shadow: var(--control-button-shadow);
+}
+.sk-theme :is(.content, .main, .wrap, #modal) .btn.ghost { border-color: var(--control-line); }
+.sk-theme :is(.content, .main, .wrap, #modal) .field label { font-size: var(--control-size); }
+.sk-theme :is(.content, .main, .wrap, #modal) :is(.modalfoot, .modal-actions, .modalfooter) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.sk-theme :is(.content, .main, .wrap, #modal) .sk-table-region {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.sk-theme .sk-table-region > table { width: 100%; border-collapse: collapse; font-size: var(--control-size); }
+.sk-theme .sk-table-region > table :is(th, td) { padding: var(--control-cell-padding); }
+.sk-theme .sk-table-region > table th {
+  background-color: var(--control-table-head);
+  color: var(--control-ink);
+  white-space: nowrap;
+}
+.sk-theme .sk-table-region > table td { vertical-align: middle; }
+.sk-theme .sk-table-region > table .sk-table-number {
+  text-align: right !important; /* older report generators include inline cell alignment */
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.sk-theme .sk-table-region > table .sk-table-actions { white-space: nowrap; }
+.sk-theme .sk-table-region > table tbody tr:hover { background-color: var(--control-table-hover); }
+
+@media (max-width: 1120px) {
+  .sk-theme .shell:not(.control-shell) { grid-template-columns: 190px minmax(0, 1fr); }
+  .sk-theme .shell:not(.control-shell) > :is(.content, .main) { padding: 16px; }
+}
+@media (max-width: 780px) {
+  .sk-theme .shell:not(.control-shell) { display: block; }
+  .sk-theme .shell:not(.control-shell) > :is(.content, .main) { padding: 12px; }
+  .sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) {
+    z-index: 10;
+    height: auto;
+    max-height: 80dvh;
+    padding: 9px 12px;
+  }
+  .sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) :is(.brand, .sidebrand) { padding: 5px 94px 5px 0; min-height: 44px; }
+  .sk-theme .shell > :is(.sidebar, .side):not(.control-sidebar) .foot { display: none; }
+  .sk-theme .sk-side-ready .sk-side-toggle {
+    display: inline-flex;
+    align-items: center;
+    position: absolute;
+    top: 9px;
+    right: 12px;
+    min-height: 44px;
+    margin: 0;
+    padding: 0 10px;
+    border: 1px solid #50708e;
+    border-radius: var(--control-control-radius);
+    color: #fff;
+    background: var(--control-nav-active);
+  }
+  .sk-theme .sk-side-ready:not(.sk-side-open) :is(.nav, .sk-side-links) { display: none !important; }
+  .sk-theme .sk-side-ready.sk-side-open :is(.nav, .sk-side-links) { margin-top: 7px; }
+  .sk-theme :is(.content, .main) :is(.top, .md-top, .md-head, .um-head, .core-module-header) { flex-wrap: wrap; }
+  .sk-theme :is(.content, .main, .wrap, #modal) :is(.btn, .field input:not([type=checkbox]):not([type=radio]), .field select) {
+    min-height: 44px;
+  }
+  .sk-theme #modal #uiFinalProject .ui-final-actions { height: auto; min-height: 48px; }
+  .sk-theme #modal #uiFinalProject .ui-final-actions > button { min-width: 0; padding-inline: 8px !important; }
+  .sk-theme .sk-table-region > table { min-width: 490px; }
+  .sk-theme .wrap { padding: 12px; }
+}
+
+@media print {
+  .sk-theme .sk-table-region { overflow: visible; }
+  .sk-theme .sk-table-region > table { min-width: 0; }
+}
+
+/* Apply one heading, tab, and status treatment to both original and added modules. */
+.sk-theme :is(.sectiontitle, .md-card-head, .um-card-head, .control-section-head) :is(h2, h3) {
+  color: var(--control-ink);
+  font-size: var(--control-panel-title);
+  line-height: 1.2;
+}
+.sk-theme :is(.tabs, .report-tabs) button {
+  border: 1px solid var(--control-line);
+  border-radius: var(--control-control-radius);
+  background: var(--control-surface);
+  color: var(--control-ink);
+  font-family: inherit;
+}
+.sk-theme :is(.tabs, .report-tabs) button.active {
+  border-color: var(--control-navy);
+  background: var(--control-deep);
+  color: #fff;
+  box-shadow: inset 0 -2px 0 var(--control-accent);
+}
+.sk-theme :is(.pill, .control-badge).green { background: #dff2e7; color: #176842; }
+.sk-theme :is(.pill, .control-badge).amber { background: #fff2da; color: #8b510b; }
+.sk-theme :is(.pill, .control-badge).red { background: #fbe4e6; color: #9b2633; }
+
+.sk-theme .md-page .md-kavio-table { width: 100%; min-width: 340px; border-collapse: collapse; }
+.sk-theme .md-page #md-managers .md-kavio-table { min-width: 400px; }
+.sk-theme .md-page .md-kavio-table :is(th, td) { border-bottom: 1px solid var(--control-line); text-align: left; }
+.sk-theme .md-page .md-kavio-table th { background: var(--control-canvas); white-space: nowrap; }
+.sk-theme .md-page .md-kavio-table :is(th, td):first-child { text-align: right; }
+.sk-theme .md-page .md-kavio-table .md-actions { flex-wrap: nowrap; justify-content: flex-end; }
+.sk-theme .md-page .md-kavio-table .md-actions .btn { min-width: 0; padding: 0 10px; }
+.sk-theme .md-page { grid-template-columns: minmax(0, 1fr); }
+.sk-theme .md-page .md-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.sk-theme .md-page [data-master-panel][hidden] { display: none !important; }
+
+/* Master Data keeps narrow tables on wide screens and scrolls within each table on phones. */
+.sk-theme .md-page [data-master-panel] { width: min(100%, max(420px, 50%)); }
+.sk-theme .md-page [data-master-panel] > :is(.md-card, .control-card) { padding: 12px; }
+.sk-theme .md-page :is(.md-kavio-table, .control-table) :is(th, td) {
+  padding: 3px 7px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+.sk-theme .md-page [data-master-catalog] .control-table { min-width: 340px; }
+.sk-theme .md-page :is(.md-kavio-table, .control-table) :is(th, td):last-child { text-align: right; }
+.sk-theme .md-page .md-kavio-table .md-actions .btn,
+.sk-theme .md-page .control-row-actions .control-link { height: 24px; min-height: 24px; }
+.sk-theme .md-page .control-form-message:empty { display: none; }
+@media (max-width: 960px) {
+  .sk-theme .md-page [data-master-panel] { width: 100%; }
+}
+@media (max-width: 780px) {
+  .sk-theme .md-page .md-kavio-table .md-actions .btn,
+  .sk-theme .md-page .control-row-actions .control-link { min-height: 36px; }
+}
+
+.sk-theme .sk-compact-editor {
+  width: min(576px, calc(100vw - 28px)) !important;
+  max-height: calc(100dvh - 28px);
+  padding: 0 !important;
+  border: 1px solid var(--control-line);
+  border-radius: 16px;
+  background: var(--control-secondary);
+  color: var(--control-ink);
+  overflow: auto;
+}
+.sk-catalog-editor::backdrop { background: rgb(10 24 41 / 55%); }
+.sk-theme .sk-compact-editor > .modalhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #102a4a, #173b67 55%, #1f6274);
+}
+.sk-theme .sk-compact-editor > .modalhead h3 { margin: 0; color: #fff; font-size: 20px; }
+.sk-theme .sk-compact-editor > :is(.control-form, .um-add-form) { margin: 0; padding: 14px 18px; }
+.sk-theme .sk-compact-editor :is(.control-form:not([hidden]), .um-modal-grid) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.sk-theme .sk-compact-editor :is(input, select) { width: 100%; min-height: 38px; }
+.sk-theme .sk-compact-editor :is(.field label, .control-form > label) {
+  color: var(--control-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.sk-theme .sk-compact-editor :is(.formactions, .control-form-actions) {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--control-line);
+}
+.sk-theme .sk-compact-editor :is(.formactions, .control-form-actions) .btn { min-height: 36px; }
+.sk-theme .sk-catalog-editor .control-form-message { grid-column: 1 / -1; grid-row: 3; }
+@media (max-width: 560px) {
+  .sk-theme .sk-compact-editor :is(.control-form:not([hidden]), .um-modal-grid) { grid-template-columns: minmax(0, 1fr); }
+  .sk-theme .sk-catalog-editor .control-form-message { grid-row: auto; }
+  .sk-theme .sk-compact-editor :is(input, select, .btn) { min-height: 44px; }
+}
+
+/* Compact data-entry dialogs with groups that span the full editor. */
+.sk-theme .sk-compact-editor > .sk-editor-stacked:not([hidden]) {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+.sk-editor-stacked > p { margin: 0; overflow-wrap: anywhere; }
+.sk-editor-stacked .sk-editor-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 10px 12px;
+}
+.sk-editor-fields .sk-editor-wide, .sk-editor-fields label:has(input[type="email"], .sk-password-field) {
+  grid-column: 1 / -1;
+}
+@media (min-width: 561px) {
+  .sk-editor-stacked .md-ordered-fields {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  }
+  .sk-editor-stacked .md-ordered-fields:has(#md_pm_code) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 3fr);
+  }
+  .md-ordered-fields label:has(#md_pm_phone) { grid-column: span 2; }
+  .md-ordered-fields label:has(#md_pm_email) { grid-column: auto; }
+}
+.sk-editor-readonly {
+  padding: 6px 8px;
+  background: var(--sk-canvas);
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 560px) {
+  .sk-editor-stacked .sk-editor-fields { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* A shared type scale for the KPI cards across report tabs. */
+.sk-theme :is(.laporan-v3, #reportContent, .kinerja-v2) {
+  --sk-report-kpi-label-size: 11px;
+  --sk-report-kpi-value-size: clamp(17px, 1.45vw, 19px);
+}
+.sk-theme :is(.laporan-v3, #reportContent, .kinerja-v2)
+  :is(.kpi, .extra-kpi, .finance-kpi, .rap-biaya-kpi, .rap-period-kpi, .cashflow-v4-kpi, .kinerja-kpi, .kv2-kpi)
+  > :is(.label, small) {
+  font-size: var(--sk-report-kpi-label-size) !important;
+  line-height: 1.2;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+.sk-theme :is(.laporan-v3, #reportContent, .kinerja-v2)
+  :is(.kpi, .extra-kpi, .finance-kpi, .rap-biaya-kpi, .rap-period-kpi, .cashflow-v4-kpi, .kinerja-kpi, .kv2-kpi)
+  > :is(.value, strong) {
+  font-size: var(--sk-report-kpi-value-size) !important;
+  line-height: 1.2;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+
+.sk-password-field { display: block; position: relative; min-width: 0; }
+.sk-password-field > input { width: 100%; padding-inline-end: 48px; }
+.sk-password-toggle {
+  position: absolute;
+  inset: 0 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--control-muted);
+  cursor: pointer;
+}
+.sk-password-toggle svg { width: 18px; height: 18px; }
+.sk-password-toggle[aria-pressed="false"] .sk-password-slash { display: none; }
+
+.sk-theme .report-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.sk-theme .report-toolbar .report-actions-v1 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-inline-start: auto;
+}
+.sk-theme .report-toolbar .report-actions-v1 .btn {
+  min-height: 44px;
+  background: var(--control-secondary);
+  color: var(--control-ink);
+}
+@media print {
+  .sk-theme .report-toolbar { display: none; }
+}
+
+.sk-theme :is(.control-button, .control-select, .control-form input, .control-form select, .control-search) {
+  border-radius: var(--control-control-radius);
+}
+.sk-theme .control-button.primary {
+  background: var(--control-raised);
+  box-shadow: var(--control-button-shadow);
+}
+.sk-theme .control-head .control-button.primary { border-color: var(--control-accent); }
+.sk-theme :is(.btn, .control-button):not(:disabled):hover { filter: brightness(.94); }
+.sk-theme :is(.btn, .control-button):not(:disabled):active {
+  box-shadow: none;
+}
+.sk-theme :is(.field, .control-form, .sk-editor-fields) :is(input:not([type=checkbox],[type=radio]), select, textarea) {
+  border-color: var(--control-line);
+  box-shadow: none;
+}
+.sk-theme :is(.control-table, .table, .table-scroll > table) thead th {
+  background-color: var(--control-table-head);
+  color: var(--control-ink);
+  border-bottom-color: var(--control-line);
+  padding: 5px 8px;
+}
+.sk-theme :is(.control-table, .table, .table-scroll > table) tbody td {
+  padding: var(--control-cell-padding);
+  border-bottom-color: var(--control-row-line);
+  font-variant-numeric: tabular-nums;
+}
+.sk-theme :is(.control-table, .table, .table-scroll > table) tbody tr:hover { background-color: var(--control-table-hover); }
+.sk-theme .login-v1 :is(.login-brand-panel, .login-form-panel) { background: var(--control-raised); }
+.sk-theme .login-v1 .login-submit {
+  color: var(--control-deep) !important;
+  background: linear-gradient(145deg, #76e8ff, var(--control-accent)) !important;
+  box-shadow: var(--control-button-shadow);
+}
+@media (max-width: 780px) {
+  .sk-theme {
+    --control-shadow: 0 2px 5px #09224f14;
+    --control-button-shadow: 0 1px 2px #09224f20;
+  }
+}
+
+/* Dark canvas and summary panels share the sidebar palette. Data-entry surfaces stay light. */
+.sk-theme {
+  --control-workspace: #050f29;
+  --control-panel-gradient: linear-gradient(150deg, #10477e, #09264e 62%, #081e42);
+  --control-panel-border: #55e5ff;
+  --control-panel-glow: inset 0 1px 2px #77ebff42, 0 0 9px #36dfff49, 0 6px 13px #020b2490;
+  --control-section-gap: 12px;
+  --control-field-height: 40px;
+  --control-field-font: 14px;
+  --control-workspace-ink: #edf7ff;
+  --control-workspace-muted: #b2d2ef;
+}
+.sk-theme,
+.sk-theme .control-shell,
+.sk-theme .shell > :is(.content, .main) {
+  background: radial-gradient(ellipse at top right, #0d376b, var(--control-workspace) 55%);
+}
+.sk-theme .shell > :is(.content, .main) {
+  color: var(--control-workspace-ink);
+}
+/* Panels and table wrappers share one surface; table cells and editable controls retain light contrast. */
+.sk-theme :is(.content, .main, .wrap) :is(.card, .control-card, .md-card, .um-card, .summary-panel, .timeline-v4, .rap-item, .rap-total, .cost-item, .timeline-v4-stat, .kpi, .extra-kpi, .kinerja-kpi, .rap-biaya-kpi, .note-card, section[data-workspace-page]) {
+  --control-ink: var(--control-workspace-ink);
+  --control-muted: var(--control-workspace-muted);
+  --control-orange: var(--control-accent);
+  --control-line: #55e5ff;
+  --text: var(--control-ink);
+  --muted: var(--control-muted);
+  background: var(--control-panel-gradient);
+  box-shadow: var(--control-panel-glow);
+  border-color: var(--control-line);
+  color: var(--control-ink);
+}
+.sk-theme :is(.content, .main, .wrap) :is(table, input, select, textarea, .control-search, .btn.ghost, .control-button:not(.primary), .control-select, .control-link) {
+  --control-ink: #122b48;
+  --control-muted: #425d79;
+  --control-line: #b9cde5;
+  --text: var(--control-ink);
+  --muted: var(--control-muted);
+  color: var(--control-ink);
+}
+.sk-theme :is(.content, .main, .wrap) table {
+  background-color: var(--control-table-surface);
+}
+.sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(.btn.ghost, .control-button:not(.primary), .report-actions-v1 .btn) {
+  background: var(--control-secondary);
+  border-color: var(--control-secondary-line);
+  color: #122b48;
+}
+.sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(.btn.ghost, .control-button:not(.primary), .report-actions-v1 .btn):not(:disabled):hover {
+  background: var(--control-table-head);
+}
+.sk-theme :is(.content, .main, .wrap) table .control-link { color: #1459b8; }
+.sk-theme .content :is(.control-kpi, .detail-kpi-v2, .kpi, .extra-kpi, .kinerja-kpi) :is(.label, .control-note, small) {
+  color: var(--control-muted);
+}
+.sk-theme .content :is(.control-kpi, .detail-kpi-v2, .kpi, .extra-kpi, .kinerja-kpi) :is(.value, strong) {
+  color: var(--control-ink);
+}
+.sk-theme .content :is(.sectiontitle, .md-card-head, .um-card-head, .control-section-head) :is(h2, h3) {
+  color: inherit;
+}
+.sk-theme .content > #module > .empty,
+.sk-theme #planning-panel > :is(label, #planning-notice) {
+  color: var(--control-workspace-ink);
+}
+.sk-theme .content .control-search { color: var(--control-data-ink); }
+
+.sk-theme .content :is(.btn.primary, .control-button.primary),
+.sk-theme #signed-in form:not(.control-form):not(.control-period) button[type=submit] {
+  background: linear-gradient(155deg, #76e8ff, var(--control-accent));
+  border-color: var(--control-accent);
+  color: var(--control-deep);
+}
+
+.sk-theme .control-kpi > svg { filter: drop-shadow(0 0 5px #44d6ff86); }
+.sk-theme .control-kpi > strong { font-variant-numeric: tabular-nums; }
+.sk-theme .control-sidebar .nav button.active {
+  background: linear-gradient(100deg, #175db3, #12386b);
+}
+.sk-theme .content :is(.btn.primary, .control-button.primary) {
+  box-shadow: inset 0 1px 0 #c2faff, 0 0 10px #3ac5ff4a;
+}
+@media (max-width: 780px) {
+  .sk-theme :is(.content, .main, .wrap) .control-kpi { box-shadow: inset 0 1px 0 #53e2ff3b; }
+  .sk-theme .control-kpi > svg { filter: none; }
+}
+
+.sk-theme .control-card .control-chart .control-line.target { stroke: #76a9ff; }
+.sk-theme .control-card .control-chart :is(.control-area, .control-dot).target { fill: #76a9ff; }
+.sk-theme .control-card .control-legend .target::before { border-color: #76a9ff; }
+.sk-theme .control-card .control-chart line { stroke: #39608a; }
+.sk-theme .control-card > .control-section-head > .control-link { color: var(--control-accent); }
+
+/* Shared screen-only details complement the form and table rules below. */
+@media screen {
+.sk-theme .content .control-search { background-color: var(--control-field-surface); }
+.sk-theme .content .control-search :is(input, svg),
+.sk-theme :is(.content, .main, .wrap) table :is(.control-link, .linkbtn) {
+  color: var(--control-data-ink) !important;
+}
+.sk-theme :is(.content, .main, .wrap, dialog, #modal, .login-form-panel) :is(input, textarea)::placeholder {
+  color: #a5cbe5;
+  opacity: 1;
+}
+.sk-theme :is(.content, .main, .wrap) table { --control-row-line: #24619a; }
+.sk-theme :is(.content, .main, .wrap) table tbody td { border-bottom-color: var(--control-row-line); }
+
+}
+
+/* Keep project detail surfaces and data labels legible across legacy modules. */
+.sk-theme :is(.content, .main, .wrap) :is(.timeline-v4, .rap-item, .rap-total, .cost-item, .timeline-v4-stat) {
+  background: var(--control-panel-gradient) !important;
+  border: 1px solid var(--control-line);
+}
+.sk-theme :is(.summary-panel, .timeline-v4) :is(.note, .label, .subheading, .timeline-v4-dates, .timeline-v4-current-date) {
+  color: #b8dcf5 !important;
+}
+.sk-theme :is(.summary-panel, .timeline-v4) :is(.value, strong, h3) {
+  color: #eefaff !important;
+}
+.sk-theme .timeline-v4-badge {
+  background: #123e68;
+  color: #d7f6ff;
+}
+.sk-theme :is(.content, .main, .wrap) table :is(.control-badge.neutral, .pill.neutral) {
+  background: #173e65;
+  color: #d6f4ff;
+}
+.sk-theme :is(.content, .main, .wrap) table :is(.control-link, .linkbtn) {
+  background: transparent;
+}
+
+/* Navigation and command buttons share the same selected and unselected colors. */
+.sk-theme :is(.shell, .wrap, dialog, .modal, #modal) :is(.btn, .control-button, .report-tabs button, .tabs button, .md-tabs button, .sidebar .nav button, .sidebar .nav a, .side .nav a):not(:is(.danger, .active, .selected, [aria-selected="true"], [aria-pressed="true"], [aria-current="page"])) {
+  background: #a7efff !important;
+  color: #091f40 !important;
+  border-color: #63dbf6;
+}
+.sk-theme :is(.shell, .wrap, dialog, .modal, #modal) :is(.btn, .control-button, .report-tabs button, .tabs button, .md-tabs button, .sidebar .nav button, .sidebar .nav a, .side .nav a):is(.active, .selected, [aria-selected="true"], [aria-pressed="true"], [aria-current="page"]) {
+  background: #0d3054 !important;
+  color: #fff !important;
+  border-color: #21567f;
+  box-shadow: inset 0 -2px 0 #53e2ff, 0 2px 8px #36dfff35;
+}
+.sk-theme .sidebar .nav :is(button, a) svg { color: currentColor; }
+
+/* Legacy modules inject unlayered important styles after page load. */
+@layer neon-surfaces {
+  @media screen {
+    /* Native dialogs can be mounted directly under body. */
+    .sk-theme dialog.sk-compact-editor,
+    /* Shared surface roles for both static and dynamically rendered modules. */
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(
+      .card, .control-card, .md-card, .um-card, .tablecard, .dashboard-panel,
+      .summary-panel, .timeline-v4, .overview-timeline-v3, .rap-item, .rap-total,
+      .cost-item, .timeline-v4-stat, .kpi, .extra-kpi, .finance-kpi, .kinerja-kpi,
+      .rap-biaya-kpi, .rap-period-kpi, .cashflow-v4-kpi, .kv2-kpi, .pp-kpi-v4,
+      .kinerja-section, .cashflow-v4-section, .kv2-sec, .pp-panel-v4, .note-card,
+      .dfk-card, .ccv7-card, .ccv7-panel,
+      .filters, .finance-toolbar, .progress-project-toolbar, .progress-project-filter,
+      .rap-biaya-filter, .kinerja-toolbar,
+      .kinerja-filter, .kinerja-trend-filter, .kv2-filter, .kv2-trend,
+      .extra-period-grid, .cashflow-v4-filters, .cashflow-v4-filter, .um-toolbar,
+      .dashboard-period, .modalbox, .sk-compact-editor, .ui-total,
+      .ui-final-help, .ui-final-summary, .ui-help,
+      .ui-progress-callout, .um-add-section, .form-section, .category-master-table,
+      .category-master-toolbar, .category-master-add, .um-role-item
+    ) {
+      --control-ink: var(--control-workspace-ink);
+      --control-muted: var(--control-workspace-muted);
+      --text: var(--control-ink);
+      --muted: var(--control-muted);
+      background: var(--control-panel-gradient) !important;
+      border-color: var(--control-panel-border) !important;
+      border-style: solid;
+      border-width: 1px;
+      border-radius: var(--control-control-radius);
+      box-shadow: var(--control-panel-glow) !important;
+      color: var(--control-ink) !important;
+    }
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(
+      .pp-header-v4, .category-master-table .cm-head, .ui-step, .extra-report-tab,
+      .cashflow-v4-actions button, .um-reset-btn
+    ) {
+      background: var(--control-table-head) !important;
+      color: var(--control-data-ink) !important;
+      border-color: var(--control-panel-border) !important;
+    }
+    .sk-theme :is(.content, .main, .wrap) :is(.pp-data-v4, .category-master-table .cm-row) {
+      background: var(--control-table-surface) !important;
+      color: var(--control-data-ink) !important;
+    }
+    .sk-theme :is(.content, .main, .wrap) :is(.pp-data-v4, .category-master-table .cm-row):hover {
+      background: var(--control-table-hover) !important;
+    }
+    .sk-theme .content #reportContent .card:has(> .filters) {
+      background: none !important;
+      border: 0 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+    }
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal, .login-form-panel) :is(input:not([type=checkbox],[type=radio],[type=range],[type=color],[type=hidden],[type=submit],[type=button],[type=reset],[type=image]), select, textarea, select option) {
+      color-scheme: dark;
+      background-color: var(--control-field-surface) !important;
+      color: var(--control-data-ink) !important;
+      font-weight: 400 !important;
+    }
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(input:not([type=checkbox],[type=radio],[type=range],[type=color],[type=hidden],[type=submit],[type=button],[type=reset],[type=image],[type=file]), select) {
+      box-sizing: border-box !important;
+      block-size: var(--control-field-height) !important;
+      min-block-size: var(--control-field-height) !important;
+      font-family: var(--control-font) !important;
+      font-size: var(--control-field-font) !important;
+      border-radius: var(--control-control-radius) !important;
+    }
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) textarea {
+      min-block-size: calc(2 * var(--control-field-height)) !important;
+      font-family: var(--control-font) !important;
+      font-size: var(--control-field-font) !important;
+    }
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) .ux-date-wrap {
+      height: var(--control-field-height) !important;
+      min-height: var(--control-field-height) !important;
+    }
+    .sk-theme #modal :is(.ui-final-close, .ui-final-step:not(.active)) {
+      background: #a7efff !important;
+      color: #091f40 !important;
+    }
+    .sk-theme #modal .ui-final-step.active {
+      background: #0d3054 !important;
+      color: #fff !important;
+      box-shadow: inset 0 -2px 0 var(--control-accent) !important;
+    }
+    .sk-theme :is(.modal, #modal, dialog) :is(.ui-final-summary, .ui-final-help) {
+      height: auto !important;
+      min-height: 32px;
+    }
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(.field label, .ui-final-field label, .control-period label, .control-form label, .sk-editor-field, td > strong, td .control-link, .timeline-v4-stat .label, .rap-item .label, .cost-item .note) {
+      font-weight: 400 !important;
+      font-family: var(--control-font) !important;
+    }
+    .sk-theme :is(.content, .main, .wrap, dialog, .modal, #modal) :is(.field label, .ui-final-field label, .control-period label, .control-form label, .sk-editor-field) {
+      color: var(--control-workspace-muted) !important;
+    }
+    .sk-theme {
+      --control-table-heading-size: 13px;
+      --control-table-body-size: 14px;
+    }
+    .sk-theme :is(.entry-table, .md-kavio-table, .kinerja-table, .kinerja-v2, .period-performance-section) {
+      --control-table-heading-size: 12px;
+      --control-table-body-size: 13px;
+    }
+    .sk-theme :is(table thead th, .pp-header-v4 > .pp-cell-v4, .category-master-table .cm-head) {
+      font-size: var(--control-table-heading-size) !important;
+      font-weight: 400 !important;
+      line-height: 1.25 !important;
+      letter-spacing: normal !important;
+    }
+    .sk-theme :is(table tbody :is(td, th), .pp-data-v4 > .pp-cell-v4, .category-master-table .cm-row) {
+      font-size: var(--control-table-body-size) !important;
+      line-height: 1.3 !important;
+    }
+    .sk-theme table tbody :is(button, a, strong, small, .pill, .control-badge) {
+      font-size: inherit !important;
+    }
+    .sk-theme .entry-table input:not([type=checkbox], [type=radio]) {
+      font-size: var(--control-table-body-size) !important;
+    }
+    @media (max-width: 780px) {
+      .sk-theme { --control-table-heading-size: 12px; --control-table-body-size: 13px; }
+    }
+    .sk-theme table :is(th, td) {
+      background: var(--control-table-surface) !important;
+      color: var(--control-data-ink) !important;
+    }
+    .sk-theme table thead th { background: var(--control-table-head) !important; }
+    .sk-theme table tbody tr:hover td { background: var(--control-table-hover) !important; }
+    .sk-theme .content :is(.kv2-toolbar, .rap-period-toolbar, .rap-period-filter, .card > .extra-period-grid) {
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+    .sk-theme .content :is(.kv2-toolbar, .rap-period-toolbar) {
+      display: grid !important;
+      gap: var(--control-section-gap) !important;
+      padding: 0 !important;
+      align-items: stretch !important;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 132px), 1fr)) !important;
+    }
+    .sk-theme .content .rap-period-toolbar > .field,
+    .sk-theme .content .rap-period-filter { min-width: 0; margin: 0 !important; padding: 0 !important; }
+    .sk-theme .content :is(.kv2-toolbar, .rap-period-toolbar) > * { min-width: 0; }
+    .sk-theme .content :is(.kv2-kpi, .rap-period-kpi) strong { overflow-wrap: anywhere; }
+    /* Shared inline filters and compact editor layout. */
+    .sk-theme .laporan-v3 #reportContent :is(.filters:has(#sumPeriod), .extra-period-grid:has(#finPeriod), .finance-toolbar) {
+      display: flex !important;
+      flex-wrap: wrap;
+      align-items: center !important;
+      gap: 8px 12px !important;
+      padding: 10px 12px !important;
+    }
+    .sk-theme .laporan-v3 #reportContent :is(.filters:has(#sumPeriod), .extra-period-grid:has(#finPeriod), .finance-toolbar) .field {
+      display: grid !important;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      flex: 1 1 200px;
+      gap: 8px;
+      min-width: 0;
+      margin: 0 !important;
+    }
+    .sk-theme .laporan-v3 #reportContent :is(.filters:has(#sumPeriod), .extra-period-grid:has(#finPeriod), .finance-toolbar) .field label {
+      margin: 0 !important;
+      white-space: nowrap;
+    }
+    .sk-theme .laporan-v3 #reportContent .extra-period-grid:has(#finPeriod) .extra-actions { margin: 0 !important; }
+    .sk-theme .laporan-v3 #reportContent .extra-period-grid:has(#finPeriod) button {
+      height: var(--control-field-height) !important;
+      margin: 0 !important;
+    }
+    .sk-theme tbody :is(td, td *) {
+      font-weight: 400 !important;
+    }
+    .sk-theme tbody :is(.md-actions, .control-row-actions, .op-actions, .um-actions) {
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .sk-theme tbody :is(.md-actions, .control-row-actions, .op-actions, .um-actions, .op-action-cell) :is(button, a) {
+      block-size: var(--control-table-action-height, 26px) !important;
+      min-block-size: var(--control-table-action-height, 26px) !important;
+      padding: 0 8px !important;
+      line-height: 1.15 !important;
+      margin-block: 0 !important;
+    }
+    .sk-theme :is(.modalbox, .sk-compact-editor) :is(.control-form, .formgrid, .op-body, .op-grid, .ui-final-grid, .ui-progress-card, .sk-editor-fields, .p6-body) {
+      background: transparent !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+    }
+    .sk-theme :is(.modalbox, .sk-compact-editor) :is(.formactions, .control-form-actions, .op-actions-bar, .ui-final-actions) {
+      background: transparent !important;
+      border: 0 !important;
+      border-top: 1px solid var(--control-panel-border) !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+    }
+    .sk-theme .sk-compact-editor > .modalhead,
+    .sk-theme #modal .modalbox:has(:is(#rap_material, #wi_name, #pr_date, #tx_date, .op-grid)) > .modalhead {
+      background: linear-gradient(135deg, #102a4a, #173b67 55%, #1f6274) !important;
+      border-bottom: 1px solid var(--control-panel-border) !important;
+      color: var(--control-workspace-ink) !important;
+    }
+    .sk-theme #modal .modalbox:has(:is(#rap_material, #wi_name, #pr_date, #tx_date, .op-grid)) {
+      min-width: 0 !important;
+      max-width: calc(100vw - 28px) !important;
+      max-height: calc(100dvh - 28px) !important;
+      overflow-y: auto !important;
+    }
+    @media (max-width: 780px) {
+      .sk-theme { --control-table-action-height: 36px; }
+    }
+    .sk-theme :is(.modal, #modal, dialog) :is(.modalbox, .sk-compact-editor) {
+      --control-editor-padding: 14px 18px;
+      max-height: calc(100dvh - 28px) !important;
+      overflow-y: auto !important;
+    }
+    .sk-theme :is(.modal, #modal, dialog) :is(.modalbox, .sk-compact-editor) :is(.formgrid, .ui-final-grid, .um-modal-grid, .sk-editor-fields) {
+      align-items: start;
+      row-gap: 10px !important;
+      column-gap: 12px !important;
+    }
+    .sk-theme :is(.modal, #modal, dialog) :is(.modalbox, .sk-compact-editor) :is(.field, .ui-final-field, .sk-editor-field) {
+      min-inline-size: 0;
+    }
+    .sk-theme :is(.modal, #modal, dialog) :is(.modalbox, .sk-compact-editor) :is(.field, .ui-final-field, .sk-editor-field) :is(input:not([type=checkbox],[type=radio]), select, textarea) {
+      max-inline-size: 100%;
+    }
+    .sk-theme :is(.modal, #modal, dialog) :is(.modalbox, .sk-compact-editor) > .modalhead {
+      padding: var(--control-editor-padding) !important;
+    }
+    @media (max-width: 560px) {
+      .sk-theme :is(.modal, #modal, dialog) :is(.formgrid, .um-modal-grid, .sk-editor-fields) {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+    }
+    .sk-theme .content .report-results { display: grid; min-width: 0; gap: var(--control-section-gap); }
+    .sk-theme .content .report-results > * { min-width: 0; margin-block: 0 !important; }
+    .sk-theme :is(.modal, #modal, dialog) .formgrid {
+      display: grid !important;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    }
+    .sk-theme :is(.modal, #modal, dialog) :is(.formgrid, .ui-final-grid, .sk-editor-fields) > :is(.field, .ui-final-field, .sk-editor-field) {
+      margin: 0 !important;
+    }
+    .sk-theme :is(.modal, #modal, dialog) :is(.field, .ui-final-field, .sk-editor-field) > label {
+      display: block;
+      margin-block-end: 4px !important;
+      font-size: 13px !important;
+    }
+    .sk-theme .content :is(#reportContent, .kinerja-v2, #cost-control-v7) {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--control-section-gap) !important;
+    }
+    .sk-theme .content :is(#reportContent, .kinerja-v2, #cost-control-v7) > * {
+      min-width: 0;
+      margin-block: 0 !important;
+    }
+    .sk-theme .content :is(#reportContent .scroll, .kv2-scroll, .ccv7-panel) {
+      min-width: 0;
+      overflow-x: auto;
+    }
+    .sk-theme .content :is(.finance-summary, .rap-period-kpis, .rap-biaya-kpis, .kv2-toolbar, .detail-finance-kpi, .ccv7-kpis) {
+      gap: var(--control-section-gap) !important;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 132px), 1fr)) !important;
+    }
+    .sk-theme .content .detail-finance-kpi { margin-block: 12px !important; }
+    .sk-theme .content #cost-control-v7 { margin-block-start: 12px !important; }
+    .sk-theme .content :is(.dfk-label, .ccv7-label) {
+      color: var(--control-workspace-muted) !important;
+      font-weight: 400 !important;
+    }
+    .sk-theme .content :is(.dfk-value, .ccv7-value) { color: var(--control-data-ink); }
+    .sk-theme .um-page .um-role-item:not(.active) {
+      background: #a7efff !important;
+      color: #091f40 !important;
+      box-shadow: none !important;
+    }
+    .sk-theme .um-page .um-role-item.active {
+      background: #0d3054 !important;
+      color: #fff !important;
+      box-shadow: inset 0 -3px 0 var(--control-accent), var(--control-panel-glow) !important;
+    }
+    .sk-theme .um-page .um-role-item small { color: inherit !important; }
+    .sk-theme :is(.modalbox, .sk-compact-editor) :is(.formactions, .ui-final-actions, .control-form-actions) {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      gap: 8px !important;
+      height: auto !important;
+      min-height: calc(var(--control-field-height) + 12px) !important;
+    }
+    .sk-theme :is(.modalbox, .sk-compact-editor) :is(.formactions, .ui-final-actions, .control-form-actions, .op-actions-bar) button {
+      height: var(--control-form-button-height, 32px) !important;
+      min-height: var(--control-form-button-height, 32px) !important;
+    }
+    .sk-theme #rapTotalPreview { color: var(--control-data-ink) !important; }
+
+    /* Entry rows share the existing inputs, date pickers and save handlers. */
+    .sk-theme #modal .modalbox:has(:is(#wi_name, #pr_item, #op_wi_name, #op_pr_date)) :is(.formgrid, .op-grid) {
+      grid-template-columns: minmax(0, 1fr) !important;
+      gap: 0 !important;
+    }
+    .sk-theme #modal .modalbox:has(:is(#wi_name, #pr_item, #op_wi_name, #op_pr_date)) .field,
+    .sk-theme :is(#planning-item, #planning-record) > label {
+      display: grid !important;
+      grid-template-columns: minmax(105px, 28%) minmax(0, 1fr);
+      align-items: center !important;
+      gap: 8px !important;
+      padding-block: 6px !important;
+      border-bottom: 1px solid var(--control-row-line);
+    }
+    .sk-theme #modal .modalbox:has(:is(#wi_name, #pr_item, #op_wi_name, #op_pr_date)) .field > label {
+      margin: 0 !important;
+    }
+    .sk-theme #signed-in :is(#planning-item, #planning-record):not([hidden]) { display: block; }
+    .sk-theme :is(#planning-item, #planning-record) > button { margin-top: 8px; }
+    @media (max-width: 480px) {
+      .sk-theme { --control-form-button-height: 40px; }
+    }
+    .sk-theme #modal :is(.ui-final-project, .ui-final-content) { min-width: 0; }
+    .sk-theme #modal .ui-final-content { overflow: auto !important; }
+    .sk-theme #modal .modalbox:has(.ui-final-project) { overflow-y: auto !important; }
+    .sk-theme #modal .ui-final-project { max-height: none !important; }
+
+  }
+}
+.sk-theme .content :is(.filters, .finance-toolbar, .progress-project-toolbar, .rap-biaya-filter, .kinerja-toolbar) { padding: 12px; }
+.sk-theme .content #reportContent .period-custom label { font-family: var(--control-font); }
+.sk-theme .content :is(.summary-panels, .project-overview-charts, .control-kpis, .control-columns, .control-stack) { gap: var(--control-section-gap); }
+.sk-theme .content :is(.summary-panels, .timeline-v4) + :is(.timeline-v4, .project-overview-charts) { margin-block-start: var(--control-section-gap); }
+@media (max-width: 780px) {
+  .sk-theme { --control-section-gap: 10px; --control-field-height: 44px; --control-field-font: 16px; }
+}
+
+@layer neon-surfaces {
+  @media screen {
+    .sk-theme #modal :is(.ui-final-summary strong, #wiTotalPreview) {
+      color: var(--control-data-ink) !important;
+    }
+    .sk-theme #modal .modalbox:has(> :is(#item-entry, #progress-entry)) {
+      display: flex !important;
+      flex-direction: column;
+      width: min(960px, calc(100vw - 28px)) !important;
+      max-width: calc(100vw - 28px) !important;
+      max-height: calc(100dvh - 28px) !important;
+      overflow: clip !important;
+    }
+    .sk-theme #modal .modalbox:has(.entry-table) > .modalhead { flex: none; }
+    .sk-theme #modal :is(#item-entry, #progress-entry) {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      gap: 8px;
+    }
+    .sk-theme #modal .entry-table-wrap {
+      min-height: 0;
+      overflow: hidden auto;
+    }
+    .sk-theme #modal :is(#item-entry, #progress-entry) > :not(.entry-table-wrap) {
+      flex: none;
+    }
+    .sk-theme #modal #progress-entry > .field {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0;
+    }
+    .sk-theme #modal #progress-entry > .field label { margin: 0 !important; }
+    .sk-theme #modal #pr_date { width: min(48%, 180px) !important; }
+    .sk-theme #modal .entry-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      font-weight: 400 !important;
+      text-transform: none !important;
+      letter-spacing: normal !important;
+    }
+    .sk-theme .entry-table input:not([type=checkbox], [type=radio]) {
+      width: 100%;
+      border: 0 !important;
+      background: transparent !important;
+      border-radius: 4px !important;
+      block-size: 30px !important;
+      min-block-size: 30px !important;
+      padding: 2px 5px !important;
+      box-shadow: none !important;
+    }
+    .sk-theme .entry-table input:not([type=checkbox], [type=radio]):focus {
+      background: var(--control-table-head) !important;
+      outline: none !important;
+    }
+    .sk-theme #modal .entry-table th[scope=row] { text-align: left; font-weight: 400 !important; }
+    .sk-theme #modal #item-entry .ui-total { color: var(--control-workspace-ink) !important; }
+    .sk-theme #modal .modalbox:has(#item-entry) > .modalhead {
+      background: linear-gradient(135deg, #102a4a, #173b67 55%, #1f6274) !important;
+      color: var(--control-workspace-ink) !important;
+    }
+    .sk-theme #modal .modalbox:has(#item-entry) > .modalhead h3 {
+      color: var(--control-workspace-ink) !important;
+    }
+    .sk-theme #modal :is(#item-entry, #progress-entry) {
+      box-sizing: border-box;
+      min-width: 0;
+      padding: 12px clamp(12px, 2vw, 20px) 16px;
+    }
+    .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table {
+      table-layout: fixed;
+      width: 100% !important;
+      min-width: 0 !important;
+      margin: 0 !important;
+    }
+    .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table :is(th, td) {
+      padding: 2px 4px !important;
+      white-space: normal !important;
+      overflow-wrap: anywhere;
+    }
+    .sk-theme #modal :is(#item-entry, #progress-entry) .formactions {
+      width: 100% !important;
+      margin: 8px 0 0 !important;
+      padding: 8px 0 0 !important;
+      box-sizing: border-box;
+    }
+    .sk-theme #progress-entry .progress-order { width: 50px; }
+    .sk-theme #progress-entry .progress-name { width: auto; }
+    .sk-theme #progress-entry .progress-weight { width: 60px; }
+    .sk-theme #progress-entry .progress-addition { width: 130px; }
+    .sk-theme #progress-entry .progress-notes { width: 300px; }
+    .sk-theme #modal #progress-entry .entry-table tbody tr:last-child > th[scope=row] { border-bottom: 0 !important; }
+    .sk-theme #modal #progress-entry .entry-table tbody :is(td, th) {
+      padding-block: 1px !important;
+      line-height: 1.2;
+    }
+    .sk-theme #modal #progress-entry .entry-table input {
+      block-size: 24px !important;
+      min-block-size: 24px !important;
+    }
+    .sk-theme #item-entry .entry-order { width: 72px; }
+    .sk-theme #item-entry .entry-weight { width: 66px; }
+    .sk-theme #item-entry .entry-duration { width: 72px; }
+    .sk-theme #item-entry .entry-date { width: 145px; }
+    .sk-theme #item-entry .entry-select { width: 58px; }
+    .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table input {
+      box-sizing: border-box !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+    }
+    @media (max-width: 740px) {
+      .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table :is(colgroup, thead) { display: none; }
+      .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table :is(tbody, tr, td, th[scope=row]),
+      .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table { display: block; }
+      .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 4px;
+      }
+      .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table tr + tr {
+        margin-top: 12px;
+        border-top: 1px solid var(--control-panel-border);
+      }
+    }
+    .sk-theme #modal :is(#item-entry, #progress-entry) .entry-table input[type=checkbox] { width: auto; }
+    .sk-theme #item-entry .entry-row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-inline-end: auto;
+    }
+  }
+}
+
+@layer neon-surfaces {
+  @media screen {
+    .sk-theme .control-form:has(> label > :is(select[name="employee_id"], select[name="equipment_id"])) > label > :is(input, select) {
+      box-sizing: border-box;
+      width: 100%;
+      min-width: 0 !important;
+      max-width: 100%;
+    }
+    .sk-theme .control-card:has(.control-form :is(select[name="employee_id"], select[name="equipment_id"])) .control-table thead th {
+      font-weight: 400 !important;
+    }
+  }
+}
+
+.sk-theme .report-item-progress {
+  width: 100%;
+  min-width: 48px;
+  height: 8px;
+  vertical-align: middle;
+  accent-color: var(--control-accent);
+}

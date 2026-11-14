@@ -88,9 +88,9 @@
       recByItem[r.work_item_id]=(recByItem[r.work_item_id]||0)+Number(r.progress_percentage||0);
     });
     const rows=data.workItems.filter(i=>String(i.project_id)===String(id)).map(i=>{
-      const progress=Math.min(100,recByItem[i.id]||0);
+      const progress=Math.min(100,Math.max(0,(recByItem[i.id]||0)*100));
       const weight=Number(i.weight||0);
-      const weighted=weight*(progress/100)*100;
+      const weighted=weight*progress;
       return {...i,progress,weighted};
     });
 
@@ -111,7 +111,7 @@
     body.innerHTML=rows.map(x=>{
       const cls=x.progress>=100?'green':x.progress>0?'amber':'red';
       const status=x.progress>=100?'SELESAI':x.progress>0?'BERJALAN':'BELUM MULAI';
-      return `<tr><td><strong>${esc(project?.project_code||'-')}</strong></td><td>${esc(project?.project_name||'-')}</td><td>${esc(x.work_name||'-')}</td><td class="num">${pct(Number(x.weight||0)*100)}</td><td class="num">${pct(x.progress)}</td><td class="num">${pct(x.weighted)}</td><td><div class="progressbar"><i style="width:${Math.max(0,Math.min(100,x.progress))}%"></i></div></td><td><span class="pill ${cls}">${status}</span></td></tr>`;
+      return `<tr><td><strong>${esc(project?.project_code||'-')}</strong></td><td>${esc(project?.project_name||'-')}</td><td>${esc(x.work_name||'-')}</td><td class="num">${pct(Number(x.weight||0)*100)}</td><td class="num">${pct(x.progress)}</td><td class="num">${pct(x.weighted)}</td><td><progress class="report-item-progress" max="100" value="${x.progress}" aria-label="Progress ${esc(x.work_name)}"></progress></td><td><span class="pill ${cls}">${status}</span></td></tr>`;
     }).join('');
   }
 
